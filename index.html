@@ -70,6 +70,10 @@
   .chips{ display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; }
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
   .chip.active{ background:rgba(227,166,62,0.14); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .search-input{ width:100%; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; }
+  .search-input::placeholder{ color:var(--text-dim); }
+  .home-top{ display:flex; justify-content:center; padding:6px 0 2px; }
+  .surprise-btn{ padding:9px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
 
   /* ===== Home / stack ===== */
   #home{ align-items:stretch; }
@@ -273,6 +277,9 @@
 
   <!-- HOME -->
   <section id="home" class="screen active">
+    <div class="home-top">
+      <button class="surprise-btn" id="surpriseBtn">🎲 Удиви меня</button>
+    </div>
     <div class="stack" id="stack"></div>
     <div class="actions">
       <button class="no" id="btnSkip">✕</button>
@@ -284,6 +291,7 @@
   <!-- CATALOG -->
   <section id="catalog" class="screen">
     <div class="eyebrow">Каталог</div>
+    <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
     <div class="chips" id="typeChips"></div>
     <div class="chips" id="catChips" style="margin-top:6px;"></div>
     <div class="grid2" id="catGrid" style="margin-top:10px;"></div>
@@ -292,7 +300,8 @@
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
     <div class="eyebrow">Хочу чекнуть <span class="count" id="wishCount">0</span></div>
-    <div id="wishList"></div>
+    <div class="chips" id="wishSort"></div>
+    <div id="wishList" style="margin-top:12px;"></div>
   </section>
 
   <!-- PROFILE -->
@@ -410,7 +419,7 @@ const tg = window.Telegram?.WebApp;
 if (tg) {
   tg.ready(); tg.expand();
   try { tg.disableVerticalSwipes(); } catch(e){}
-  try { tg.requestFullscreen(); } catch(e){}
+  // requestFullscreen убран: он прячет хедер Telegram, из-за чего его плавающие кнопки (крестик, меню) наезжают на наш логотип. expand() + disableVerticalSwipes() достаточно, чтобы окно не сворачивалось свайпом вниз, и при этом хедер Telegram остаётся на своём месте, не перекрывая контент.
   tg.setHeaderColor && tg.setHeaderColor('#131110');
   tg.setBackgroundColor && tg.setBackgroundColor('#131110');
   tg.setBottomBarColor && tg.setBottomBarColor('#131110');
@@ -509,45 +518,105 @@ document.getElementById('redoOnboarding').onclick = () => {
   document.getElementById('onboarding').classList.add('show');
 };
 
-/* ============ DATA ============ */
-// Подключение TMDB вместо моков:
-// const TMDB_KEY = 'ВАШ_КЛЮЧ';
-// async function loadMovies() {
-//   const res = await fetch(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&sort_by=popularity.desc&api_key=${TMDB_KEY}`);
-//   const data = await res.json();
-//   return data.results.map(m => ({ id:m.id, title:m.title, year:(m.release_date||'').slice(0,4),
-//     rating:m.vote_average, overview:m.overview, poster:`https://image.tmdb.org/t/p/w780${m.poster_path}`, genres:[] }));
-// }
+/* ============ DATA (TMDB) ============ */
+const TMDB_KEY = '4a37646c1145e683d01fb159ab035fe7';
+const GENRE_MOVIE = {}, GENRE_TV = {};
 
-const MOVIES = [
+const FALLBACK_MOVIES = [
   { id:1, type:'film', title:'Стеклянный горизонт', year:2021, rating:7.4, genres:['Драма','Фантастика'], overview:'Инженер маяка на заброшенной станции получает сигнал, который не должен был существовать.' },
   { id:2, type:'film', title:'Полночный маршрут', year:2019, rating:6.8, genres:['Триллер'], overview:'Ночной таксист становится свидетелем преступления и должен решить, ввязываться ли в историю крупнее его самого.' },
   { id:3, type:'film', title:'Соль и пепел', year:2023, rating:8.1, genres:['Драма'], overview:'Две сестры возвращаются в прибрежный город спустя двадцать лет, чтобы разобрать дом отца.' },
-  { id:4, type:'film', title:'Комната 7B', year:2020, rating:6.2, genres:['Ужасы'], overview:'Новый жилец коммуналки замечает, что соседняя комната не сдаётся уже пятнадцать лет — и не просто так.' },
-  { id:5, type:'film', title:'Летний протокол', year:2022, rating:7.0, genres:['Комедия','Драма'], overview:'Стажёры на удалённой турбазе должны продержаться сезон без интернета — и без ссор.' },
-  { id:6, type:'film', title:'Северный вексель', year:2018, rating:7.7, genres:['Криминал'], overview:'Бывший бухгалтер узнаёт, что старый долг вернулся к нему в виде предложения, от которого нельзя отказаться.' },
-  { id:7, type:'film', title:'Красный прилив', year:2024, rating:7.2, genres:['Романтика','Драма'], overview:'Двое бывших встречаются спустя годы на съёмках одного фильма и заново проходят то, что не договорили.' },
-  { id:8, type:'film', title:'Тихий репортаж', year:2020, rating:8.4, genres:['Документальное'], overview:'Съёмочная группа год живёт с семьёй рыбаков на исчезающем острове.' },
-  { id:9, type:'film', title:'Автострада 9', year:2017, rating:6.5, genres:['Боевик','Триллер'], overview:'Курьер должен довезти груз до границы за одну ночь, пока за ним охотятся сразу три банды.' },
-  { id:10, type:'film', title:'Зеркальный код', year:2025, rating:7.9, genres:['Фантастика','Триллер'], overview:'Программистка находит в старой игре код, который предсказывает реальные события.' },
   { id:11, type:'series', title:'Дом на отшибе', year:2022, rating:7.6, genres:['Драма','Триллер'], episodesTotal:8, overview:'Семья переезжает в дом у леса и постепенно понимает, что предыдущие жильцы съехали не просто так.' },
-  { id:12, type:'series', title:'Соседний квартал', year:2021, rating:7.1, genres:['Комедия'], episodesTotal:12, overview:'Жители одного двора пытаются провести общий ремонт подъезда — и разругаться заново каждую серию.' },
-  { id:13, type:'series', title:'Приёмная 12', year:2023, rating:8.0, genres:['Драма'], episodesTotal:10, overview:'Молодой врач ночной смены сталкивается с делами, которые не укладываются в протокол.' },
   { id:14, type:'anime', title:'Лисий переход', year:2020, rating:8.2, genres:['Фантастика','Драма'], overview:'Девочка, умеющая видеть духов района, должна закрыть проход, который сама случайно открыла.' },
-  { id:15, type:'anime', title:'Городские хроники', year:2019, rating:7.8, genres:['Боевик'], overview:'Курьеры будущего сражаются за маршруты в городе, поделённом враждующими корпорациями.' },
   { id:16, type:'cartoon', title:'Мятная поляна', year:2021, rating:7.5, genres:['Комедия'], overview:'Семья ежей готовится к зиме и постоянно откладывает всё на последний день.' },
-  { id:17, type:'cartoon', title:'Звёздный чердак', year:2023, rating:7.9, genres:['Фантастика'], overview:'Дети находят на чердаке карту, которая ведёт не в подвал, а на соседнюю планету.' },
 ];
+let MOVIES = FALLBACK_MOVIES; // заменится результатами TMDB после loadMovies()
+
+async function loadGenres(){
+  const [gm, gt] = await Promise.all([
+    fetch(`https://api.themoviedb.org/3/genre/movie/list?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json()),
+    fetch(`https://api.themoviedb.org/3/genre/tv/list?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json()),
+  ]);
+  (gm.genres||[]).forEach(g => GENRE_MOVIE[g.id] = g.name);
+  (gt.genres||[]).forEach(g => GENRE_TV[g.id] = g.name);
+}
+async function fetchList(url, type, genreMap){
+  const data = await fetch(url).then(r=>r.json());
+  return (data.results||[]).slice(0, 8).map(item => ({
+    id: item.id,
+    type,
+    title: item.title || item.name,
+    year: (item.release_date || item.first_air_date || '').slice(0,4),
+    rating: item.vote_average ? Math.round(item.vote_average*10)/10 : 0,
+    genres: (item.genre_ids||[]).map(id => genreMap[id]).filter(Boolean),
+    overview: item.overview || 'Описание пока не переведено.',
+    posterPath: item.poster_path || null,
+    // Условное число серий — сразу видно что-то в интерфейсе.
+    // Настоящее число подтягивается точечно через ensureEpisodeTotal(),
+    // когда пользователь реально открывает карточку сериала.
+    episodesTotal: type==='series' ? (6 + (item.id % 8)) : undefined,
+    _epFetched: false,
+  }));
+}
+
+const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v1';
+const TMDB_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 часов — не дёргаем TMDB на каждый запуск
+function loadTmdbCache(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(TMDB_CACHE_KEY) || 'null');
+    if (!raw || Date.now() - raw.ts > TMDB_CACHE_TTL) return null;
+    return raw;
+  }catch(e){ return null; }
+}
+function saveTmdbCache(movies){
+  try{ localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV })); }catch(e){}
+}
+
+async function loadMovies(){
+  const cached = loadTmdbCache();
+  if (cached){
+    MOVIES = cached.movies;
+    Object.assign(GENRE_MOVIE, cached.genreMovie);
+    Object.assign(GENRE_TV, cached.genreTv);
+    return;
+  }
+  try{
+    await loadGenres();
+    const K = TMDB_KEY;
+    const [films, series, anime, cartoons] = await Promise.all([
+      fetchList(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&sort_by=popularity.desc&api_key=${K}`, 'film', GENRE_MOVIE),
+      fetchList(`https://api.themoviedb.org/3/discover/tv?language=ru-RU&sort_by=popularity.desc&api_key=${K}`, 'series', GENRE_TV),
+      fetchList(`https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&api_key=${K}`, 'anime', GENRE_TV),
+      fetchList(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&api_key=${K}`, 'cartoon', GENRE_MOVIE),
+    ]);
+    const combined = [...films, ...series, ...anime, ...cartoons];
+    if (combined.length){ MOVIES = combined; saveTmdbCache(combined); }
+  }catch(e){
+    console.error('TMDB load failed, using fallback', e);
+  }
+}
+async function ensureEpisodeTotal(movie){
+  if (movie.type !== 'series' || movie._epFetched) return false;
+  try{
+    const data = await fetch(`https://api.themoviedb.org/3/tv/${movie.id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
+    if (data?.number_of_episodes) movie.episodesTotal = data.number_of_episodes;
+  }catch(e){}
+  movie._epFetched = true;
+  return true;
+}
 
 const TYPE_LABEL = { film:'Фильм', series:'Сериал', anime:'Аниме', cartoon:'Мультфильм' };
 const TYPE_TABS = [ {key:'all', label:'Всё'}, {key:'film', label:'Фильмы'}, {key:'series', label:'Сериалы'}, {key:'anime', label:'Аниме'}, {key:'cartoon', label:'Мультфильмы'} ];
 const TYPE_ICON = { series:'📺', anime:'🎌', cartoon:'🧸' };
-const GENRE_ICON = { 'Драма':'🎭','Комедия':'😄','Триллер':'🎯','Ужасы':'👻','Фантастика':'🚀','Боевик':'💥','Романтика':'❤️','Документальное':'📰','Криминал':'🕵️' };
+const GENRE_ICON = { 'Драма':'🎭','Комедия':'😄','Триллер':'🎯','Ужасы':'👻','Фантастика':'🚀','Боевик':'💥','Романтика':'❤️','Документальный':'📰','Криминал':'🕵️' };
 function posterBG(m){
   const h = (m.id * 53) % 360;
   return `radial-gradient(120% 90% at 30% 15%, hsla(${h+30},70%,55%,0.22), transparent 60%), linear-gradient(165deg, hsl(${h},38%,20%), hsl(${h+25},45%,9%))`;
 }
 function posterIcon(m){ return TYPE_ICON[m.type] || GENRE_ICON[m.genres[0]] || '🎬'; }
+function hasArt(m){ return !!m.posterPath; }
+function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.posterPath}`; }
+function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${posterUrl(m, size)}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
 const BADGES = [
   { id:'b1', min:1, icon:'🎬', name:'Дебют' },
@@ -565,7 +634,28 @@ const state = {
 };
 function movieById(id){ return MOVIES.find(m => m.id === id); }
 
-const RANK = [ { name:'Марк', count:214 }, { name:'Ты', count:0, me:true }, { name:'Лиза', count:47 }, { name:'Дана', count:31 } ];
+function surpriseMe(){
+  const unseen = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  const pool = unseen.length ? unseen : MOVIES;
+  if (!pool.length) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  haptic('impact','medium');
+  openSheet(pick);
+}
+document.getElementById('surpriseBtn').onclick = surpriseMe;
+
+function shareApp(){
+  const text = 'Го затрекаем, что смотрели — я в SMOTRA';
+  const url = 'https://t.me/your_bot/app'; // ← заменить на реальную ссылку мини-аппа
+  if (tg?.openTelegramLink) {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+  } else if (navigator.share) {
+    navigator.share({ title: 'SMOTRA', text });
+  } else {
+    navigator.clipboard?.writeText(text);
+    showToast('Скопировано в буфер');
+  }
+}
 
 /* ============ TOAST ============ */
 let toastTimer;
@@ -630,7 +720,7 @@ function renderStack(){
     card.style.transform = `translateY(${depth*10}px) scale(${1 - depth*0.045})`;
     card.style.zIndex = 10 - depth;
     card.innerHTML = `
-      <div class="poster" style="background:${posterBG(movie)}"><div class="poster-icon">${posterIcon(movie)}</div></div>
+      <div class="poster" style="${posterStyle(movie, 'w500')}">${hasArt(movie) ? '' : `<div class="poster-icon">${posterIcon(movie)}</div>`}</div>
       <div class="shade"></div>
       <div class="stamp watched">СМОТРЕЛ</div>
       <div class="stamp skip">МИМО</div>
@@ -685,7 +775,7 @@ function makeDraggable(card, movie){
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
-  if (action === 'watched'){ flyX = 900; rot = 28; state.watched.push(movie.id); RANK.find(r=>r.me).count++; dbSwipe(movie.id, 'watched'); }
+  if (action === 'watched'){ flyX = 900; rot = 28; state.watched.push(movie.id); dbSwipe(movie.id, 'watched'); }
   if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(movie.id); dbSwipe(movie.id, 'skipped'); }
   if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(movie.id)) state.wishlist.push(movie.id); dbWishAdd(movie.id); }
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
@@ -719,35 +809,57 @@ document.getElementById('typeChips').addEventListener('click', e=>{
   [...document.querySelectorAll('#typeChips .chip')].forEach(x=>x.classList.toggle('active', x===c));
   renderCatalog();
 });
-const ALL_GENRES = ['Все', ...new Set(MOVIES.flatMap(m => m.genres))];
 let activeGenre = 'Все';
-document.getElementById('catChips').innerHTML = ALL_GENRES.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${g}">${g}</div>`).join('');
+let searchQuery = '';
+document.getElementById('catSearch').addEventListener('input', e=>{
+  searchQuery = e.target.value.trim().toLowerCase();
+  renderCatalog();
+});
 document.getElementById('catChips').addEventListener('click', e=>{
   const c = e.target.closest('.chip'); if (!c) return;
   activeGenre = c.dataset.g; haptic('selection');
   [...document.querySelectorAll('#catChips .chip')].forEach(x=>x.classList.toggle('active', x===c));
   renderCatalog();
 });
+function setupGenreChips(){
+  const genres = ['Все', ...new Set(MOVIES.flatMap(m => m.genres))];
+  document.getElementById('catChips').innerHTML = genres.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${g}">${g}</div>`).join('');
+}
 function renderCatalog(){
-  const list = MOVIES.filter(m => (activeType==='all' || m.type===activeType) && (activeGenre==='Все' || m.genres.includes(activeGenre)));
+  const list = MOVIES.filter(m =>
+    (activeType==='all' || m.type===activeType) &&
+    (activeGenre==='Все' || m.genres.includes(activeGenre)) &&
+    (!searchQuery || m.title.toLowerCase().includes(searchQuery))
+  );
   if (!list.length){ document.getElementById('catGrid').innerHTML = `<div class="empty-note">Ничего не нашлось — попробуй другой фильтр</div>`; return; }
   document.getElementById('catGrid').innerHTML = list.map(m => {
     const w = state.watched.includes(m.id), wi = state.wishlist.includes(m.id);
     const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
                 : wi ? `<div class="pc-flag wish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>` : '';
-    return `<div class="poster-card" data-id="${m.id}"><div class="pc-art" style="background:${posterBG(m)}"><span class="pc-icon">${posterIcon(m)}</span></div>${flag}<div class="pc-shade"></div><div class="pc-title">${m.title}</div></div>`;
+    return `<div class="poster-card" data-id="${m.id}"><div class="pc-art" style="${posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${posterIcon(m)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${m.title}</div></div>`;
   }).join('');
   [...document.querySelectorAll('.poster-card')].forEach(el => el.onclick = () => openSheet(movieById(+el.dataset.id)));
 }
 
 /* ============ WISHLIST ============ */
+const WISH_SORTS = [ {key:'added', label:'По добавлению'}, {key:'rating', label:'По рейтингу'}, {key:'type', label:'По типу'} ];
+let wishSort = 'added';
+document.getElementById('wishSort').innerHTML = WISH_SORTS.map(s => `<div class="chip ${s.key===wishSort?'active':''}" data-s="${s.key}">${s.label}</div>`).join('');
+document.getElementById('wishSort').addEventListener('click', e=>{
+  const c = e.target.closest('.chip'); if (!c) return;
+  wishSort = c.dataset.s; haptic('selection');
+  [...document.querySelectorAll('#wishSort .chip')].forEach(x=>x.classList.toggle('active', x===c));
+  renderWishlist();
+});
 function renderWishlist(){
-  const items = state.wishlist.map(movieById).filter(Boolean);
+  let items = state.wishlist.map(movieById).filter(Boolean);
+  if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
+  else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
   const el = document.getElementById('wishList');
   if (!items.length){ el.innerHTML = `<div class="empty-note">Свайпни карточку наверх — она попадёт сюда</div>`; return; }
   el.innerHTML = items.map(m => `
     <div class="row-card" data-id="${m.id}">
-      <div class="thumb" style="background:${posterBG(m)}">${posterIcon(m)}</div>
+      <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : posterIcon(m)}</div>
       <div class="rc-body"><div class="rc-title">${m.title}</div><div class="rc-meta">${m.year} · ${m.genres.join(', ')}</div></div>
       <div class="rc-actions"><button class="ok" data-act="watched">✓</button><button data-act="remove">✕</button></div>
     </div>`).join('');
@@ -771,7 +883,7 @@ function renderHistory(){
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
   el.innerHTML = items.map(m => `
     <div class="row-card" data-id="${m.id}">
-      <div class="thumb" style="background:${posterBG(m)}">${posterIcon(m)}</div>
+      <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : posterIcon(m)}</div>
       <div class="rc-body"><div class="rc-title">${m.title}</div><div class="rc-meta">${m.year} · ${m.genres.join(', ')}</div></div>
     </div>`).join('');
   [...el.querySelectorAll('.row-card')].forEach(row => row.onclick = () => openSheet(movieById(+row.dataset.id)));
@@ -782,48 +894,59 @@ document.getElementById('openSettings').onclick = () => document.getElementById(
 document.getElementById('closeSettings').onclick = () => document.getElementById('settingsScreen').classList.remove('open');
 
 /* ============ RANK ============ */
+// Настоящий рейтинг среди друзей появится, когда будет система друзей
+// (например, общая группа/чат в Telegram — таблица friends в Supabase).
+// Пока честно показываем только тебя и зовём пригласить кого-то.
 function renderRank(){
-  document.getElementById('rankList').innerHTML = [...RANK].sort((a,b)=>b.count-a.count)
-    .map((r,i)=>`<div class="rank-row ${r.me?'me':''}"><div class="rank-num">${i+1}</div><div class="rank-name">${r.name}</div><div class="rank-count">${r.count}</div></div>`).join('');
+  document.getElementById('rankList').innerHTML = `
+    <div class="rank-row me"><div class="rank-num">1</div><div class="rank-name">Ты</div><div class="rank-count">${state.watched.length}</div></div>
+    <div class="empty-note" style="padding:18px 4px 14px;">Друзей в рейтинге пока нет</div>
+    <button id="inviteBtn" style="width:100%; padding:13px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--accent); font-weight:600; font-size:14px;">Пригласить друга</button>`;
+  document.getElementById('inviteBtn').onclick = shareApp;
 }
 
 /* ============ DETAIL SHEET ============ */
 const sheet = document.getElementById('sheet'), backdrop = document.getElementById('backdrop');
 let sheetMovie = null;
+
+function renderProgress(movie){
+  const prog = document.getElementById('sheetProgress');
+  if (movie.type !== 'series') { prog.style.display = 'none'; return; }
+  const watchedEp = state.episodes[movie.id] || 0;
+  const total = movie.episodesTotal;
+  const pct = Math.min(100, Math.round(watchedEp/total*100));
+  const done = watchedEp >= total;
+  prog.style.display = 'block';
+  prog.innerHTML = `
+    <div class="progress-label"><span>Серия ${watchedEp} из ${total}${movie._epFetched ? '' : ' (уточняется…)'}</span><span>${pct}%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <button class="progress-btn" id="progBtn" ${done?'disabled':''}>${done?'Досмотрено ✓':'+ Серия'}</button>`;
+  document.getElementById('progBtn').onclick = () => {
+    const cur = state.episodes[movie.id] || 0;
+    if (cur >= movie.episodesTotal) return;
+    state.episodes[movie.id] = cur + 1;
+    haptic('impact','light');
+    dbEpisode(movie.id, state.episodes[movie.id]);
+    if (state.episodes[movie.id] >= movie.episodesTotal) {
+      if (!state.watched.includes(movie.id)) state.watched.push(movie.id);
+      haptic('notification','success'); showToast('Сериал досмотрен ✓'); dbSwipe(movie.id,'watched'); checkBadges();
+    }
+    updateStats(); renderProgress(movie);
+  };
+}
+
 function openSheet(movie){
   sheetMovie = movie;
-  document.getElementById('sheetPoster').style.background = posterBG(movie);
-  document.getElementById('sheetPoster').innerHTML = `<span class="sheet-poster-icon">${posterIcon(movie)}</span>`;
+  document.getElementById('sheetPoster').style.cssText = posterStyle(movie, 'w780');
+  document.getElementById('sheetPoster').innerHTML = hasArt(movie) ? '' : `<span class="sheet-poster-icon">${posterIcon(movie)}</span>`;
   document.getElementById('sheetTitle').textContent = movie.title;
   const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
   document.getElementById('sheetMeta').innerHTML = `${movie.year} · ★ ${movie.rating} ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
   document.getElementById('sheetOverview').textContent = movie.overview;
   document.getElementById('sheetCast').innerHTML = ['Актёр 1','Актёр 2','Актёр 3','Актёр 4'].map(n=>`<div class="cast-chip">${n}</div>`).join('');
-  const prog = document.getElementById('sheetProgress');
-  if (movie.type === 'series') {
-    const watchedEp = state.episodes[movie.id] || 0;
-    const total = movie.episodesTotal;
-    const pct = Math.min(100, Math.round(watchedEp/total*100));
-    const done = watchedEp >= total;
-    prog.style.display = 'block';
-    prog.innerHTML = `
-      <div class="progress-label"><span>Серия ${watchedEp} из ${total}</span><span>${pct}%</span></div>
-      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <button class="progress-btn" id="progBtn" ${done?'disabled':''}>${done?'Досмотрено ✓':'+ Серия'}</button>`;
-    document.getElementById('progBtn').onclick = () => {
-      const cur = state.episodes[movie.id] || 0;
-      if (cur >= movie.episodesTotal) return;
-      state.episodes[movie.id] = cur + 1;
-      haptic('impact','light');
-      dbEpisode(movie.id, state.episodes[movie.id]);
-      if (state.episodes[movie.id] >= movie.episodesTotal) {
-        if (!state.watched.includes(movie.id)) state.watched.push(movie.id);
-        haptic('notification','success'); showToast('Сериал досмотрен ✓'); dbSwipe(movie.id,'watched'); checkBadges();
-      }
-      updateStats(); openSheet(movie);
-    };
-  } else {
-    prog.style.display = 'none';
+  renderProgress(movie);
+  if (movie.type === 'series' && !movie._epFetched) {
+    ensureEpisodeTotal(movie).then(() => { if (sheetMovie === movie) renderProgress(movie); });
   }
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
@@ -849,9 +972,9 @@ document.querySelectorAll('nav button').forEach(btn=>{
 
 /* ============ INIT ============ */
 (async () => {
-  await loadState();
+  await Promise.all([loadState(), loadMovies()]);
+  setupGenreChips();
   deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
-  RANK.find(r=>r.me).count = state.watched.length;
   renderStack(); renderCatalog(); renderWishlist(); renderBadges(); renderRank(); updateStats();
 })();
 </script>
