@@ -387,6 +387,7 @@
     <div class="set-row"><div><div class="set-label">Вибро-отклик</div><div class="set-sub">На свайпах и ачивках</div></div><div class="switch on"></div></div>
     <div class="set-row"><div><div class="set-label">Показывать 18+</div></div><div class="switch"></div></div>
     <div class="set-row" id="redoOnboarding" style="cursor:pointer;"><div><div class="set-label">Жанры заново</div><div class="set-sub">Перепройти подбор жанров</div></div><div>›</div></div>
+    <div class="set-row" id="resetSwipes" style="cursor:pointer;"><div><div class="set-label">Сбросить историю свайпов</div><div class="set-sub">Для тестов — очищает просмотрено/пропущено</div></div><div>›</div></div>
     <div class="set-row"><div><div class="set-label">Источник данных</div><div class="set-sub">TMDB</div></div></div>
     <div class="set-row"><div><div class="set-label">О приложении</div><div class="set-sub">SMOTRA · версия 0.2</div></div></div>
   </div>
@@ -517,20 +518,22 @@ document.getElementById('redoOnboarding').onclick = () => {
   document.getElementById('settingsScreen').classList.remove('open');
   document.getElementById('onboarding').classList.add('show');
 };
+document.getElementById('resetSwipes').onclick = async () => {
+  try{
+    await sb.from('swipes').delete().eq('telegram_id', TG_ID);
+    state.watched = []; state.skipped = [];
+    deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+    renderStack(); renderCatalog(); renderRank(); updateStats();
+    showToast('История свайпов очищена');
+  }catch(e){ showToast('Не получилось — проверь связь'); }
+};
 
 /* ============ DATA (TMDB) ============ */
 const TMDB_KEY = '4a37646c1145e683d01fb159ab035fe7';
 const GENRE_MOVIE = {}, GENRE_TV = {};
 
-const FALLBACK_MOVIES = [
-  { id:1, type:'film', title:'Стеклянный горизонт', year:2021, rating:7.4, genres:['Драма','Фантастика'], overview:'Инженер маяка на заброшенной станции получает сигнал, который не должен был существовать.' },
-  { id:2, type:'film', title:'Полночный маршрут', year:2019, rating:6.8, genres:['Триллер'], overview:'Ночной таксист становится свидетелем преступления и должен решить, ввязываться ли в историю крупнее его самого.' },
-  { id:3, type:'film', title:'Соль и пепел', year:2023, rating:8.1, genres:['Драма'], overview:'Две сестры возвращаются в прибрежный город спустя двадцать лет, чтобы разобрать дом отца.' },
-  { id:11, type:'series', title:'Дом на отшибе', year:2022, rating:7.6, genres:['Драма','Триллер'], episodesTotal:8, overview:'Семья переезжает в дом у леса и постепенно понимает, что предыдущие жильцы съехали не просто так.' },
-  { id:14, type:'anime', title:'Лисий переход', year:2020, rating:8.2, genres:['Фантастика','Драма'], overview:'Девочка, умеющая видеть духов района, должна закрыть проход, который сама случайно открыла.' },
-  { id:16, type:'cartoon', title:'Мятная поляна', year:2021, rating:7.5, genres:['Комедия'], overview:'Семья ежей готовится к зиме и постоянно откладывает всё на последний день.' },
-];
-let MOVIES = FALLBACK_MOVIES; // заменится результатами TMDB после loadMovies()
+let MOVIES = []; // заполняется только результатами TMDB, без выдуманных фильмов
+let tmdbFailed = false;
 
 async function loadGenres(){
   const [gm, gt] = await Promise.all([
@@ -542,7 +545,7 @@ async function loadGenres(){
 }
 async function fetchList(url, type, genreMap){
   const data = await fetch(url).then(r=>r.json());
-  return (data.results||[]).slice(0, 8).map(item => ({
+  return (data.results||[]).map(item => ({
     id: item.id,
     type,
     title: item.title || item.name,
@@ -578,6 +581,7 @@ async function loadMovies(){
     MOVIES = cached.movies;
     Object.assign(GENRE_MOVIE, cached.genreMovie);
     Object.assign(GENRE_TV, cached.genreTv);
+    tmdbFailed = false;
     return;
   }
   try{
@@ -590,10 +594,19 @@ async function loadMovies(){
       fetchList(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&api_key=${K}`, 'cartoon', GENRE_MOVIE),
     ]);
     const combined = [...films, ...series, ...anime, ...cartoons];
-    if (combined.length){ MOVIES = combined; saveTmdbCache(combined); }
+    if (combined.length){ MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false; }
+    else { tmdbFailed = true; }
   }catch(e){
-    console.error('TMDB load failed, using fallback', e);
+    console.error('TMDB load failed', e);
+    tmdbFailed = true;
   }
+}
+async function retryLoadMovies(){
+  showToast('Загружаю каталог…');
+  await loadMovies();
+  setupGenreChips();
+  deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  renderStack(); renderCatalog(); updateStats();
 }
 async function ensureEpisodeTotal(movie){
   if (movie.type !== 'series' || movie._epFetched) return false;
@@ -708,8 +721,13 @@ let deck = [];
 function renderStack(){
   stackEl.innerHTML = '';
   if (!deck.length){
-    stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Пока всё!</div><div>Новые карточки появятся позже — а пока загляни в каталог</div><button id="toCatalog">Открыть каталог</button></div>`;
-    document.getElementById('toCatalog').onclick = () => switchTab('catalog');
+    if (tmdbFailed) {
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
+      document.getElementById('retryTmdb').onclick = retryLoadMovies;
+    } else {
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Пока всё!</div><div>Новые карточки появятся позже — а пока загляни в каталог</div><button id="toCatalog">Открыть каталог</button></div>`;
+      document.getElementById('toCatalog').onclick = () => switchTab('catalog');
+    }
     return;
   }
   const visible = deck.slice(0,3);
@@ -831,7 +849,12 @@ function renderCatalog(){
     (activeGenre==='Все' || m.genres.includes(activeGenre)) &&
     (!searchQuery || m.title.toLowerCase().includes(searchQuery))
   );
-  if (!list.length){ document.getElementById('catGrid').innerHTML = `<div class="empty-note">Ничего не нашлось — попробуй другой фильтр</div>`; return; }
+  if (!list.length){
+    document.getElementById('catGrid').innerHTML = tmdbFailed
+      ? `<div class="empty-note">Каталог не загрузился — проверь интернет и ключ TMDB</div>`
+      : `<div class="empty-note">Ничего не нашлось — попробуй другой фильтр</div>`;
+    return;
+  }
   document.getElementById('catGrid').innerHTML = list.map(m => {
     const w = state.watched.includes(m.id), wi = state.wishlist.includes(m.id);
     const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
