@@ -22,6 +22,7 @@
     --watched:#4c9a76;
     --skip:#c1493f;
     --wish:#d9a6ef;
+    --watching:#5aa9e6;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -63,14 +64,14 @@
   .screen.active{ display:flex; flex-direction:column; animation:rise .32s cubic-bezier(.2,.8,.2,1); }
   @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
-  .eyebrow{ font-size:13px; color:var(--text-dim); margin:18px 0 10px; display:flex; align-items:center; justify-content:space-between; }
+  .eyebrow{ font-size:13px; color:var(--text-dim); margin:18px 0 10px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
   .eyebrow span.count{ color:var(--text); background:var(--surface); padding:2px 9px; border-radius:20px; font-size:12px; }
 
   /* ===== Genre chips ===== */
-  .chips{ display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; }
+  .chips{ display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; flex-shrink:0; }
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
   .chip.active{ background:rgba(227,166,62,0.14); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  .search-input{ width:100%; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; }
+  .search-input{ width:100%; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
   .search-input::placeholder{ color:var(--text-dim); }
   .home-top{ display:flex; justify-content:center; padding:6px 0 2px; }
   .surprise-btn{ padding:9px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
@@ -99,13 +100,18 @@
   .stamp.watched{ top:26px; left:22px; color:var(--watched); border-color:var(--watched); transform:rotate(-12deg); }
   .stamp.skip{ top:26px; right:22px; color:var(--skip); border-color:var(--skip); transform:rotate(12deg); }
   .stamp.wish{ top:22px; left:50%; transform:translateX(-50%); color:var(--wish); border-color:var(--wish); }
+  .stamp.watching{ bottom:26px; left:50%; transform:translateX(-50%); color:var(--watching); border-color:var(--watching); }
+
+  @keyframes popPulse{ 0%{transform:scale(1);} 45%{transform:scale(1.22);} 100%{transform:scale(1);} }
+  .pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
 
   .actions{ display:flex; justify-content:center; align-items:center; gap:18px; padding:14px 0 4px; }
-  .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; }
+  .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease, border-color .2s ease; }
   .actions .no,.actions .yes{ width:54px; height:54px; font-size:20px; }
   .actions .wishbtn{ width:44px; height:44px; font-size:16px; color:var(--wish); }
   .actions .no{ color:var(--skip); }
   .actions .yes{ color:var(--watched); }
+  .actions .wishbtn.active{ background:var(--wish); color:#1a1408; border-color:var(--wish); }
   .empty-deck{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; color:var(--text-dim); padding:0 20px; }
   .empty-deck .wordmark{ font-size:17px; color:var(--text); }
   .empty-deck button{ background:var(--accent); color:#1a1408; border:none; padding:12px 22px; border-radius:12px; font-weight:700; font-size:14px; }
@@ -160,8 +166,8 @@
   .cast-row{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
   .cast-chip{ flex:0 0 auto; padding:8px 14px; border-radius:12px; background:var(--surface-2); font-size:13px; }
   .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
-  .sheet-actions button{ flex:1; padding:13px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-weight:600; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:6px; }
-  .sheet-actions button.primary{ background:var(--accent); color:#1a1408; border:none; }
+  .sheet-actions button{ flex:1; padding:13px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-weight:600; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:6px; transition:background .2s ease, color .2s ease, border-color .2s ease; }
+  .sheet-actions button.active{ background:var(--accent); color:#1a1408; border-color:var(--accent); }
 
   /* ===== Profile ===== */
   .profile-head{ display:flex; align-items:center; gap:14px; padding-top:4px; }
@@ -172,8 +178,11 @@
   .stat-card{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 8px; text-align:center; }
   .stat-num{ font-family:'Unbounded', sans-serif; font-size:20px; font-weight:700; }
   .stat-label{ font-size:11px; color:var(--text-dim); margin-top:3px; }
-  .week{ display:flex; align-items:flex-end; gap:8px; height:64px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 14px; }
-  .week i{ flex:1; background:linear-gradient(180deg, var(--accent), var(--accent-2)); border-radius:4px; }
+  .week{ display:flex; align-items:flex-end; gap:8px; height:82px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 14px 10px; }
+  .week-col{ flex:1; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:5px; }
+  .week-col i{ width:100%; min-height:4px; background:linear-gradient(180deg, var(--accent), var(--accent-2)); border-radius:4px; display:block; }
+  .week-col i.zero{ background:var(--surface-2); }
+  .week-col span{ font-size:10px; color:var(--text-dim); }
   .badges-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
   .badge{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; opacity:0.35; }
   .badge.unlocked{ opacity:1; border-color:rgba(227,166,62,0.4); }
@@ -208,11 +217,17 @@
   .ov-body{ flex:1; overflow-y:auto; padding:6px 20px 30px; }
 
   /* ===== Bottom nav ===== */
-  nav{ display:flex; justify-content:space-around; align-items:center; padding:9px 0 calc(9px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); position:relative; z-index:10; }
+  nav{ display:flex; justify-content:space-around; align-items:flex-end; padding:9px 0 calc(9px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); position:relative; z-index:10; }
   nav button{ background:none; border:none; color:var(--text-dim); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; font-family:'Inter'; position:relative; padding:4px 10px; }
   nav button.active{ color:var(--accent); }
   nav button.active::before{ content:''; position:absolute; top:-9px; width:4px; height:4px; border-radius:50%; background:var(--accent); }
   nav svg{ width:21px; height:21px; }
+  nav button.nav-home{ transform:translateY(-14px); }
+  nav button.nav-home::before{ display:none; }
+  nav button.nav-home .nav-home-circle{ width:48px; height:48px; border-radius:50%; background:linear-gradient(145deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 22px -8px rgba(227,166,62,0.65); border:3px solid var(--bg-2); }
+  nav button.nav-home .nav-home-circle svg{ width:22px; height:22px; color:#1a1408; }
+  nav button.nav-home{ color:var(--text-dim); }
+  nav button.nav-home.active{ color:var(--accent); }
 
   /* ===== Splash ===== */
   #splash{ position:fixed; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .45s ease; }
@@ -266,7 +281,7 @@
 <div class="topbar">
   <div class="wordmark">SM<b>O</b>TRA</div>
   <div class="topbar-icons">
-    <div class="streak">🔥 6</div>
+    <div class="streak" id="streakBadge">🔥 0</div>
     <button class="icon-btn" id="openSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.6-2.6c.7-.3 1.4-.7 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
     </button>
@@ -304,10 +319,16 @@
     <div id="wishList" style="margin-top:12px;"></div>
   </section>
 
+  <!-- WATCHING -->
+  <section id="watching" class="screen">
+    <div class="eyebrow">Смотрю сейчас <span class="count" id="watchingCount">0</span></div>
+    <div id="watchingList" style="margin-top:12px;"></div>
+  </section>
+
   <!-- PROFILE -->
   <section id="profile" class="screen">
     <div class="profile-head">
-      <div class="avatar" id="avatarInit">Г</div>
+      <div class="avatar" id="avatarInit" style="overflow:hidden; background-size:cover; background-position:center;">Г</div>
       <div>
         <div class="profile-name" id="userName">Гость</div>
         <div class="profile-sub">в SMOTRA с сентября 2026</div>
@@ -315,16 +336,13 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-num" id="statWatched">0</div><div class="stat-label">просмотрено</div></div>
-      <div class="stat-card"><div class="stat-num" id="statSkipped">0</div><div class="stat-label">пропущено</div></div>
-      <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">дней подряд</div></div>
+      <div class="stat-card"><div class="stat-num" id="statWatched">0</div><div class="stat-label">🎬 просмотрено</div></div>
+      <div class="stat-card"><div class="stat-num" id="statSkipped">0</div><div class="stat-label">⏭ пропущено</div></div>
+      <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">🔥 дней подряд</div></div>
     </div>
 
-    <div class="eyebrow">Активность за неделю</div>
-    <div class="week">
-      <i style="height:30%"></i><i style="height:55%"></i><i style="height:20%"></i>
-      <i style="height:80%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:35%"></i>
-    </div>
+    <div class="eyebrow">Активность за неделю <span class="count" id="weekTotal">0 свайпов</span></div>
+    <div class="week" id="weekChart"></div>
 
     <div class="eyebrow">Ачивки</div>
     <div class="badges-grid" id="badgesGrid"></div>
@@ -350,9 +368,13 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg>
     Чекнуть
   </button>
-  <button data-tab="home" class="active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M16 3v18"/></svg>
+  <button data-tab="home" class="active nav-home">
+    <span class="nav-home-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M16 3v18"/></svg></span>
     Главная
+  </button>
+  <button data-tab="watching">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5v-7z"/></svg>
+    Смотрю
   </button>
   <button data-tab="profile">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-4 5-5.5 7-5.5s5.5 1.5 7 5.5"/></svg>
@@ -382,14 +404,14 @@
     <div class="wordmark">Настройки</div>
   </div>
   <div class="ov-body">
-    <div class="set-row"><div><div class="set-label">Тёмная тема</div><div class="set-sub">Сейчас — единственная</div></div><div class="switch on"></div></div>
-    <div class="set-row"><div><div class="set-label">Уведомления</div><div class="set-sub">Напоминание раз в день</div></div><div class="switch on"></div></div>
-    <div class="set-row"><div><div class="set-label">Вибро-отклик</div><div class="set-sub">На свайпах и ачивках</div></div><div class="switch on"></div></div>
-    <div class="set-row"><div><div class="set-label">Показывать 18+</div></div><div class="switch"></div></div>
+    <div class="set-row"><div><div class="set-label">Тёмная тема</div><div class="set-sub">Сейчас — единственная</div></div><div class="switch on" style="opacity:.55; pointer-events:none;"></div></div>
+    <div class="set-row"><div><div class="set-label">Уведомления</div><div class="set-sub">Напоминание раз в день</div></div><div class="switch" id="switchNotif" data-key="smotra_notif"></div></div>
+    <div class="set-row"><div><div class="set-label">Вибро-отклик</div><div class="set-sub">На свайпах и ачивках</div></div><div class="switch" id="switchHaptic" data-key="smotra_haptic"></div></div>
+    <div class="set-row"><div><div class="set-label">Показывать 18+</div></div><div class="switch" id="switchAdult" data-key="smotra_adult"></div></div>
     <div class="set-row" id="redoOnboarding" style="cursor:pointer;"><div><div class="set-label">Жанры заново</div><div class="set-sub">Перепройти подбор жанров</div></div><div>›</div></div>
     <div class="set-row" id="resetSwipes" style="cursor:pointer;"><div><div class="set-label">Сбросить историю свайпов</div><div class="set-sub">Для тестов — очищает просмотрено/пропущено</div></div><div>›</div></div>
     <div class="set-row"><div><div class="set-label">Источник данных</div><div class="set-sub">TMDB</div></div></div>
-    <div class="set-row"><div><div class="set-label">О приложении</div><div class="set-sub">SMOTRA · версия 0.2</div></div></div>
+    <div class="set-row"><div><div class="set-label">О приложении</div><div class="set-sub">SMOTRA · версия 0.3</div></div></div>
   </div>
 </div>
 
@@ -407,7 +429,7 @@
     <div class="sheet-actions">
       <button id="sheetWish">☆ Чекнуть</button>
       <button id="sheetShare">↗ Поделиться</button>
-      <button class="primary" id="sheetWatched">✓ Смотрел</button>
+      <button id="sheetWatched">✓ Смотрел</button>
     </div>
   </div>
 </div>
@@ -427,11 +449,20 @@ if (tg) {
   const u = tg.initDataUnsafe?.user;
   if (u) {
     document.getElementById('userName').textContent = [u.first_name, u.last_name].filter(Boolean).join(' ');
-    document.getElementById('avatarInit').textContent = (u.first_name || 'Г')[0].toUpperCase();
+    const av = document.getElementById('avatarInit');
+    av.textContent = (u.first_name || 'Г')[0].toUpperCase();
+    if (u.photo_url) {
+      av.style.backgroundImage = `url('${u.photo_url}')`;
+      av.textContent = '';
+    }
   }
 }
+function getFlag(key, def){ const v = localStorage.getItem(key); return v===null ? def : v==='1'; }
+function setFlag(key, val){ localStorage.setItem(key, val ? '1':'0'); }
+
 function haptic(type, style){
   if (!tg?.HapticFeedback) return;
+  if (!getFlag('smotra_haptic', true)) return;
   try{
     if (type==='impact') tg.HapticFeedback.impactOccurred(style||'light');
     else if (type==='notification') tg.HapticFeedback.notificationOccurred(style||'success');
@@ -454,8 +485,11 @@ function getTelegramId(){
 const TG_ID = getTelegramId();
 
 async function dbSwipe(movieId, action){ try{ await sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: movieId, action }); }catch(e){ console.error(e); } }
+async function dbSwipeRemove(movieId, action){ try{ await sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId).eq('action', action); }catch(e){ console.error(e); } }
 async function dbWishAdd(movieId){ try{ await sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: movieId }); }catch(e){ console.error(e); } }
 async function dbWishRemove(movieId){ try{ await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){ console.error(e); } }
+async function dbWatchingAdd(movieId){ try{ await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId }); }catch(e){ /* таблицы watching может ещё не быть в Supabase — не роняем приложение */ } }
+async function dbWatchingRemove(movieId){ try{ await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){} }
 async function dbEpisode(movieId, count){ try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: count }); }catch(e){ console.error(e); } }
 async function dbBadge(badgeId){ try{ await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }); }catch(e){ console.error(e); } }
 
@@ -472,6 +506,10 @@ async function loadState(){
   state.episodes = {};
   (ep||[]).forEach(r => state.episodes[r.movie_id] = r.watched_count);
   state.unlocked = (bd||[]).map(r=>r.badge_id);
+  try{
+    const { data: wa } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
+    state.watching = (wa||[]).map(r=>r.movie_id);
+  }catch(e){ state.watching = []; }
 }
 
 /* ============ SPLASH ============ */
@@ -490,6 +528,28 @@ setTimeout(()=>{
     document.getElementById('onboarding').classList.add('show');
   }
 }, 1900);
+
+/* ============ STREAK (реальные дни захода) ============ */
+const STREAK_KEY = 'smotra_visit_days';
+function dateKey(d){ return d.toISOString().slice(0,10); }
+function recordVisitAndGetStreak(){
+  let days = [];
+  try{ days = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]'); }catch(e){}
+  const today = dateKey(new Date());
+  if (!days.includes(today)) days.push(today);
+  days = [...new Set(days)];
+  try{ localStorage.setItem(STREAK_KEY, JSON.stringify(days)); }catch(e){}
+  let streak = 0;
+  const cursor = new Date();
+  while (days.includes(dateKey(cursor))){
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+const currentStreak = recordVisitAndGetStreak();
+document.getElementById('streakBadge').innerHTML = '🔥 ' + currentStreak;
+document.getElementById('statStreak').textContent = currentStreak;
 
 /* ============ ONBOARDING ============ */
 const GENRES = ['Драма','Комедия','Триллер','Ужасы','Фантастика','Боевик','Романтика','Документальное','Криминал'];
@@ -528,6 +588,34 @@ document.getElementById('resetSwipes').onclick = async () => {
   }catch(e){ showToast('Не получилось — проверь связь'); }
 };
 
+/* ============ НАСТРОЙКИ (реально работают и сохраняются) ============ */
+function initSwitch(el, def, onChange){
+  if (!el) return;
+  const key = el.dataset.key;
+  let val = getFlag(key, def);
+  el.classList.toggle('on', val);
+  el.onclick = () => {
+    val = !val;
+    setFlag(key, val);
+    el.classList.toggle('on', val);
+    haptic('selection');
+    onChange && onChange(val);
+  };
+}
+initSwitch(document.getElementById('switchNotif'), true, (val) => {
+  showToast(val ? 'Напоминания включены' : 'Напоминания выключены');
+});
+initSwitch(document.getElementById('switchHaptic'), true);
+initSwitch(document.getElementById('switchAdult'), false, async (val) => {
+  showToast('Обновляю каталог…');
+  try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
+  await loadMovies();
+  setupGenreChips();
+  deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  renderStack(); renderCatalog(); updateStats();
+  showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
+});
+
 /* ============ DATA (TMDB) ============ */
 const TMDB_KEY = '4a37646c1145e683d01fb159ab035fe7';
 const GENRE_MOVIE = {}, GENRE_TV = {};
@@ -559,6 +647,8 @@ async function fetchList(url, type, genreMap){
     // когда пользователь реально открывает карточку сериала.
     episodesTotal: type==='series' ? (6 + (item.id % 8)) : undefined,
     _epFetched: false,
+    cast: [],
+    _castFetched: false,
   }));
 }
 
@@ -575,6 +665,17 @@ function saveTmdbCache(movies){
   try{ localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV })); }catch(e){}
 }
 
+let tmdbPage = 1;
+function discoverUrls(page){
+  const K = TMDB_KEY;
+  const adult = getFlag('smotra_adult', false) ? 'true' : 'false';
+  return {
+    film:    `https://api.themoviedb.org/3/discover/movie?language=ru-RU&sort_by=popularity.desc&include_adult=${adult}&page=${page}&api_key=${K}`,
+    series:  `https://api.themoviedb.org/3/discover/tv?language=ru-RU&sort_by=popularity.desc&include_adult=${adult}&page=${page}&api_key=${K}`,
+    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=${adult}&page=${page}&api_key=${K}`,
+    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=${adult}&page=${page}&api_key=${K}`,
+  };
+}
 async function loadMovies(){
   const cached = loadTmdbCache();
   if (cached){
@@ -586,12 +687,13 @@ async function loadMovies(){
   }
   try{
     await loadGenres();
-    const K = TMDB_KEY;
+    tmdbPage = 1;
+    const u = discoverUrls(tmdbPage);
     const [films, series, anime, cartoons] = await Promise.all([
-      fetchList(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&sort_by=popularity.desc&api_key=${K}`, 'film', GENRE_MOVIE),
-      fetchList(`https://api.themoviedb.org/3/discover/tv?language=ru-RU&sort_by=popularity.desc&api_key=${K}`, 'series', GENRE_TV),
-      fetchList(`https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&api_key=${K}`, 'anime', GENRE_TV),
-      fetchList(`https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&api_key=${K}`, 'cartoon', GENRE_MOVIE),
+      fetchList(u.film, 'film', GENRE_MOVIE),
+      fetchList(u.series, 'series', GENRE_TV),
+      fetchList(u.anime, 'anime', GENRE_TV),
+      fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
     const combined = [...films, ...series, ...anime, ...cartoons];
     if (combined.length){ MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false; }
@@ -608,6 +710,42 @@ async function retryLoadMovies(){
   deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
   renderStack(); renderCatalog(); updateStats();
 }
+
+/* Подгружает следующую страницу TMDB, чтобы карточки в ленте никогда не заканчивались */
+async function fetchMorePages(){
+  if (tmdbFailed) return 0;
+  tmdbPage += 1;
+  try{
+    const u = discoverUrls(tmdbPage);
+    const [films, series, anime, cartoons] = await Promise.all([
+      fetchList(u.film, 'film', GENRE_MOVIE),
+      fetchList(u.series, 'series', GENRE_TV),
+      fetchList(u.anime, 'anime', GENRE_TV),
+      fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
+    ]);
+    const existing = new Set(MOVIES.map(m => m.type + '_' + m.id));
+    const fresh = [...films, ...series, ...anime, ...cartoons].filter(m => !existing.has(m.type + '_' + m.id));
+    if (fresh.length){ MOVIES = MOVIES.concat(fresh); saveTmdbCache(MOVIES); }
+    return fresh.length;
+  }catch(e){ tmdbPage -= 1; return 0; }
+}
+
+/* Колода никогда не должна заканчиваться навсегда: сперва добираем непоказанные,
+   потом грузим следующую страницу TMDB, а если и это не помогло — по-честному
+   показываем заново то, что раньше пропустили («мимо»), не трогая просмотренное. */
+async function refillDeck(){
+  let fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id) && !deck.includes(m));
+  if (!fresh.length){
+    const added = await fetchMorePages();
+    if (added) fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id) && !deck.includes(m));
+  }
+  if (!fresh.length && state.skipped.length){
+    state.skipped = [];
+    fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !deck.includes(m));
+    if (fresh.length) showToast('Показываем заново то, что пропустили — новых пока нет');
+  }
+  deck = deck.concat(fresh);
+}
 async function ensureEpisodeTotal(movie){
   if (movie.type !== 'series' || movie._epFetched) return false;
   try{
@@ -615,6 +753,16 @@ async function ensureEpisodeTotal(movie){
     if (data?.number_of_episodes) movie.episodesTotal = data.number_of_episodes;
   }catch(e){}
   movie._epFetched = true;
+  return true;
+}
+async function ensureCast(movie){
+  if (movie._castFetched) return false;
+  const kind = (movie.type === 'series' || movie.type === 'anime') ? 'tv' : 'movie';
+  try{
+    const data = await fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/credits?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
+    movie.cast = (data.cast || []).slice(0, 6).map(c => c.name).filter(Boolean);
+  }catch(e){ movie.cast = []; }
+  movie._castFetched = true;
   return true;
 }
 
@@ -642,6 +790,7 @@ const state = {
   watched: [],
   skipped: [],
   wishlist: [],
+  watching: [],
   unlocked: [],
   episodes: {},
 };
@@ -659,7 +808,7 @@ document.getElementById('surpriseBtn').onclick = surpriseMe;
 
 function shareApp(){
   const text = 'Го затрекаем, что смотрели — я в SMOTRA';
-  const url = 'https://t.me/your_bot/app'; // ← заменить на реальную ссылку мини-аппа
+  const url = 'https://t.me/smotra67bot?profile'; // реальная ссылка на мини-апп
   if (tg?.openTelegramLink) {
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
   } else if (navigator.share) {
@@ -703,7 +852,7 @@ function renderBadges(){
 /* ============ SHARE ============ */
 function shareMovie(movie){
   const text = `Смотрю через SMOTRA: ${movie.title} (${movie.year})`;
-  const url = 'https://t.me/your_bot/app'; // ← заменить на реальную ссылку мини-аппа
+  const url = 'https://t.me/smotra67bot?profile'; // реальная ссылка на мини-апп
   if (tg?.openTelegramLink) {
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
   } else if (navigator.share) {
@@ -725,8 +874,8 @@ function renderStack(){
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
       document.getElementById('retryTmdb').onclick = retryLoadMovies;
     } else {
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Пока всё!</div><div>Новые карточки появятся позже — а пока загляни в каталог</div><button id="toCatalog">Открыть каталог</button></div>`;
-      document.getElementById('toCatalog').onclick = () => switchTab('catalog');
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Секунду…</div><div>Подгружаю ещё карточки</div></div>`;
+      refillDeck().then(() => renderStack());
     }
     return;
   }
@@ -743,6 +892,7 @@ function renderStack(){
       <div class="stamp watched">СМОТРЕЛ</div>
       <div class="stamp skip">МИМО</div>
       <div class="stamp wish">ЧЕКНУТЬ</div>
+      <div class="stamp watching">СМОТРЮ</div>
       <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${movie.genres.map(g=>`<div class="genre-tag">${g}</div>`).join('')}</div>
       <div class="info">
         <div class="title">${movie.title}</div>
@@ -755,7 +905,7 @@ function renderStack(){
 
 function makeDraggable(card, movie){
   let startX, startY, dx=0, dy=0, dragging=false, moved=false;
-  const wS = card.querySelector('.stamp.watched'), sS = card.querySelector('.stamp.skip'), wiS = card.querySelector('.stamp.wish');
+  const wS = card.querySelector('.stamp.watched'), sS = card.querySelector('.stamp.skip'), wiS = card.querySelector('.stamp.wish'), wchS = card.querySelector('.stamp.watching');
 
   card.addEventListener('pointerdown', e=>{
     dragging = true; moved = false; startX = e.clientX; startY = e.clientY;
@@ -767,22 +917,23 @@ function makeDraggable(card, movie){
     if (Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
     const rot = dx/18;
     card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
-    const vertical = Math.abs(dy) > Math.abs(dx) && dy < 0;
+    const vertical = Math.abs(dy) > Math.abs(dx);
     const t = Math.min(Math.max(Math.abs(dx), Math.abs(dy)) / 120, 1);
     wS.style.opacity = (!vertical && dx > 0) ? t : 0;
     sS.style.opacity = (!vertical && dx < 0) ? t : 0;
-    wiS.style.opacity = vertical ? t : 0;
+    wiS.style.opacity = (vertical && dy < 0) ? t : 0;
+    wchS.style.opacity = (vertical && dy > 0) ? t : 0;
   });
   function release(){
     if (!dragging) return;
     dragging = false; card.style.transition = '';
-    const vertical = Math.abs(dy) > Math.abs(dx) && dy < 0;
+    const vertical = Math.abs(dy) > Math.abs(dx);
     if (vertical && Math.abs(dy) > 100){
-      resolveSwipe(card, movie, 'wish');
+      resolveSwipe(card, movie, dy < 0 ? 'wish' : 'watching');
     } else if (!vertical && Math.abs(dx) > 110){
       resolveSwipe(card, movie, dx > 0 ? 'watched' : 'skip');
     } else {
-      card.style.transform = ''; wS.style.opacity = 0; sS.style.opacity = 0; wiS.style.opacity = 0;
+      card.style.transform = ''; wS.style.opacity = 0; sS.style.opacity = 0; wiS.style.opacity = 0; wchS.style.opacity = 0;
     }
     dx = 0; dy = 0;
   }
@@ -793,29 +944,75 @@ function makeDraggable(card, movie){
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
-  if (action === 'watched'){ flyX = 900; rot = 28; state.watched.push(movie.id); dbSwipe(movie.id, 'watched'); }
+  if (action === 'watched'){ flyX = 900; rot = 28; state.watched.push(movie.id); state.watching = state.watching.filter(id=>id!==movie.id); dbSwipe(movie.id, 'watched'); dbWatchingRemove(movie.id); }
   if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(movie.id); dbSwipe(movie.id, 'skipped'); }
   if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(movie.id)) state.wishlist.push(movie.id); dbWishAdd(movie.id); }
+  if (action === 'watching'){ flyY = 900; if (!state.watching.includes(movie.id)) state.watching.push(movie.id); dbWatchingAdd(movie.id); }
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
   haptic('impact', action === 'watched' ? 'medium' : 'light');
   updateStats();
   if (action === 'watched') checkBadges();
-  setTimeout(()=>{
+  setTimeout(async ()=>{
     deck = deck.filter(m => m.id !== movie.id);
+    if (deck.length < 3) await refillDeck();
     renderStack();
   }, 260);
 }
 
-document.getElementById('btnWatched').onclick = () => { const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
-document.getElementById('btnSkip').onclick = () => { const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
-document.getElementById('btnWish').onclick = () => { const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'wish'); };
+document.getElementById('btnWatched').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
+document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
+document.getElementById('btnWish').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'wish'); };
 
 function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
-  renderWishlist(); renderCatalog(); renderRank();
+  renderWishlist(); renderCatalog(); renderRank(); renderWatching();
+}
+
+/* ============ WATCHING («смотрю сейчас») ============ */
+function renderWatching(){
+  const items = state.watching.map(movieById).filter(Boolean);
+  document.getElementById('watchingCount').textContent = items.length;
+  const el = document.getElementById('watchingList');
+  if (!items.length){ el.innerHTML = `<div class="empty-note">Свайпни карточку вниз — она попадёт сюда</div>`; return; }
+  el.innerHTML = items.map(m => `
+    <div class="row-card" data-id="${m.id}">
+      <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : posterIcon(m)}</div>
+      <div class="rc-body"><div class="rc-title">${m.title}</div><div class="rc-meta">${m.year} · ${m.genres.join(', ')}</div></div>
+      <div class="rc-actions"><button class="ok" data-act="watched">✓</button><button data-act="remove">✕</button></div>
+    </div>`).join('');
+  [...el.querySelectorAll('.row-card')].forEach(row=>{
+    const id = +row.dataset.id;
+    row.querySelector('[data-act=remove]').onclick = () => { state.watching = state.watching.filter(x=>x!==id); dbWatchingRemove(id); updateStats(); };
+    row.querySelector('[data-act=watched]').onclick = () => { state.watching = state.watching.filter(x=>x!==id); if(!state.watched.includes(id)) state.watched.push(id); haptic('impact','medium'); dbWatchingRemove(id); dbSwipe(id,'watched'); updateStats(); checkBadges(); };
+    row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id)); });
+  });
+}
+
+/* ============ АКТИВНОСТЬ ЗА НЕДЕЛЮ (реальные данные из swipes) ============ */
+async function renderWeekActivity(){
+  const dayLetters = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const days = [];
+  for (let i = 6; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0); days.push(d); }
+  const counts = days.map(()=>0);
+  try{
+    const since = new Date(days[0]);
+    const { data } = await sb.from('swipes').select('created_at').eq('telegram_id', TG_ID).gte('created_at', since.toISOString());
+    (data||[]).forEach(r=>{
+      const d = new Date(r.created_at);
+      const idx = days.findIndex(day => day.toDateString() === d.toDateString());
+      if (idx > -1) counts[idx]++;
+    });
+  }catch(e){ /* если у таблицы swipes нет created_at — просто покажем пустые столбцы */ }
+  const max = Math.max(1, ...counts);
+  const total = counts.reduce((a,b)=>a+b,0);
+  document.getElementById('weekTotal').textContent = total + (total===1 ? ' свайп' : ' свайпов');
+  document.getElementById('weekChart').innerHTML = counts.map((c,i)=>{
+    const h = c ? Math.max(Math.round((c/max)*100), 8) : 4;
+    return `<div class="week-col"><i class="${c?'':'zero'}" style="height:${h}%" title="${c}"></i><span>${dayLetters[days[i].getDay()]}</span></div>`;
+  }).join('');
 }
 
 /* ============ CATALOG ============ */
@@ -958,6 +1155,30 @@ function renderProgress(movie){
   };
 }
 
+function pulseBtn(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+
+function updateSheetButtons(movie){
+  const wishBtn = document.getElementById('sheetWish');
+  const watchedBtn = document.getElementById('sheetWatched');
+  const isWish = state.wishlist.includes(movie.id);
+  const isWatched = state.watched.includes(movie.id);
+  wishBtn.classList.toggle('active', isWish);
+  wishBtn.innerHTML = (isWish ? '★' : '☆') + ' Чекнуть';
+  watchedBtn.classList.toggle('active', isWatched);
+  watchedBtn.innerHTML = '✓ Смотрел' + (isWatched ? '' : '');
+}
+
+function renderCastChips(movie){
+  const el = document.getElementById('sheetCast');
+  if (movie.cast && movie.cast.length){
+    el.innerHTML = movie.cast.map(n=>`<div class="cast-chip">${n}</div>`).join('');
+  } else if (movie._castFetched){
+    el.innerHTML = `<div class="cast-chip" style="opacity:.5;">Нет данных об актёрах</div>`;
+  } else {
+    el.innerHTML = `<div class="cast-chip" style="opacity:.5;">Загрузка…</div>`;
+  }
+}
+
 function openSheet(movie){
   sheetMovie = movie;
   document.getElementById('sheetPoster').style.cssText = posterStyle(movie, 'w780');
@@ -966,7 +1187,11 @@ function openSheet(movie){
   const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
   document.getElementById('sheetMeta').innerHTML = `${movie.year} · ★ ${movie.rating} ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
   document.getElementById('sheetOverview').textContent = movie.overview;
-  document.getElementById('sheetCast').innerHTML = ['Актёр 1','Актёр 2','Актёр 3','Актёр 4'].map(n=>`<div class="cast-chip">${n}</div>`).join('');
+  renderCastChips(movie);
+  if (!movie._castFetched) {
+    ensureCast(movie).then(() => { if (sheetMovie === movie) renderCastChips(movie); });
+  }
+  updateSheetButtons(movie);
   renderProgress(movie);
   if (movie.type === 'series' && !movie._epFetched) {
     ensureEpisodeTotal(movie).then(() => { if (sheetMovie === movie) renderProgress(movie); });
@@ -974,14 +1199,46 @@ function openSheet(movie){
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
-document.getElementById('sheetWish').onclick = () => { if(!sheetMovie) return; if(!state.wishlist.includes(sheetMovie.id)) state.wishlist.push(sheetMovie.id); haptic('impact','light'); dbWishAdd(sheetMovie.id); updateStats(); showToast('Добавлено в «Хочу чекнуть»'); };
-document.getElementById('sheetShare').onclick = () => sheetMovie && shareMovie(sheetMovie);
-document.getElementById('sheetWatched').onclick = () => {
+
+document.getElementById('sheetWish').onclick = function(){
   if (!sheetMovie) return;
-  if (!state.watched.includes(sheetMovie.id)) state.watched.push(sheetMovie.id);
-  state.wishlist = state.wishlist.filter(id=>id!==sheetMovie.id);
-  haptic('impact','medium'); dbSwipe(sheetMovie.id,'watched'); dbWishRemove(sheetMovie.id); updateStats(); checkBadges();
-  sheet.classList.remove('open'); backdrop.classList.remove('open');
+  const already = state.wishlist.includes(sheetMovie.id);
+  if (already){
+    state.wishlist = state.wishlist.filter(id=>id!==sheetMovie.id);
+    dbWishRemove(sheetMovie.id);
+    showToast('Убрано из «Хочу чекнуть»');
+  } else {
+    state.wishlist.push(sheetMovie.id);
+    dbWishAdd(sheetMovie.id);
+    showToast('Добавлено в «Хочу чекнуть»');
+  }
+  haptic('impact','light');
+  pulseBtn(this);
+  updateSheetButtons(sheetMovie);
+  updateStats();
+};
+
+document.getElementById('sheetShare').onclick = function(){ pulseBtn(this); sheetMovie && shareMovie(sheetMovie); };
+
+document.getElementById('sheetWatched').onclick = function(){
+  if (!sheetMovie) return;
+  const already = state.watched.includes(sheetMovie.id);
+  if (already){
+    state.watched = state.watched.filter(id=>id!==sheetMovie.id);
+    dbSwipeRemove(sheetMovie.id, 'watched');
+    showToast('Отмечено как непросмотренное');
+  } else {
+    state.watched.push(sheetMovie.id);
+    state.wishlist = state.wishlist.filter(id=>id!==sheetMovie.id);
+    state.watching = state.watching.filter(id=>id!==sheetMovie.id);
+    dbSwipe(sheetMovie.id,'watched'); dbWishRemove(sheetMovie.id); dbWatchingRemove(sheetMovie.id);
+    checkBadges();
+    showToast('Отмечено как просмотренное');
+  }
+  haptic('impact','medium');
+  pulseBtn(this);
+  updateSheetButtons(sheetMovie);
+  updateStats();
 };
 
 /* ============ TABS ============ */
@@ -998,7 +1255,9 @@ document.querySelectorAll('nav button').forEach(btn=>{
   await Promise.all([loadState(), loadMovies()]);
   setupGenreChips();
   deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
-  renderStack(); renderCatalog(); renderWishlist(); renderBadges(); renderRank(); updateStats();
+  if (deck.length < 3) await refillDeck();
+  renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
+  renderWeekActivity();
 })();
 </script>
 </body>
