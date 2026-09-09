@@ -73,7 +73,7 @@
   .chip.active{ background:rgba(227,166,62,0.14); border-color:var(--accent); color:var(--accent); font-weight:600; }
   .search-input{ width:100%; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
   .search-input::placeholder{ color:var(--text-dim); }
-  .home-top{ display:flex; justify-content:center; padding:6px 0 2px; }
+  .home-top{ display:flex; justify-content:center; gap:10px; padding:6px 0 2px; }
   .surprise-btn{ padding:9px 16px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
 
   /* ===== Home / stack ===== */
@@ -157,6 +157,15 @@
   .sheet .meta{ color:var(--text-dim); font-size:13px; margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .sheet .overview{ margin-top:16px; line-height:1.6; font-size:14.5px; color:#dcd3c1; }
   .progress-wrap{ margin-top:16px; }
+  .seasons-list{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .season-row{ background:var(--surface-2); border-radius:12px; padding:10px 12px; }
+  .season-top{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:6px; }
+  .season-top span:first-child{ color:var(--text); font-weight:600; }
+  .season-bar{ height:6px; background:var(--surface); border-radius:6px; overflow:hidden; }
+  .season-fill{ height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .season-btns{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+  .season-btns button{ width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-weight:700; font-size:15px; }
+  .season-btns button:disabled{ opacity:.35; }
   .progress-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px; }
   .progress-track{ height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden; }
   .progress-fill{ height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
@@ -165,8 +174,8 @@
   .sheet .cast-label{ font-size:13px; color:var(--text-dim); margin:18px 0 8px; }
   .cast-row{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
   .cast-chip{ flex:0 0 auto; padding:8px 14px; border-radius:12px; background:var(--surface-2); font-size:13px; }
-  .sheet-actions{ display:flex; gap:10px; margin-top:20px; }
-  .sheet-actions button{ flex:1; padding:13px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-weight:600; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:6px; transition:background .2s ease, color .2s ease, border-color .2s ease; }
+  .sheet-actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
+  .sheet-actions button{ flex:1 1 45%; padding:13px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-weight:600; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:6px; transition:background .2s ease, color .2s ease, border-color .2s ease; }
   .sheet-actions button.active{ background:var(--accent); color:#1a1408; border-color:var(--accent); }
 
   /* ===== Profile ===== */
@@ -294,6 +303,7 @@
   <section id="home" class="screen active">
     <div class="home-top">
       <button class="surprise-btn" id="surpriseBtn">🎲 Удиви меня</button>
+      <button class="surprise-btn" id="shakeBtn">🔀 Растрясти</button>
     </div>
     <div class="stack" id="stack"></div>
     <div class="actions">
@@ -310,6 +320,7 @@
     <div class="chips" id="typeChips"></div>
     <div class="chips" id="catChips" style="margin-top:6px;"></div>
     <div class="grid2" id="catGrid" style="margin-top:10px;"></div>
+    <div class="empty-note" id="catLoadMore" style="display:none; padding:16px; text-align:center;">Догружаю каталог…</div>
   </section>
 
   <!-- WISHLIST -->
@@ -428,6 +439,7 @@
     <div class="cast-row" id="sheetCast"></div>
     <div class="sheet-actions">
       <button id="sheetWish">☆ Чекнуть</button>
+      <button id="sheetWatching">▶ Смотрю</button>
       <button id="sheetShare">↗ Поделиться</button>
       <button id="sheetWatched">✓ Смотрел</button>
     </div>
@@ -490,22 +502,50 @@ async function dbWishAdd(movieId){ try{ await sb.from('wishlist').upsert({ teleg
 async function dbWishRemove(movieId){ try{ await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){ console.error(e); } }
 async function dbWatchingAdd(movieId){ try{ await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId }); }catch(e){ /* таблицы watching может ещё не быть в Supabase — не роняем приложение */ } }
 async function dbWatchingRemove(movieId){ try{ await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){} }
-async function dbEpisode(movieId, count){ try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: count }); }catch(e){ console.error(e); } }
+async function dbEpisode(movieId, seasons){
+  const total = Object.values(seasons).reduce((a,b)=>a+b, 0);
+  try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total, seasons }); }
+  catch(e){
+    // старая схема таблицы без колонки seasons — сохраняем хотя бы общий счётчик
+    try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total }); }catch(e2){ console.error(e2); }
+  }
+}
 async function dbBadge(badgeId){ try{ await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }); }catch(e){ console.error(e); } }
 
+function getEpisodeState(movieId){
+  if (!state.episodes[movieId]) state.episodes[movieId] = { seasons: {} };
+  return state.episodes[movieId];
+}
+function totalWatchedEpisodes(movieId){
+  return Object.values(getEpisodeState(movieId).seasons).reduce((a,b)=>a+b, 0);
+}
+
 async function loadState(){
-  const [{data:sw}, {data:wl}, {data:ep}, {data:bd}] = await Promise.all([
+  const [{data:sw}, {data:wl}, {data:bd}] = await Promise.all([
     sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
     sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
-    sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID),
     sb.from('badges').select('badge_id').eq('telegram_id', TG_ID),
   ]);
   state.watched = (sw||[]).filter(r=>r.action==='watched').map(r=>r.movie_id);
   state.skipped = (sw||[]).filter(r=>r.action==='skipped').map(r=>r.movie_id);
   state.wishlist = (wl||[]).map(r=>r.movie_id);
-  state.episodes = {};
-  (ep||[]).forEach(r => state.episodes[r.movie_id] = r.watched_count);
   state.unlocked = (bd||[]).map(r=>r.badge_id);
+  state.episodes = {};
+  try{
+    const { data: ep, error } = await sb.from('episodes_progress').select('movie_id,watched_count,seasons').eq('telegram_id', TG_ID);
+    if (error) throw error;
+    (ep||[]).forEach(r=>{
+      let seasons = {};
+      if (r.seasons) seasons = typeof r.seasons === 'string' ? JSON.parse(r.seasons) : r.seasons;
+      state.episodes[r.movie_id] = { seasons: seasons || {} };
+    });
+  }catch(e){
+    // в таблице ещё нет колонки seasons — тянем как раньше и кладём всё в «сезон 1»
+    try{
+      const { data: ep } = await sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID);
+      (ep||[]).forEach(r => state.episodes[r.movie_id] = { seasons: { '1': r.watched_count || 0 } });
+    }catch(e2){}
+  }
   try{
     const { data: wa } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
     state.watching = (wa||[]).map(r=>r.movie_id);
@@ -582,7 +622,7 @@ document.getElementById('resetSwipes').onclick = async () => {
   try{
     await sb.from('swipes').delete().eq('telegram_id', TG_ID);
     state.watched = []; state.skipped = [];
-    deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+    deck = shuffle(MOVIES.filter(isUnseen));
     renderStack(); renderCatalog(); renderRank(); updateStats();
     showToast('История свайпов очищена');
   }catch(e){ showToast('Не получилось — проверь связь'); }
@@ -611,7 +651,7 @@ initSwitch(document.getElementById('switchAdult'), false, async (val) => {
   try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
   await loadMovies();
   setupGenreChips();
-  deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  deck = shuffle(MOVIES.filter(isUnseen));
   renderStack(); renderCatalog(); updateStats();
   showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
 });
@@ -645,7 +685,8 @@ async function fetchList(url, type, genreMap){
     // Условное число серий — сразу видно что-то в интерфейсе.
     // Настоящее число подтягивается точечно через ensureEpisodeTotal(),
     // когда пользователь реально открывает карточку сериала.
-    episodesTotal: type==='series' ? (6 + (item.id % 8)) : undefined,
+    episodesTotal: (type==='series'||type==='anime') ? (6 + (item.id % 8)) : undefined,
+    seasons: [],
     _epFetched: false,
     cast: [],
     _castFetched: false,
@@ -696,7 +737,10 @@ async function loadMovies(){
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
     const combined = [...films, ...series, ...anime, ...cartoons];
-    if (combined.length){ MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false; }
+    if (combined.length){
+      MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false;
+      fetchMorePages(); // догружаем вторую страницу в фоне, чтобы колода не мелела быстро
+    }
     else { tmdbFailed = true; }
   }catch(e){
     console.error('TMDB load failed', e);
@@ -707,7 +751,7 @@ async function retryLoadMovies(){
   showToast('Загружаю каталог…');
   await loadMovies();
   setupGenreChips();
-  deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  deck = shuffle(MOVIES.filter(isUnseen));
   renderStack(); renderCatalog(); updateStats();
 }
 
@@ -730,27 +774,52 @@ async function fetchMorePages(){
   }catch(e){ tmdbPage -= 1; return 0; }
 }
 
-/* Колода никогда не должна заканчиваться навсегда: сперва добираем непоказанные,
-   потом грузим следующую страницу TMDB, а если и это не помогло — по-честному
-   показываем заново то, что раньше пропустили («мимо»), не трогая просмотренное. */
+/* Карточка, с которой ты уже что-то сделал (смотрел/пропустил/чекнул/смотрю),
+   больше никогда не возвращается в колоду — только по-настоящему новые. */
+function isUnseen(m){
+  return !state.watched.includes(m.id) && !state.skipped.includes(m.id)
+      && !state.wishlist.includes(m.id) && !state.watching.includes(m.id);
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 async function refillDeck(){
-  let fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id) && !deck.includes(m));
-  if (!fresh.length){
+  let fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
+  let attempts = 0;
+  while (!fresh.length && attempts < 5){
     const added = await fetchMorePages();
-    if (added) fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id) && !deck.includes(m));
+    attempts++;
+    if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
+    if (!added) break;
   }
-  if (!fresh.length && state.skipped.length){
-    state.skipped = [];
-    fresh = MOVIES.filter(m => !state.watched.includes(m.id) && !deck.includes(m));
-    if (fresh.length) showToast('Показываем заново то, что пропустили — новых пока нет');
-  }
-  deck = deck.concat(fresh);
+  deck = deck.concat(shuffle(fresh));
+}
+function shakeDeck(){
+  const top = deck[0];
+  const rest = shuffle(deck.slice(1));
+  deck = top ? [top, ...rest] : rest;
+  haptic('impact','medium');
+  renderStack();
+  showToast('Колода перетасована 🔀');
 }
 async function ensureEpisodeTotal(movie){
-  if (movie.type !== 'series' || movie._epFetched) return false;
+  if (!(movie.type === 'series' || movie.type === 'anime') || movie._epFetched) return false;
   try{
     const data = await fetch(`https://api.themoviedb.org/3/tv/${movie.id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
-    if (data?.number_of_episodes) movie.episodesTotal = data.number_of_episodes;
+    const seasons = (data?.seasons || [])
+      .filter(s => s.season_number > 0 && s.episode_count > 0)
+      .map(s => ({ number: s.season_number, name: s.name || `Сезон ${s.season_number}`, total: s.episode_count }));
+    if (seasons.length){
+      movie.seasons = seasons;
+      movie.episodesTotal = seasons.reduce((sum,s)=>sum+s.total, 0);
+    } else if (data?.number_of_episodes) {
+      movie.episodesTotal = data.number_of_episodes;
+    }
   }catch(e){}
   movie._epFetched = true;
   return true;
@@ -805,6 +874,7 @@ function surpriseMe(){
   openSheet(pick);
 }
 document.getElementById('surpriseBtn').onclick = surpriseMe;
+document.getElementById('shakeBtn').onclick = shakeDeck;
 
 function shareApp(){
   const text = 'Го затрекаем, что смотрели — я в SMOTRA';
@@ -867,15 +937,18 @@ function shareMovie(movie){
 const stackEl = document.getElementById('stack');
 let deck = [];
 
+let deckRefreshing = false;
 function renderStack(){
   stackEl.innerHTML = '';
   if (!deck.length){
     if (tmdbFailed) {
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
       document.getElementById('retryTmdb').onclick = retryLoadMovies;
-    } else {
+    } else if (deckRefreshing) {
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Секунду…</div><div>Подгружаю ещё карточки</div></div>`;
-      refillDeck().then(() => renderStack());
+    } else {
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Пока всё!</div><div>Ты прошёл(ла) весь доступный каталог — новое появится позже, а пока загляни в «Каталог»</div><button id="toCatalog">Открыть каталог</button></div>`;
+      document.getElementById('toCatalog').onclick = () => switchTab('catalog');
     }
     return;
   }
@@ -1131,28 +1204,56 @@ let sheetMovie = null;
 
 function renderProgress(movie){
   const prog = document.getElementById('sheetProgress');
-  if (movie.type !== 'series') { prog.style.display = 'none'; return; }
-  const watchedEp = state.episodes[movie.id] || 0;
-  const total = movie.episodesTotal;
-  const pct = Math.min(100, Math.round(watchedEp/total*100));
-  const done = watchedEp >= total;
+  if (!(movie.type === 'series' || movie.type === 'anime')) { prog.style.display = 'none'; return; }
+  const epState = getEpisodeState(movie.id);
+  const watchedEp = totalWatchedEpisodes(movie.id);
+  const total = movie.episodesTotal || 0;
+  const pct = total ? Math.min(100, Math.round(watchedEp/total*100)) : 0;
+  const seasons = movie.seasons || [];
   prog.style.display = 'block';
+  const seasonsHtml = seasons.length ? seasons.map(s => {
+    const cur = Math.min(epState.seasons[s.number] || 0, s.total);
+    const sPct = s.total ? Math.round(cur/s.total*100) : 0;
+    return `
+      <div class="season-row" data-season="${s.number}">
+        <div class="season-top"><span>${s.name}</span><span>${cur}/${s.total}</span></div>
+        <div class="season-bar"><div class="season-fill" style="width:${sPct}%"></div></div>
+        <div class="season-btns">
+          <button data-d="-1" ${cur<=0?'disabled':''}>−</button>
+          <button data-d="1" ${cur>=s.total?'disabled':''}>+</button>
+        </div>
+      </div>`;
+  }).join('') : `<div class="empty-note" style="padding:10px 0;">${movie._epFetched ? 'Список сезонов не найден' : 'Уточняю сезоны…'}</div>`;
   prog.innerHTML = `
-    <div class="progress-label"><span>Серия ${watchedEp} из ${total}${movie._epFetched ? '' : ' (уточняется…)'}</span><span>${pct}%</span></div>
+    <div class="progress-label"><span>Всего: ${watchedEp} из ${total || '…'}</span><span>${pct}%</span></div>
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-    <button class="progress-btn" id="progBtn" ${done?'disabled':''}>${done?'Досмотрено ✓':'+ Серия'}</button>`;
-  document.getElementById('progBtn').onclick = () => {
-    const cur = state.episodes[movie.id] || 0;
-    if (cur >= movie.episodesTotal) return;
-    state.episodes[movie.id] = cur + 1;
-    haptic('impact','light');
-    dbEpisode(movie.id, state.episodes[movie.id]);
-    if (state.episodes[movie.id] >= movie.episodesTotal) {
-      if (!state.watched.includes(movie.id)) state.watched.push(movie.id);
-      haptic('notification','success'); showToast('Сериал досмотрен ✓'); dbSwipe(movie.id,'watched'); checkBadges();
-    }
-    updateStats(); renderProgress(movie);
-  };
+    <div class="seasons-list">${seasonsHtml}</div>`;
+  prog.querySelectorAll('.season-row button').forEach(btn=>{
+    btn.onclick = () => {
+      const row = btn.closest('.season-row');
+      const num = row.dataset.season;
+      const seasonDef = seasons.find(s => String(s.number) === num);
+      if (!seasonDef) return;
+      const delta = +btn.dataset.d;
+      const cur = epState.seasons[num] || 0;
+      const next = Math.max(0, Math.min(seasonDef.total, cur + delta));
+      if (next === cur) return;
+      epState.seasons[num] = next;
+      haptic('impact','light');
+      dbEpisode(movie.id, epState.seasons);
+      const newTotal = totalWatchedEpisodes(movie.id);
+      if (movie.episodesTotal && newTotal >= movie.episodesTotal){
+        if (!state.watched.includes(movie.id)){
+          state.watched.push(movie.id);
+          haptic('notification','success'); showToast('Сериал досмотрен ✓'); dbSwipe(movie.id,'watched'); checkBadges();
+        }
+      } else if (state.watched.includes(movie.id)) {
+        state.watched = state.watched.filter(id=>id!==movie.id);
+        dbSwipeRemove(movie.id, 'watched');
+      }
+      updateStats(); renderProgress(movie); updateSheetButtons(movie);
+    };
+  });
 }
 
 function pulseBtn(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
@@ -1160,12 +1261,16 @@ function pulseBtn(el){ el.classList.remove('pulse'); void el.offsetWidth; el.cla
 function updateSheetButtons(movie){
   const wishBtn = document.getElementById('sheetWish');
   const watchedBtn = document.getElementById('sheetWatched');
+  const watchingBtn = document.getElementById('sheetWatching');
   const isWish = state.wishlist.includes(movie.id);
   const isWatched = state.watched.includes(movie.id);
+  const isWatching = state.watching.includes(movie.id);
   wishBtn.classList.toggle('active', isWish);
   wishBtn.innerHTML = (isWish ? '★' : '☆') + ' Чекнуть';
   watchedBtn.classList.toggle('active', isWatched);
-  watchedBtn.innerHTML = '✓ Смотрел' + (isWatched ? '' : '');
+  watchedBtn.innerHTML = '✓ Смотрел';
+  watchingBtn.classList.toggle('active', isWatching);
+  watchingBtn.innerHTML = (isWatching ? '⏸' : '▶') + ' Смотрю';
 }
 
 function renderCastChips(movie){
@@ -1193,7 +1298,7 @@ function openSheet(movie){
   }
   updateSheetButtons(movie);
   renderProgress(movie);
-  if (movie.type === 'series' && !movie._epFetched) {
+  if ((movie.type === 'series' || movie.type === 'anime') && !movie._epFetched) {
     ensureEpisodeTotal(movie).then(() => { if (sheetMovie === movie) renderProgress(movie); });
   }
   sheet.classList.add('open'); backdrop.classList.add('open');
@@ -1220,6 +1325,24 @@ document.getElementById('sheetWish').onclick = function(){
 
 document.getElementById('sheetShare').onclick = function(){ pulseBtn(this); sheetMovie && shareMovie(sheetMovie); };
 
+document.getElementById('sheetWatching').onclick = function(){
+  if (!sheetMovie) return;
+  const already = state.watching.includes(sheetMovie.id);
+  if (already){
+    state.watching = state.watching.filter(id=>id!==sheetMovie.id);
+    dbWatchingRemove(sheetMovie.id);
+    showToast('Убрано из «Смотрю»');
+  } else {
+    state.watching.push(sheetMovie.id);
+    dbWatchingAdd(sheetMovie.id);
+    showToast('Перемещено в «Смотрю»');
+  }
+  haptic('impact','light');
+  pulseBtn(this);
+  updateSheetButtons(sheetMovie);
+  updateStats();
+};
+
 document.getElementById('sheetWatched').onclick = function(){
   if (!sheetMovie) return;
   const already = state.watched.includes(sheetMovie.id);
@@ -1242,19 +1365,44 @@ document.getElementById('sheetWatched').onclick = function(){
 };
 
 /* ============ TABS ============ */
+async function refillAndRender(){
+  if (deckRefreshing) return;
+  deckRefreshing = true;
+  renderStack();
+  await refillDeck();
+  deckRefreshing = false;
+  renderStack();
+}
 function switchTab(id){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
+  if (id === 'home' && deck.length < 3 && !deckRefreshing && !tmdbFailed) refillAndRender();
 }
 document.querySelectorAll('nav button').forEach(btn=>{
   btn.addEventListener('click', () => { haptic('selection'); switchTab(btn.dataset.tab); });
+});
+
+/* Каталог не грузится весь и сразу (это тысячи тайтлов) — подгружаем ещё,
+   когда долистали почти до низа. */
+let catalogLoadingMore = false;
+document.getElementById('catalog').addEventListener('scroll', async (e) => {
+  if (catalogLoadingMore || tmdbFailed) return;
+  const el = e.target;
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < 500){
+    catalogLoadingMore = true;
+    document.getElementById('catLoadMore').style.display = 'block';
+    const added = await fetchMorePages();
+    document.getElementById('catLoadMore').style.display = 'none';
+    if (added){ setupGenreChips(); renderCatalog(); }
+    catalogLoadingMore = false;
+  }
 });
 
 /* ============ INIT ============ */
 (async () => {
   await Promise.all([loadState(), loadMovies()]);
   setupGenreChips();
-  deck = MOVIES.filter(m => !state.watched.includes(m.id) && !state.skipped.includes(m.id));
+  deck = shuffle(MOVIES.filter(isUnseen));
   if (deck.length < 3) await refillDeck();
   renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
   renderWeekActivity();
