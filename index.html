@@ -43,16 +43,16 @@
   }
   body.theme-neon{
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(124,107,255,0.12), transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, rgba(79,139,255,0.10), transparent 50%),
+      radial-gradient(1300px 700px at 15% 10%, rgba(124,107,255,0.10), transparent 60%),
+      radial-gradient(1000px 600px at 100% 15%, rgba(79,139,255,0.08), transparent 55%),
       var(--bg);
   }
-  html,body{height:100%; margin:0;}
+  html,body{height:100%; margin:0; overflow-x:hidden; overscroll-behavior-x:none; touch-action:pan-y;}
   body{
     transition:background-color .4s ease;
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(227,166,62,0.08), transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, rgba(76,154,118,0.06), transparent 50%),
+      radial-gradient(1300px 700px at 15% 10%, rgba(227,166,62,0.07), transparent 60%),
+      radial-gradient(1000px 600px at 100% 15%, rgba(76,154,118,0.05), transparent 55%),
       var(--bg);
     color:var(--text);
     font-family:'Inter',system-ui,sans-serif;
@@ -80,7 +80,7 @@
 
   /* ===== Screens ===== */
   .screens{ flex:1; position:relative; min-height:0; }
-  .screen{ position:absolute; inset:0; padding:0 20px 16px; display:none; overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none; }
+  .screen{ position:absolute; inset:0; padding:0 20px 16px; display:none; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -ms-overflow-style:none; scrollbar-width:none; }
   .screen::-webkit-scrollbar{display:none;}
   .screen.active{ display:flex; flex-direction:column; animation:rise .32s cubic-bezier(.2,.8,.2,1); }
   @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
@@ -223,9 +223,11 @@
   .week-col i.zero{ background:var(--surface-2); }
   .week-col span{ font-size:10px; color:var(--text-dim); }
   .badges-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  .badge{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; opacity:0.35; }
+  .badge{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; opacity:0.35; cursor:pointer; transition:transform .15s ease; }
+  .badge:active{ transform:scale(.94); }
   .badge.unlocked{ opacity:1; border-color:rgba(227,166,62,0.4); }
   .badge .b-icon{ display:flex; align-items:center; justify-content:center; color:var(--accent); }
+  #badgeDetailIcon.locked{ opacity:.35; }
   .badge .b-name{ font-size:10px; color:var(--text-dim); margin-top:5px; line-height:1.2; }
   .menu-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 2px; border-bottom:1px solid var(--border); }
   .menu-row:last-child{ border-bottom:none; }
@@ -412,7 +414,7 @@
     <div class="eyebrow">Активность за неделю <span class="count" id="weekTotal">0 свайпов</span></div>
     <div class="week" id="weekChart"></div>
 
-    <div class="eyebrow">Ачивки</div>
+    <div class="eyebrow"><span>Ачивки</span><span class="view-toggle" id="openAchievements" style="cursor:pointer; padding:4px 10px; gap:4px; font-size:11.5px; color:var(--text-dim);">Все <span class="set-chevron" style="font-size:14px;">›</span></span></div>
     <div class="badges-grid" id="badgesGrid"></div>
 
     <div class="eyebrow">Рейтинг среди друзей</div>
@@ -464,6 +466,39 @@
     <div class="chips" id="histTypeChips" style="margin-top:10px;"></div>
     <div id="histList" style="margin-top:14px;"></div>
   </div>
+</div>
+
+<!-- ACHIEVEMENTS OVERLAY -->
+<div class="overlay-screen" id="achievementsScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeAchievements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Ачивки</div>
+    <span class="count" id="achievementsCount" style="margin-left:auto;">0 из 0</span>
+  </div>
+  <div class="ov-body">
+    <div class="badges-grid" id="achievementsGrid" style="grid-template-columns:repeat(3,1fr);"></div>
+  </div>
+</div>
+
+<!-- BADGE DETAIL -->
+<div class="sheet-backdrop" id="badgeBackdrop"></div>
+<div class="sheet" id="badgeSheet" style="max-height:50vh;">
+  <div class="handle"></div>
+  <div style="padding:6px 22px 24px; text-align:center;">
+    <div id="badgeDetailIcon" style="width:64px; height:64px; border-radius:20px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--accent);"></div>
+    <div id="badgeDetailName" style="font-size:18px; font-weight:700;"></div>
+    <div id="badgeDetailDesc" style="font-size:13.5px; color:var(--text-dim); line-height:1.5; margin-top:6px;"></div>
+    <div id="badgeDetailDate" style="font-size:12px; color:var(--text-dim); margin-top:16px;"></div>
+  </div>
+</div>
+
+<!-- FRIEND PROFILE OVERLAY -->
+<div class="overlay-screen" id="friendProfileScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeFriendProfile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Профиль друга</div>
+  </div>
+  <div class="ov-body" id="friendProfileBody"></div>
 </div>
 
 <!-- SETTINGS OVERLAY -->
@@ -641,10 +676,27 @@ function ICON(name, size){
 
 /* ============ TELEGRAM ============ */
 const tg = window.Telegram?.WebApp;
+function applySafeArea(){
+  const csa = tg?.contentSafeAreaInset || {};
+  const sa = tg?.safeAreaInset || {};
+  const top = (csa.top ?? sa.top ?? 0);
+  const bottom = (csa.bottom ?? sa.bottom ?? 0);
+  document.documentElement.style.setProperty('--safe-top', top + 'px');
+  document.documentElement.style.setProperty('--safe-bottom', Math.max(bottom, 0) + 'px');
+}
 if (tg) {
-  tg.ready(); tg.expand();
+  tg.ready();
+  // Полноэкранный режим прячет собственный хедер Telegram (тот самый "хвостик"/шапка над нашим лого) —
+  // а contentSafeAreaInset подсказывает, сколько отступить сверху, чтобы не залезть под плавающие
+  // кнопки Telegram (крестик, меню), которые в fullscreen остаются поверх контента.
+  try{ tg.requestFullscreen(); }catch(e){ tg.expand(); }
   try { tg.disableVerticalSwipes(); } catch(e){}
-  // requestFullscreen убран: он прячет хедер Telegram, из-за чего его плавающие кнопки (крестик, меню) наезжают на наш логотип. expand() + disableVerticalSwipes() достаточно, чтобы окно не сворачивалось свайпом вниз, и при этом хедер Telegram остаётся на своём месте, не перекрывая контент.
+  if (tg.onEvent){
+    tg.onEvent('contentSafeAreaChanged', applySafeArea);
+    tg.onEvent('safeAreaChanged', applySafeArea);
+    tg.onEvent('fullscreenChanged', applySafeArea);
+  }
+  applySafeArea();
   tg.setHeaderColor && tg.setHeaderColor('#131110');
   tg.setBackgroundColor && tg.setBackgroundColor('#131110');
   tg.setBottomBarColor && tg.setBottomBarColor('#131110');
@@ -704,6 +756,83 @@ async function dbEpisode(movieId, seasons){
 }
 async function dbBadge(badgeId){ try{ await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }); }catch(e){ console.error(e); } }
 
+/* ============ ДРУЗЬЯ И ПРОФИЛИ ============ */
+async function upsertProfile(){
+  const u = tg?.initDataUnsafe?.user;
+  if (!u) return;
+  try{
+    await sb.from('profiles').upsert({
+      telegram_id: TG_ID,
+      first_name: u.first_name || '',
+      last_name: u.last_name || '',
+      username: u.username || '',
+      photo_url: u.photo_url || '',
+      updated_at: new Date().toISOString(),
+    });
+  }catch(e){ /* таблицы profiles ещё нет — просто не сохранится */ }
+}
+async function addFriend(friendId){
+  friendId = Number(friendId);
+  if (!friendId || friendId === TG_ID || Number.isNaN(friendId)) return false;
+  try{
+    await sb.from('friends').upsert([
+      { telegram_id: TG_ID, friend_id: friendId },
+      { telegram_id: friendId, friend_id: TG_ID },
+    ]);
+    return true;
+  }catch(e){ return false; }
+}
+async function getFriendIds(){
+  try{
+    const { data } = await sb.from('friends').select('friend_id').eq('telegram_id', TG_ID);
+    return (data||[]).map(r=>r.friend_id);
+  }catch(e){ return []; }
+}
+async function getProfile(id){
+  try{
+    const { data } = await sb.from('profiles').select('*').eq('telegram_id', id).maybeSingle();
+    return data;
+  }catch(e){ return null; }
+}
+async function getActionCount(id, action){
+  try{
+    const { count } = await sb.from('swipes').select('*', { count:'exact', head:true }).eq('telegram_id', id).eq('action', action);
+    return count || 0;
+  }catch(e){ return 0; }
+}
+function friendDisplayName(profile){
+  if (!profile) return 'Друг';
+  return [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.username || 'Друг';
+}
+function avatarBlockHTML(name, photoUrl, size){
+  size = size || 88;
+  if (photoUrl){
+    return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background-image:url('${photoUrl}'); background-size:cover; background-position:center; margin:0 auto 14px;"></div>`;
+  }
+  return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:#1a1408; margin:0 auto 14px;">${(name[0]||'?').toUpperCase()}</div>`;
+}
+async function openFriendProfile(id){
+  document.getElementById('friendProfileScreen').classList.add('open');
+  const body = document.getElementById('friendProfileBody');
+  body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Загружаю…</div>`;
+  const [profile, watchedCount, skippedCount] = await Promise.all([
+    getProfile(id), getActionCount(id,'watched'), getActionCount(id,'skipped')
+  ]);
+  const name = friendDisplayName(profile);
+  body.innerHTML = `
+    <div style="text-align:center; padding-top:10px;">
+      ${avatarBlockHTML(name, profile?.photo_url, 88)}
+      <div style="font-size:18px; font-weight:700;">${name}</div>
+      ${profile?.username ? `<div class="set-sub">@${profile.username}</div>` : ''}
+    </div>
+    <div class="stats-row" style="margin-top:20px;">
+      <div class="stat-card"><div class="stat-num">${watchedCount}</div><div class="stat-label">просмотрено</div></div>
+      <div class="stat-card"><div class="stat-num">${skippedCount}</div><div class="stat-label">пропущено</div></div>
+    </div>`;
+}
+document.getElementById('closeFriendProfile').onclick = () => document.getElementById('friendProfileScreen').classList.remove('open');
+
+
 function getEpisodeState(movieId){
   if (!state.episodes[movieId]) state.episodes[movieId] = { seasons: {} };
   return state.episodes[movieId];
@@ -713,15 +842,26 @@ function totalWatchedEpisodes(movieId){
 }
 
 async function loadState(){
-  const [{data:sw}, {data:wl}, {data:bd}] = await Promise.all([
+  const [{data:sw}, {data:wl}] = await Promise.all([
     sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
     sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
-    sb.from('badges').select('badge_id').eq('telegram_id', TG_ID),
   ]);
   state.watched = (sw||[]).filter(r=>r.action==='watched').map(r=>r.movie_id);
   state.skipped = (sw||[]).filter(r=>r.action==='skipped').map(r=>r.movie_id);
   state.wishlist = (wl||[]).map(r=>r.movie_id);
-  state.unlocked = (bd||[]).map(r=>r.badge_id);
+  state.unlocked = [];
+  state.badgeDates = {};
+  try{
+    const { data: bd, error } = await sb.from('badges').select('badge_id,created_at').eq('telegram_id', TG_ID);
+    if (error) throw error;
+    state.unlocked = (bd||[]).map(r=>r.badge_id);
+    (bd||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
+  }catch(e){
+    try{
+      const { data: bd } = await sb.from('badges').select('badge_id').eq('telegram_id', TG_ID);
+      state.unlocked = (bd||[]).map(r=>r.badge_id);
+    }catch(e2){}
+  }
   state.episodes = {};
   try{
     const { data: ep, error } = await sb.from('episodes_progress').select('movie_id,watched_count,seasons').eq('telegram_id', TG_ID);
@@ -1078,6 +1218,31 @@ function shakeDeck(){
   renderStack();
   showToast('Колода перетасована', 'shuffle');
 }
+
+/* ============ ТРЯХНИ ТЕЛЕФОН — перетасовка колоды ============ */
+(function initShakeToShuffle(){
+  let lastShake = 0;
+  function onMotion(e){
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a) return;
+    const mag = Math.sqrt((a.x||0)**2 + (a.y||0)**2 + (a.z||0)**2);
+    const now = Date.now();
+    if (mag > 26 && now - lastShake > 1400){
+      lastShake = now;
+      if (document.getElementById('home')?.classList.contains('active')) shakeDeck();
+    }
+  }
+  function bind(){ window.addEventListener('devicemotion', onMotion); }
+  document.addEventListener('click', function askOnce(){
+    document.removeEventListener('click', askOnce);
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+      DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') bind(); }).catch(()=>{});
+    } else if (window.DeviceMotionEvent) {
+      bind();
+    }
+  }, { once:true });
+})();
+
 async function ensureEpisodeTotal(movie){
   if (!(movie.type === 'series' || movie.type === 'anime') || movie._epFetched) return false;
   try{
@@ -1120,10 +1285,10 @@ function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.poste
 function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${posterUrl(m, size)}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
 const BADGES = [
-  { id:'b1', min:1, icon:'clapper', name:'Дебют' },
-  { id:'b2', min:5, icon:'popcorn', name:'Втянулся' },
-  { id:'b3', min:10, icon:'reel', name:'Киноман' },
-  { id:'b4', min:25, icon:'trophy', name:'Марафонец' },
+  { id:'b1', min:1, icon:'clapper', name:'Дебют', desc:'Отметь первый просмотренный тайтл' },
+  { id:'b2', min:5, icon:'popcorn', name:'Втянулся', desc:'Отметь 5 просмотренных тайтлов' },
+  { id:'b3', min:10, icon:'reel', name:'Киноман', desc:'Отметь 10 просмотренных тайтлов' },
+  { id:'b4', min:25, icon:'trophy', name:'Марафонец', desc:'Отметь 25 просмотренных тайтлов' },
 ];
 
 const state = {
@@ -1132,6 +1297,7 @@ const state = {
   wishlist: [],
   watching: [],
   unlocked: [],
+  badgeDates: {},
   episodes: {},
 };
 function movieById(id){ return MOVIES.find(m => m.id === id); }
@@ -1149,7 +1315,7 @@ document.getElementById('shakeBtn').onclick = shakeDeck;
 
 function shareApp(){
   const text = 'Го затрекаем, что смотрели — я в SMOTRA';
-  const url = 'https://t.me/smotra67bot'; // обновлённая ссылка на бота
+  const url = `https://t.me/smotra67bot?startapp=ref_${TG_ID}`; // персональная реф-ссылка — открывший её автоматически станет твоим другом
   if (tg?.openTelegramLink) {
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
   } else if (navigator.share) {
@@ -1175,6 +1341,7 @@ function checkBadges(){
   BADGES.forEach(b=>{
     if (state.watched.length >= b.min && !state.unlocked.includes(b.id)){
       state.unlocked.push(b.id);
+      state.badgeDates[b.id] = new Date().toISOString();
       showToast(`Ачивка «${b.name}» открыта`, b.icon);
       haptic('notification','success');
       dbBadge(b.id);
@@ -1184,11 +1351,55 @@ function checkBadges(){
 }
 function renderBadges(){
   document.getElementById('badgesGrid').innerHTML = BADGES.map(b => `
-    <div class="badge ${state.unlocked.includes(b.id) ? 'unlocked' : ''}">
+    <div class="badge ${state.unlocked.includes(b.id) ? 'unlocked' : ''}" data-badge="${b.id}">
       <div class="b-icon">${ICON(b.icon, 20)}</div>
       <div class="b-name">${b.name}</div>
     </div>`).join('');
+  [...document.getElementById('badgesGrid').querySelectorAll('.badge')].forEach(el=>{
+    el.onclick = () => openBadgeDetail(el.dataset.badge);
+  });
+  renderAchievementsScreen();
 }
+function renderAchievementsScreen(){
+  const el = document.getElementById('achievementsGrid');
+  if (!el) return;
+  el.innerHTML = BADGES.map(b => `
+    <div class="badge ${state.unlocked.includes(b.id) ? 'unlocked' : ''}" data-badge="${b.id}">
+      <div class="b-icon">${ICON(b.icon, 24)}</div>
+      <div class="b-name">${b.name}</div>
+    </div>`).join('');
+  [...el.querySelectorAll('.badge')].forEach(node=>{
+    node.onclick = () => openBadgeDetail(node.dataset.badge);
+  });
+  const unlockedCount = BADGES.filter(b=>state.unlocked.includes(b.id)).length;
+  const countEl = document.getElementById('achievementsCount');
+  if (countEl) countEl.textContent = `${unlockedCount} из ${BADGES.length}`;
+}
+function openBadgeDetail(badgeId){
+  const b = BADGES.find(x=>x.id===badgeId);
+  if (!b) return;
+  const unlocked = state.unlocked.includes(b.id);
+  haptic('selection');
+  document.getElementById('badgeDetailIcon').innerHTML = ICON(b.icon, 30);
+  document.getElementById('badgeDetailIcon').classList.toggle('locked', !unlocked);
+  document.getElementById('badgeDetailName').textContent = b.name;
+  document.getElementById('badgeDetailDesc').textContent = b.desc;
+  const dateEl = document.getElementById('badgeDetailDate');
+  if (unlocked){
+    const d = state.badgeDates[b.id];
+    dateEl.textContent = d ? `Получена ${new Date(d).toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' })}` : 'Уже открыта';
+  } else {
+    dateEl.textContent = 'Ещё не открыта';
+  }
+  document.getElementById('badgeSheet').classList.add('open');
+  document.getElementById('badgeBackdrop').classList.add('open');
+}
+document.getElementById('badgeBackdrop').onclick = () => {
+  document.getElementById('badgeSheet').classList.remove('open');
+  document.getElementById('badgeBackdrop').classList.remove('open');
+};
+document.getElementById('openAchievements').onclick = () => { document.getElementById('achievementsScreen').classList.add('open'); renderAchievementsScreen(); };
+document.getElementById('closeAchievements').onclick = () => document.getElementById('achievementsScreen').classList.remove('open');
 
 /* ============ SHARE ============ */
 function shareMovie(movie){
@@ -1318,7 +1529,7 @@ function updateStats(){
 /* ============ WATCHING («смотрю сейчас») ============ */
 function renderWatching(){
   const view = syncViewToggle('watching', 'list');
-  const items = state.watching.map(movieById).filter(Boolean);
+  const items = state.watching.slice().reverse().map(movieById).filter(Boolean);
   document.getElementById('watchingCount').textContent = items.length;
   const el = document.getElementById('watchingList');
   if (!items.length){ el.className = ''; el.innerHTML = `<div class="empty-note">Свайпни карточку вниз — она попадёт сюда</div>`; return; }
@@ -1472,7 +1683,7 @@ document.getElementById('wishSort').addEventListener('click', e=>{
 });
 function renderWishlist(){
   const view = syncViewToggle('wishlist', 'list');
-  let items = state.wishlist.map(movieById).filter(Boolean);
+  let items = state.wishlist.slice().reverse().map(movieById).filter(Boolean);
   if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
   else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
   const el = document.getElementById('wishList');
@@ -1512,7 +1723,7 @@ document.getElementById('histTypeChips').addEventListener('click', e=>{
 });
 function renderHistory(){
   const ids = histMode === 'watched' ? state.watched : state.skipped;
-  const items = ids.map(movieById).filter(Boolean).filter(m => histType==='all' || m.type===histType);
+  const items = ids.slice().reverse().map(movieById).filter(Boolean).filter(m => histType==='all' || m.type===histType);
   const el = document.getElementById('histList');
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
   el.innerHTML = items.map(m => `
@@ -1546,12 +1757,47 @@ document.getElementById('closeFilters').onclick = () => document.getElementById(
 // Настоящий рейтинг среди друзей появится, когда будет система друзей
 // (например, общая группа/чат в Telegram — таблица friends в Supabase).
 // Пока честно показываем только тебя и зовём пригласить кого-то.
-function renderRank(){
-  document.getElementById('rankList').innerHTML = `
-    <div class="rank-row me"><div class="rank-num">1</div><div class="rank-name">Ты</div><div class="rank-count">${state.watched.length}</div></div>
-    <div class="empty-note" style="padding:18px 4px 14px;">Друзей в рейтинге пока нет</div>
-    <button id="inviteBtn" style="width:100%; padding:13px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--accent); font-weight:600; font-size:14px;">Пригласить друга</button>`;
+let rankLoaded = false;
+async function renderRank(){
+  const el = document.getElementById('rankList');
+  if (!rankLoaded){
+    el.innerHTML = `<div class="empty-note" style="padding:18px 4px;">Загружаю рейтинг…</div>`;
+  }
+  const friendIds = await getFriendIds();
+  rankLoaded = true;
+  const rows = [{ id: TG_ID, name: 'Ты', photo: tg?.initDataUnsafe?.user?.photo_url, count: state.watched.length, isMe:true }];
+  const friendData = await Promise.all(friendIds.map(async fid => {
+    const [profile, count] = await Promise.all([getProfile(fid), getActionCount(fid,'watched')]);
+    return { id: fid, name: friendDisplayName(profile), photo: profile?.photo_url, count };
+  }));
+  rows.push(...friendData);
+  rows.sort((a,b) => b.count - a.count);
+  const rowsHtml = rows.map((r,i) => `
+    <div class="rank-row ${r.isMe?'me':''}" data-id="${r.id}" ${r.isMe?'':'style="cursor:pointer;"'}>
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-name">${r.name}</div>
+      <div class="rank-count">${r.count}</div>
+    </div>`).join('');
+  const emptyNote = friendIds.length ? '' : `<div class="empty-note" style="padding:14px 4px;">Друзей в рейтинге пока нет — пригласи или добавь по ID</div>`;
+  el.innerHTML = rowsHtml + emptyNote + `
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button id="addFriendBtn" style="flex:1; padding:13px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-weight:600; font-size:13.5px;">Добавить по ID</button>
+      <button id="inviteBtn" style="flex:1; padding:13px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--accent); font-weight:600; font-size:13.5px;">Пригласить</button>
+    </div>
+    <div class="set-sub" style="margin-top:10px; text-align:center;">Твой ID для друзей: <b style="color:var(--text);">${TG_ID}</b></div>`;
   document.getElementById('inviteBtn').onclick = shareApp;
+  document.getElementById('addFriendBtn').onclick = async () => {
+    let id = '';
+    try{ id = window.prompt('Введи Telegram ID друга (он есть у него внизу этого списка):') || ''; }catch(e){}
+    id = id.trim();
+    if (!id) return;
+    const ok = await addFriend(id);
+    if (ok){ showToast('Друг добавлен', 'check'); haptic('notification','success'); renderRank(); }
+    else showToast('Не получилось — проверь ID и связь');
+  };
+  [...el.querySelectorAll('.rank-row:not(.me)')].forEach(row => {
+    row.onclick = () => { haptic('selection'); openFriendProfile(+row.dataset.id); };
+  });
 }
 
 /* ============ DETAIL SHEET ============ */
@@ -1673,6 +1919,39 @@ function openSheet(movie){
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
 
+/* Свайп вниз по шапке шторки — закрыть и вернуться к ленте */
+(function initSheetSwipeDown(){
+  const zones = [document.querySelector('#sheet .handle'), document.getElementById('sheetPoster')].filter(Boolean);
+  let startY = 0, dy = 0, dragging = false;
+  function onDown(e){
+    dragging = true; dy = 0; startY = e.clientY; sheet.style.transition = 'none';
+    try{ e.target.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  function onMove(e){
+    if (!dragging) return;
+    dy = Math.max(0, e.clientY - startY);
+    sheet.style.transform = `translateY(${dy}px)`;
+  }
+  function onUp(){
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if (dy > 110){
+      haptic('impact','light');
+      sheet.classList.remove('open'); backdrop.classList.remove('open');
+    }
+    dy = 0;
+  }
+  zones.forEach(z => {
+    z.style.touchAction = 'none';
+    z.addEventListener('pointerdown', onDown);
+    z.addEventListener('pointermove', onMove);
+    z.addEventListener('pointerup', onUp);
+    z.addEventListener('pointercancel', onUp);
+  });
+})();
+
 document.getElementById('sheetWish').onclick = function(){
   if (!sheetMovie) return;
   const already = state.wishlist.includes(sheetMovie.id);
@@ -1774,6 +2053,17 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
   if (deck.length < 3) await refillDeck();
   renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
   renderWeekActivity();
+
+  upsertProfile();
+  const startParam = tg?.initDataUnsafe?.start_param || '';
+  if (startParam.startsWith('ref_')){
+    const refId = startParam.slice(4);
+    if (refId && Number(refId) !== TG_ID){
+      addFriend(refId).then(ok => {
+        if (ok){ showToast('Теперь вы друзья в SMOTRA', 'check'); renderRank(); }
+      });
+    }
+  }
 })();
 </script>
 </body>
