@@ -193,6 +193,26 @@
   .season-btns{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px; }
   .season-fillall{ display:flex; align-items:center; gap:5px; padding:6px 10px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); font-size:11.5px; font-weight:600; }
   .season-stepper{ display:flex; gap:8px; flex:0 0 auto; }
+
+  /* ===== Рецензии / шкала СМОТРЫ ===== */
+  .cat-row{ margin-bottom:14px; }
+  .cat-top{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+  .cat-top span:first-child{ color:var(--text); }
+  .cat-top .cat-val{ color:var(--accent); font-weight:700; }
+  .cat-slider{ width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:4px; background:var(--surface-2); outline:none; }
+  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+  .cat-slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+
+  .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; }
+  .review-head{ display:flex; align-items:center; gap:10px; }
+  .review-avatar{ width:34px; height:34px; border-radius:11px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a1408; font-size:14px; flex:0 0 auto; background-size:cover; background-position:center; }
+  .review-meta{ flex:1; min-width:0; }
+  .review-name{ font-size:13.5px; font-weight:600; }
+  .review-movie{ font-size:11.5px; color:var(--text-dim); }
+  .review-score{ flex:0 0 auto; background:var(--surface-2); border-radius:11px; padding:5px 10px; font-weight:800; font-size:13px; color:var(--accent); }
+  .review-text{ font-size:13px; color:var(--text-dim); margin-top:10px; line-height:1.5; }
+  .review-mini-cats{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .review-mini-cats span{ font-size:11px; color:var(--text-dim); background:var(--surface-2); border-radius:8px; padding:3px 8px; }
   .season-btns button{ width:30px; height:30px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-weight:700; font-size:15px; }
   .season-btns button:disabled{ opacity:.35; }
   .progress-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px; }
@@ -315,9 +335,33 @@
   #onboarding .ob-go{ background:var(--accent); color:#1a1408; border:none; padding:15px; border-radius:14px; font-weight:700; font-size:15px; }
   #onboarding .ob-skip{ background:none; border:none; color:var(--text-dim); font-size:13.5px; padding:6px; }
 
+  #tutorial{ position:fixed; inset:0; background:rgba(10,9,8,0.72); backdrop-filter:blur(3px); z-index:95; display:none; align-items:center; justify-content:center; padding:24px; }
+  #tutorial.show{ display:flex; }
+  .tut-card{ width:100%; max-width:340px; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:28px 24px 22px; text-align:center; animation:rise .35s cubic-bezier(.2,.8,.2,1); }
+  .tut-icon{ width:56px; height:56px; border-radius:18px; background:var(--surface-2); color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+  .tut-title{ font-size:17px; font-weight:700; }
+  .tut-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.5; margin-top:8px; }
+  .tut-dots{ display:flex; justify-content:center; gap:6px; margin:18px 0; }
+  .tut-dots span{ width:6px; height:6px; border-radius:50%; background:var(--surface-2); transition:background .2s ease, transform .2s ease; }
+  .tut-dots span.active{ background:var(--accent); transform:scale(1.3); }
+  .tut-actions{ display:flex; flex-direction:column; gap:10px; }
+  .tut-next{ background:var(--accent); color:#1a1408; border:none; padding:14px; border-radius:14px; font-weight:700; font-size:14.5px; }
+  .tut-skip{ background:none; border:none; color:var(--text-dim); font-size:13px; padding:4px; }
+
   /* ===== Toast ===== */
   #toast{ position:fixed; top:calc(14px + var(--safe-top)); left:50%; transform:translate(-50%,-140%); background:var(--surface-2); border:1px solid rgba(227,166,62,0.35); color:var(--text); padding:11px 18px; border-radius:14px; font-size:13px; z-index:60; transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px; }
   .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
+
+  .undo-pill{ position:fixed; left:50%; bottom:calc(96px + var(--safe-bottom)); transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--surface-2); border:1px solid var(--border); color:var(--text); padding:11px 20px; border-radius:30px; font-size:13px; font-weight:600; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px rgba(0,0,0,0.6); }
+  .undo-pill.show{ transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
+  @keyframes cardUndoIn{ 0%{ transform:scale(.85) translateY(50px) rotate(-4deg); opacity:.3; } 100%{ transform:scale(1) translateY(0) rotate(0); opacity:1; } }
+  .card-undo-in{ animation:cardUndoIn .42s cubic-bezier(.2,.8,.2,1); }
+
+  .quick-action-btn{ display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-weight:500; text-align:left; transition:background .15s ease, transform .15s ease; }
+  .quick-action-btn:active{ transform:scale(.97); background:var(--surface-2); }
+  .quick-action-btn.active{ border-color:rgba(227,166,62,0.4); color:var(--accent); }
+  .quick-action-btn.danger{ color:var(--skip); }
+  .quick-action-btn .qa-icon{ width:22px; display:flex; justify-content:center; flex:0 0 auto; }
   #toast.show{ transform:translate(-50%,0); }
 </style>
 </head>
@@ -340,6 +384,19 @@
   <div class="ob-actions">
     <button class="ob-go" id="obGo">Готово</button>
     <button class="ob-skip" id="obSkip">Пропустить</button>
+  </div>
+</div>
+
+<div id="tutorial">
+  <div class="tut-card">
+    <div class="tut-icon" id="tutIcon"></div>
+    <div class="tut-title" id="tutTitle"></div>
+    <div class="tut-desc" id="tutDesc"></div>
+    <div class="tut-dots" id="tutDots"></div>
+    <div class="tut-actions">
+      <button class="tut-skip" id="tutSkip">Пропустить</button>
+      <button class="tut-next" id="tutNext">Далее</button>
+    </div>
   </div>
 </div>
 
@@ -421,6 +478,10 @@
     <div id="rankList"></div>
 
     <div class="eyebrow">&nbsp;</div>
+    <div class="menu-row" id="openFeed" style="cursor:pointer;">
+      <div class="ml"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Лента рецензий</div>
+      <div>›</div>
+    </div>
     <div class="menu-row" id="openHistory" style="cursor:pointer;">
       <div class="ml"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>История просмотров</div>
       <div>›</div>
@@ -492,6 +553,14 @@
   </div>
 </div>
 
+<!-- QUICK ACTIONS (долгое нажатие на карточку) -->
+<div class="sheet-backdrop" id="quickBackdrop"></div>
+<div class="sheet" id="quickSheet" style="max-height:60vh;">
+  <div class="handle"></div>
+  <div id="quickHeader" style="display:flex; gap:12px; align-items:center; padding:2px 20px 14px;"></div>
+  <div id="quickActionsList" style="padding:0 20px 24px; display:flex; flex-direction:column; gap:8px;"></div>
+</div>
+
 <!-- FRIEND PROFILE OVERLAY -->
 <div class="overlay-screen" id="friendProfileScreen">
   <div class="ov-head">
@@ -499,6 +568,35 @@
     <div class="wordmark">Профиль друга</div>
   </div>
   <div class="ov-body" id="friendProfileBody"></div>
+</div>
+
+<!-- REVIEW COMPOSER -->
+<div class="overlay-screen" id="reviewScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeReview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Смотриметры</div>
+    <span class="count" id="reviewTotalBadge" style="margin-left:auto;">10/68</span>
+  </div>
+  <div class="ov-body">
+    <div id="reviewMovieHeader" style="display:flex; gap:12px; align-items:center; margin-bottom:6px;"></div>
+    <div class="set-group-title" style="padding-left:0;">Главное (1–10)</div>
+    <div id="reviewBigSliders"></div>
+    <div class="set-group-title" style="padding-left:0; margin-top:8px;">Детали (1–5)</div>
+    <div id="reviewSmallSliders"></div>
+    <div class="set-group-title" style="padding-left:0; margin-top:8px;">Текст рецензии</div>
+    <textarea id="reviewText" rows="5" placeholder="Что понравилось, что нет, кому советуешь…" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; color:var(--text); font-family:'Inter'; font-size:14px; resize:vertical;"></textarea>
+    <button id="submitReview" style="width:100%; margin-top:16px; padding:14px; border-radius:14px; background:var(--accent); color:#1a1408; font-weight:700; font-size:15px; border:none;">Опубликовать</button>
+    <button id="deleteReview" style="width:100%; margin-top:10px; padding:12px; border-radius:14px; background:none; border:1px solid var(--border); color:var(--skip); font-weight:600; font-size:13.5px; display:none;">Удалить рецензию</button>
+  </div>
+</div>
+
+<!-- REVIEWS FEED -->
+<div class="overlay-screen" id="feedScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeFeed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Лента рецензий</div>
+  </div>
+  <div class="ov-body" id="feedBody"></div>
 </div>
 
 <!-- SETTINGS OVERLAY -->
@@ -629,11 +727,16 @@
       <button id="sheetWatching"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none" style="vertical-align:-2px; margin-right:4px;"><path d="M7 4.5l14 7.5-14 7.5v-15z"/></svg>Смотрю</button>
       <button id="sheetShare"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M7 17L17 7M9 7h8v8"/></svg>Поделиться</button>
       <button id="sheetWatched"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M20 6L9 17l-5-5"/></svg>Смотрел</button>
+      <button id="sheetReviewBtn" style="flex-basis:100%; background:var(--surface-2);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Смотриметры</button>
     </div>
+
+    <div id="sheetMyReview"></div>
+    <div id="sheetOtherReviews"></div>
   </div>
 </div>
 
 <div id="toast"></div>
+<button id="undoBtn" class="undo-pill"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11a5 5 0 0 1 0 10h-5"/><path d="M7 3L3 7l4 4"/></svg>Вернуть карточку</button>
 
 <script>
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -686,15 +789,15 @@ function applySafeArea(){
 }
 if (tg) {
   tg.ready();
-  // Полноэкранный режим прячет собственный хедер Telegram (тот самый "хвостик"/шапка над нашим лого) —
-  // а contentSafeAreaInset подсказывает, сколько отступить сверху, чтобы не залезть под плавающие
-  // кнопки Telegram (крестик, меню), которые в fullscreen остаются поверх контента.
-  try{ tg.requestFullscreen(); }catch(e){ tg.expand(); }
+  // requestFullscreen() рисует поверх контента маленький системный квадратик-кнопку выхода из
+  // fullscreen у Telegram — от него и была "хуйня сверху". Возвращаемся на expand(): окно занимает
+  // весь размер, но без системной fullscreen-кнопки. disableVerticalSwipes() не даёт свайпом вниз
+  // случайно свернуть мини-апп.
+  try{ tg.expand(); }catch(e){}
   try { tg.disableVerticalSwipes(); } catch(e){}
   if (tg.onEvent){
-    tg.onEvent('contentSafeAreaChanged', applySafeArea);
     tg.onEvent('safeAreaChanged', applySafeArea);
-    tg.onEvent('fullscreenChanged', applySafeArea);
+    tg.onEvent('viewportChanged', applySafeArea);
   }
   applySafeArea();
   tg.setHeaderColor && tg.setHeaderColor('#131110');
@@ -755,6 +858,58 @@ async function dbEpisode(movieId, seasons){
   }
 }
 async function dbBadge(badgeId){ try{ await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }); }catch(e){ console.error(e); } }
+
+/* ============ РЕЦЕНЗИИ — СОБСТВЕННАЯ ШКАЛА СМОТРЫ (10–80) ============ */
+const BIG_CATS = [
+  { key:'story', label:'Сюжет' },
+  { key:'acting', label:'Актёрская игра' },
+  { key:'directing', label:'Режиссура' },
+  { key:'visuals', label:'Визуал' },
+  { key:'sound', label:'Музыка и звук' },
+  { key:'feels', label:'Эмоции' },
+];
+const SMALL_CATS = [
+  { key:'dialogue', label:'Диалоги' },
+  { key:'pacing', label:'Темп' },
+  { key:'ending', label:'Концовка' },
+  { key:'originality', label:'Оригинальность' },
+];
+const SCORE_MAX = BIG_CATS.length*8 + SMALL_CATS.length*5; // 68 — "смотриметры"
+const SCORE_NAME = 'смотриметр';
+function scoreLabel(n){
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return `${n} ${SCORE_NAME}ов`;
+  if (last === 1) return `${n} ${SCORE_NAME}`;
+  if (last >= 2 && last <= 4) return `${n} ${SCORE_NAME}а`;
+  return `${n} ${SCORE_NAME}ов`;
+}
+function scoreTotal(big, small){
+  return BIG_CATS.reduce((s,c)=>s+(big[c.key]||0),0) + SMALL_CATS.reduce((s,c)=>s+(small[c.key]||0),0);
+}
+async function dbSaveReview(movieId, big, small, text){
+  const total = scoreTotal(big, small);
+  try{
+    await sb.from('reviews').upsert({ telegram_id: TG_ID, movie_id: movieId, big, small, total, text: text || '', updated_at: new Date().toISOString() }, { onConflict: 'telegram_id,movie_id' });
+    return true;
+  }catch(e){ return false; }
+}
+async function getMyReview(movieId){
+  try{
+    const { data } = await sb.from('reviews').select('*').eq('telegram_id', TG_ID).eq('movie_id', movieId).maybeSingle();
+    return data;
+  }catch(e){ return null; }
+}
+async function getFeedReviews(limit){
+  try{
+    const { data } = await sb.from('reviews').select('*').order('updated_at', { ascending:false }).limit(limit || 40);
+    return data || [];
+  }catch(e){ return []; }
+}
+function parseJsonField(v){
+  if (!v) return {};
+  return typeof v === 'string' ? JSON.parse(v) : v;
+}
 
 /* ============ ДРУЗЬЯ И ПРОФИЛИ ============ */
 async function upsertProfile(){
@@ -898,6 +1053,8 @@ setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if (!localStorage.getItem('smotra_onboarded')) {
     document.getElementById('onboarding').classList.add('show');
+  } else {
+    maybeStartTutorial();
   }
 }, 3000);
 
@@ -924,24 +1081,67 @@ document.getElementById('streakNum').textContent = currentStreak;
 document.getElementById('statStreak').textContent = currentStreak;
 
 /* ============ ONBOARDING ============ */
-const GENRES = ['Драма','Комедия','Триллер','Ужасы','Фантастика','Боевик','Романтика','Документальное','Криминал'];
+const GENRES_FALLBACK = ['Драма','Комедия','Триллер','Ужасы','Фантастика','Боевик','Мелодрама','Документальный','Криминал'];
 let selectedGenres = JSON.parse(localStorage.getItem('smotra_genres') || '[]');
 const obChips = document.getElementById('obChips');
-GENRES.forEach(g=>{
-  const c = document.createElement('div');
-  c.className = 'ob-chip' + (selectedGenres.includes(g) ? ' sel' : '');
-  c.textContent = g;
-  c.onclick = () => {
-    c.classList.toggle('sel');
-    haptic('selection');
-    selectedGenres = [...obChips.querySelectorAll('.sel')].map(e=>e.textContent);
-  };
-  obChips.appendChild(c);
-});
+function buildOnboardingChips(genreList){
+  obChips.innerHTML = '';
+  genreList.forEach(g=>{
+    const c = document.createElement('div');
+    c.className = 'ob-chip' + (selectedGenres.includes(g) ? ' sel' : '');
+    c.textContent = g;
+    c.onclick = () => {
+      c.classList.toggle('sel');
+      haptic('selection');
+      selectedGenres = [...obChips.querySelectorAll('.sel')].map(e=>e.textContent);
+    };
+    obChips.appendChild(c);
+  });
+}
+buildOnboardingChips(GENRES_FALLBACK); // временно, пока не подгрузился реальный список жанров из TMDB
 function finishOnboarding(){
   localStorage.setItem('smotra_onboarded', '1');
   localStorage.setItem('smotra_genres', JSON.stringify(selectedGenres));
   document.getElementById('onboarding').classList.remove('show');
+  if (typeof MOVIES !== 'undefined' && MOVIES.length){
+    deck = sortByPopularity(MOVIES.filter(isUnseen));
+    renderStack();
+  }
+  maybeStartTutorial();
+}
+
+/* ============ ТУТОРИАЛ (первый заход) ============ */
+const TUTORIAL_STEPS = [
+  { icon:'shuffle', title:'Свайпай карточки', desc:'Вправо — «смотрел», влево — «мимо», вверх — «хочу чекнуть», вниз — «смотрю сейчас».' },
+  { icon:'check', title:'Или жми кнопки', desc:'Внизу экрана те же действия одним тапом, если свайпать неудобно.' },
+  { icon:'grid', title:'Держи постер подольше', desc:'Долгое нажатие на карточку в каталоге, «Чекнуть» или «Смотрю» — быстрые действия без открытия карточки.' },
+  { icon:'clapper', title:'Смотриметры', desc:'Своя система оценки — до 68 баллов по нескольким категориям вместо одной звезды. Рецензии видно в общей ленте.' },
+  { icon:'fire', title:'Не теряй стрик', desc:'Заходи каждый день — профиль считает подряд идущие дни и открывает ачивки.' },
+];
+let tutStep = 0;
+function renderTutStep(){
+  const s = TUTORIAL_STEPS[tutStep];
+  document.getElementById('tutIcon').innerHTML = ICON(s.icon, 26);
+  document.getElementById('tutTitle').textContent = s.title;
+  document.getElementById('tutDesc').textContent = s.desc;
+  document.getElementById('tutDots').innerHTML = TUTORIAL_STEPS.map((_,i)=>`<span class="${i===tutStep?'active':''}"></span>`).join('');
+  document.getElementById('tutNext').textContent = tutStep === TUTORIAL_STEPS.length-1 ? 'Начать' : 'Далее';
+}
+function closeTutorial(){
+  document.getElementById('tutorial').classList.remove('show');
+  localStorage.setItem('smotra_tutorial_done', '1');
+}
+document.getElementById('tutNext').onclick = () => {
+  haptic('selection');
+  if (tutStep === TUTORIAL_STEPS.length-1){ closeTutorial(); return; }
+  tutStep++; renderTutStep();
+};
+document.getElementById('tutSkip').onclick = closeTutorial;
+function maybeStartTutorial(){
+  if (localStorage.getItem('smotra_tutorial_done')) return;
+  tutStep = 0;
+  renderTutStep();
+  document.getElementById('tutorial').classList.add('show');
 }
 document.getElementById('obGo').onclick = finishOnboarding;
 document.getElementById('obSkip').onclick = finishOnboarding;
@@ -1198,8 +1398,16 @@ function shuffle(arr){
   }
   return a;
 }
+function personalScore(m){
+  let score = m.popularity || 0;
+  if (selectedGenres && selectedGenres.length){
+    const matches = m.genres.filter(g => selectedGenres.includes(g)).length;
+    if (matches > 0) score *= (1 + matches * 0.65); // реальный, ощутимый вес выбранных жанров, а не для галочки
+  }
+  return score;
+}
 function sortByPopularity(arr){
-  return arr.slice().sort((a,b) => (b.popularity||0) - (a.popularity||0));
+  return arr.slice().sort((a,b) => personalScore(b) - personalScore(a));
 }
 async function refillDeck(){
   let fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
@@ -1218,30 +1426,6 @@ function shakeDeck(){
   renderStack();
   showToast('Колода перетасована', 'shuffle');
 }
-
-/* ============ ТРЯХНИ ТЕЛЕФОН — перетасовка колоды ============ */
-(function initShakeToShuffle(){
-  let lastShake = 0;
-  function onMotion(e){
-    const a = e.accelerationIncludingGravity || e.acceleration;
-    if (!a) return;
-    const mag = Math.sqrt((a.x||0)**2 + (a.y||0)**2 + (a.z||0)**2);
-    const now = Date.now();
-    if (mag > 26 && now - lastShake > 1400){
-      lastShake = now;
-      if (document.getElementById('home')?.classList.contains('active')) shakeDeck();
-    }
-  }
-  function bind(){ window.addEventListener('devicemotion', onMotion); }
-  document.addEventListener('click', function askOnce(){
-    document.removeEventListener('click', askOnce);
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
-      DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') bind(); }).catch(()=>{});
-    } else if (window.DeviceMotionEvent) {
-      bind();
-    }
-  }, { once:true });
-})();
 
 async function ensureEpisodeTotal(movie){
   if (!(movie.type === 'series' || movie.type === 'anime') || movie._epFetched) return false;
@@ -1429,8 +1613,13 @@ function renderStack(){
     } else if (deckRefreshing) {
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Секунду…</div><div>Подгружаю ещё карточки</div></div>`;
     } else {
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Пока всё!</div><div>Ты прошёл(ла) весь доступный каталог — новое появится позже, а пока загляни в «Каталог»</div><button id="toCatalog">Открыть каталог</button></div>`;
-      document.getElementById('toCatalog').onclick = () => switchTab('catalog');
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Новых пока нет</div><div>Мы поискали, но карточки закончились</div><button id="loadMoreBtn">${ICON('shuffle',16)} Загрузить ещё</button></div>`;
+      document.getElementById('loadMoreBtn').onclick = async (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true; btn.innerHTML = `${ICON('shuffle',16)} Гружу…`;
+        await refillDeck();
+        renderStack();
+      };
     }
     return;
   }
@@ -1499,7 +1688,14 @@ function makeDraggable(card, movie){
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
-  if (action === 'watched'){ flyX = 900; rot = 28; state.watched.push(movie.id); state.watching = state.watching.filter(id=>id!==movie.id); dbSwipe(movie.id, 'watched'); dbWatchingRemove(movie.id); }
+  const undoInfo = { movie, action };
+  if (action === 'watched'){
+    flyX = 900; rot = 28;
+    undoInfo.wasWatching = state.watching.includes(movie.id);
+    state.watched.push(movie.id);
+    state.watching = state.watching.filter(id=>id!==movie.id);
+    dbSwipe(movie.id, 'watched'); dbWatchingRemove(movie.id);
+  }
   if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(movie.id); dbSwipe(movie.id, 'skipped'); }
   if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(movie.id)) state.wishlist.push(movie.id); dbWishAdd(movie.id); }
   if (action === 'watching'){ flyY = 900; if (!state.watching.includes(movie.id)) state.watching.push(movie.id); dbWatchingAdd(movie.id); }
@@ -1508,12 +1704,151 @@ function resolveSwipe(card, movie, action){
   haptic('impact', action === 'watched' ? 'medium' : 'light');
   updateStats();
   if (action === 'watched') checkBadges();
-  setTimeout(async ()=>{
+  pushSwipeHistory(undoInfo);
+  setTimeout(()=>{
     deck = deck.filter(m => m.id !== movie.id);
-    if (deck.length < 3) await refillDeck();
     renderStack();
+    // Догружаем запас в фоне, не блокируя показ следующей карточки —
+    // так кнопка "Загрузить ещё" почти никогда не всплывает по-настоящему.
+    if (deck.length < 4 && !deckRefreshing){
+      deckRefreshing = true;
+      refillDeck().then(()=>{
+        deckRefreshing = false;
+        if (document.getElementById('home')?.classList.contains('active')) renderStack();
+      });
+    }
   }, 260);
 }
+
+/* ============ ОТМЕНА СВАЙПА ============ */
+let swipeHistory = [];
+let undoTimer;
+function pushSwipeHistory(entry){
+  swipeHistory.push(entry);
+  if (swipeHistory.length > 15) swipeHistory.shift();
+  const btn = document.getElementById('undoBtn');
+  btn.classList.add('show');
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(()=> btn.classList.remove('show'), 4000);
+}
+function undoLastSwipe(){
+  const entry = swipeHistory.pop();
+  document.getElementById('undoBtn').classList.remove('show');
+  clearTimeout(undoTimer);
+  if (!entry) return;
+  const { movie, action, wasWatching } = entry;
+  if (action === 'watched'){
+    state.watched = state.watched.filter(id=>id!==movie.id);
+    dbSwipeRemove(movie.id, 'watched');
+    if (wasWatching){ state.watching.push(movie.id); dbWatchingAdd(movie.id); }
+  }
+  if (action === 'skip'){ state.skipped = state.skipped.filter(id=>id!==movie.id); dbSwipeRemove(movie.id, 'skipped'); }
+  if (action === 'wish'){ state.wishlist = state.wishlist.filter(id=>id!==movie.id); dbWishRemove(movie.id); }
+  if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==movie.id); dbWatchingRemove(movie.id); }
+  deck = deck.filter(m => m.id !== movie.id);
+  deck.unshift(movie);
+  haptic('impact','medium');
+  updateStats();
+  renderStack();
+  requestAnimationFrame(()=>{
+    const topCard = stackEl.querySelector('.card:last-child');
+    if (topCard){
+      topCard.classList.add('card-undo-in');
+      topCard.addEventListener('animationend', ()=> topCard.classList.remove('card-undo-in'), { once:true });
+    }
+  });
+  showToast('Карточка возвращена', 'shuffle');
+}
+document.getElementById('undoBtn').onclick = undoLastSwipe;
+
+/* ============ ДОЛГОЕ НАЖАТИЕ — БЫСТРЫЕ ДЕЙСТВИЯ ============ */
+function closeQuick(){
+  document.getElementById('quickSheet').classList.remove('open');
+  document.getElementById('quickBackdrop').classList.remove('open');
+}
+document.getElementById('quickBackdrop').onclick = closeQuick;
+function toggleQuick(kind, movie){
+  if (kind === 'wishlist'){
+    const already = state.wishlist.includes(movie.id);
+    if (already){ state.wishlist = state.wishlist.filter(id=>id!==movie.id); dbWishRemove(movie.id); showToast('Убрано из «Хочу чекнуть»'); }
+    else { state.wishlist.push(movie.id); dbWishAdd(movie.id); showToast('Добавлено в «Хочу чекнуть»'); }
+  }
+  if (kind === 'watching'){
+    const already = state.watching.includes(movie.id);
+    if (already){ state.watching = state.watching.filter(id=>id!==movie.id); dbWatchingRemove(movie.id); showToast('Убрано из «Смотрю»'); }
+    else { state.watching.push(movie.id); dbWatchingAdd(movie.id); showToast('Добавлено в «Смотрю»'); }
+  }
+  if (kind === 'watched'){
+    const already = state.watched.includes(movie.id);
+    if (already){ state.watched = state.watched.filter(id=>id!==movie.id); dbSwipeRemove(movie.id,'watched'); showToast('Отметка снята'); }
+    else {
+      state.watched.push(movie.id);
+      state.wishlist = state.wishlist.filter(id=>id!==movie.id);
+      state.watching = state.watching.filter(id=>id!==movie.id);
+      dbSwipe(movie.id,'watched'); dbWishRemove(movie.id); dbWatchingRemove(movie.id);
+      checkBadges();
+      showToast('Отмечено «Смотрел»', 'check');
+    }
+  }
+  haptic('impact','light');
+  updateStats();
+  closeQuick();
+}
+function buildQuickActions(movie){
+  const isWish = state.wishlist.includes(movie.id);
+  const isWatching = state.watching.includes(movie.id);
+  const isWatched = state.watched.includes(movie.id);
+  return [
+    { icon: isWish ? 'starFill' : 'star', label: isWish ? 'Убрать из «Хочу чекнуть»' : 'В «Хочу чекнуть»', active:isWish, onClick: () => toggleQuick('wishlist', movie) },
+    { icon: isWatching ? 'pause' : 'play', label: isWatching ? 'Убрать из «Смотрю»' : 'В «Смотрю»', active:isWatching, onClick: () => toggleQuick('watching', movie) },
+    { icon: 'check', label: isWatched ? 'Снять отметку «Смотрел»' : 'Отметить «Смотрел»', active:isWatched, onClick: () => toggleQuick('watched', movie) },
+    { icon: 'clapper', label: 'Смотриметры', onClick: () => { closeQuick(); openReviewScreen(movie); } },
+    { icon: 'share', label: 'Поделиться', onClick: () => { closeQuick(); shareMovie(movie); } },
+  ];
+}
+function openQuickActions(movie){
+  document.getElementById('quickHeader').innerHTML = `
+    <div class="thumb" style="${posterStyle(movie,'w154')}; width:44px; height:62px;">${hasArt(movie) ? '' : ICON(posterIcon(movie), 20)}</div>
+    <div><div style="font-weight:700; font-size:15px;">${movie.title}</div><div class="set-sub">${movie.year}${movie.genres[0] ? ' · '+movie.genres[0] : ''}</div></div>`;
+  const actions = buildQuickActions(movie);
+  document.getElementById('quickActionsList').innerHTML = actions.map((a,i) => `
+    <button class="quick-action-btn ${a.active?'active':''}" data-i="${i}">
+      <span class="qa-icon">${ICON(a.icon, 17)}</span>${a.label}
+    </button>`).join('');
+  [...document.getElementById('quickActionsList').querySelectorAll('button')].forEach((btn,i) => { btn.onclick = actions[i].onClick; });
+  document.getElementById('quickSheet').classList.add('open');
+  document.getElementById('quickBackdrop').classList.add('open');
+}
+function initLongPress(containerId){
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let pressTimer = null, startX = 0, startY = 0, moved = false, activeCard = null;
+  el.addEventListener('pointerdown', e => {
+    const card = e.target.closest('.poster-card, .row-card');
+    if (!card) return;
+    activeCard = card; moved = false; startX = e.clientX; startY = e.clientY;
+    pressTimer = setTimeout(() => {
+      pressTimer = null;
+      if (moved) return;
+      haptic('impact','medium');
+      const movie = movieById(+card.dataset.id);
+      if (movie){ card._suppressClick = true; openQuickActions(movie); }
+    }, 480);
+  });
+  const cancel = () => { if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } };
+  el.addEventListener('pointermove', e => {
+    if (!activeCard || moved) return;
+    if (Math.abs(e.clientX-startX) > 8 || Math.abs(e.clientY-startY) > 8){ moved = true; cancel(); }
+  });
+  el.addEventListener('pointerup', cancel);
+  el.addEventListener('pointercancel', cancel);
+  el.addEventListener('click', e => {
+    const card = e.target.closest('.poster-card, .row-card');
+    if (card && card._suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); card._suppressClick = false; }
+  }, true);
+  el.addEventListener('contextmenu', e => { if (e.target.closest('.poster-card, .row-card')) e.preventDefault(); });
+}
+['catGrid','wishList','watchingList'].forEach(initLongPress);
 
 document.getElementById('btnWatched').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
 document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
@@ -1904,7 +2239,7 @@ function openSheet(movie){
   document.getElementById('sheetPoster').innerHTML = hasArt(movie) ? '' : `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;
   document.getElementById('sheetTitle').textContent = movie.title;
   const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
-  document.getElementById('sheetMeta').innerHTML = `${movie.year} · ${ICON('starFill', 12)} ${movie.rating} ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
+  document.getElementById('sheetMeta').innerHTML = `${movie.year} · ${ICON('starFill', 12)} ${movie.rating} <span id="sheetSmotrimetry"></span> ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
   document.getElementById('sheetOverview').textContent = movie.overview;
   renderCastChips(movie);
   if (!movie._castFetched) {
@@ -1915,6 +2250,9 @@ function openSheet(movie){
   if ((movie.type === 'series' || movie.type === 'anime') && !movie._epFetched) {
     ensureEpisodeTotal(movie).then(() => { if (sheetMovie === movie) renderProgress(movie); });
   }
+  document.getElementById('sheetMyReview').innerHTML = '';
+  document.getElementById('sheetOtherReviews').innerHTML = '';
+  refreshSheetReviews(movie);
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
@@ -1951,6 +2289,160 @@ backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.re
     z.addEventListener('pointercancel', onUp);
   });
 })();
+
+/* ============ РЕЦЕНЗИИ: показ на карточке фильма ============ */
+async function refreshSheetReviews(movie){
+  const mine = await getMyReview(movie.id);
+  if (sheetMovie !== movie) return;
+  const mineEl = document.getElementById('sheetMyReview');
+  if (mine){
+    mineEl.innerHTML = `
+      <div class="review-card" style="border-color:rgba(227,166,62,0.35);">
+        <div class="review-head">
+          <div class="review-meta"><div class="review-name">Твоя рецензия</div></div>
+          <div class="review-score">${mine.total}/${SCORE_MAX}</div>
+        </div>
+        ${mine.text ? `<div class="review-text">${mine.text}</div>` : ''}
+      </div>`;
+  } else {
+    mineEl.innerHTML = '';
+  }
+  try{
+    const { data } = await sb.from('reviews').select('*').eq('movie_id', movie.id).order('updated_at', { ascending:false });
+    if (sheetMovie !== movie) return;
+    const smEl = document.getElementById('sheetSmotrimetry');
+    if (smEl){
+      if (data && data.length){
+        const avg = Math.round(data.reduce((s,r)=>s+r.total,0) / data.length);
+        smEl.innerHTML = `· ${ICON('sparkles',12)} ${avg}/${SCORE_MAX} (${data.length})`;
+      } else {
+        smEl.innerHTML = '';
+      }
+    }
+    const otherData = (data || []).filter(r => r.telegram_id !== TG_ID).slice(0, 10);
+    const otherEl = document.getElementById('sheetOtherReviews');
+    if (!otherData.length){ otherEl.innerHTML = ''; return; }
+    const profiles = await Promise.all([...new Set(otherData.map(r=>r.telegram_id))].map(id => getProfile(id)));
+    const profileMap = {};
+    profiles.forEach(p => { if (p) profileMap[p.telegram_id] = p; });
+    otherEl.innerHTML = `<div class="cast-label" style="margin-top:6px;">Рецензии зрителей</div>` + otherData.map(r => {
+      const name = friendDisplayName(profileMap[r.telegram_id]);
+      const photo = profileMap[r.telegram_id]?.photo_url;
+      return `<div class="review-card">
+        <div class="review-head">
+          <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
+          <div class="review-meta"><div class="review-name">${name}</div></div>
+          <div class="review-score">${r.total}/${SCORE_MAX}</div>
+        </div>
+        ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
+      </div>`;
+    }).join('');
+  }catch(e){ /* таблицы reviews ещё нет — просто не показываем блок */ }
+}
+
+/* ============ РЕЦЕНЗИИ: конструктор оценки ============ */
+let reviewMovie = null, reviewBig = {}, reviewSmall = {};
+function updateReviewTotal(){
+  const total = scoreTotal(reviewBig, reviewSmall);
+  document.getElementById('reviewTotalBadge').textContent = `${total}/${SCORE_MAX}`;
+}
+function renderSliders(containerId, cats, store, max){
+  const el = document.getElementById(containerId);
+  el.innerHTML = cats.map(c => `
+    <div class="cat-row" data-key="${c.key}">
+      <div class="cat-top"><span>${c.label}</span><span class="cat-val" id="val-${c.key}">${store[c.key]}</span></div>
+      <input type="range" class="cat-slider" min="1" max="${max}" value="${store[c.key]}" data-key="${c.key}">
+    </div>`).join('');
+  el.querySelectorAll('.cat-slider').forEach(input => {
+    input.addEventListener('input', () => {
+      store[input.dataset.key] = +input.value;
+      document.getElementById('val-'+input.dataset.key).textContent = input.value;
+      updateReviewTotal();
+    });
+    input.addEventListener('change', () => haptic('selection'));
+  });
+}
+async function openReviewScreen(movie){
+  reviewMovie = movie;
+  document.getElementById('reviewMovieHeader').innerHTML = `
+    <div class="thumb" style="${posterStyle(movie,'w154')}; width:44px; height:62px;">${hasArt(movie) ? '' : ICON(posterIcon(movie), 20)}</div>
+    <div><div style="font-weight:700; font-size:15px;">${movie.title}</div><div class="set-sub">${movie.year}</div></div>`;
+  const existing = await getMyReview(movie.id);
+  reviewBig = existing ? { ...parseJsonField(existing.big) } : {};
+  reviewSmall = existing ? { ...parseJsonField(existing.small) } : {};
+  BIG_CATS.forEach(c => { if (!reviewBig[c.key]) reviewBig[c.key] = 4; });
+  SMALL_CATS.forEach(c => { if (!reviewSmall[c.key]) reviewSmall[c.key] = 3; });
+  renderSliders('reviewBigSliders', BIG_CATS, reviewBig, 8);
+  renderSliders('reviewSmallSliders', SMALL_CATS, reviewSmall, 5);
+  updateReviewTotal();
+  document.getElementById('reviewText').value = existing?.text || '';
+  document.getElementById('deleteReview').style.display = existing ? 'block' : 'none';
+  document.getElementById('reviewScreen').classList.add('open');
+}
+document.getElementById('sheetReviewBtn').onclick = () => { if (sheetMovie) openReviewScreen(sheetMovie); };
+document.getElementById('closeReview').onclick = () => document.getElementById('reviewScreen').classList.remove('open');
+document.getElementById('submitReview').onclick = async () => {
+  if (!reviewMovie) return;
+  const text = document.getElementById('reviewText').value.trim();
+  const ok = await dbSaveReview(reviewMovie.id, reviewBig, reviewSmall, text);
+  if (ok){
+    haptic('notification','success');
+    showToast('Рецензия опубликована', 'check');
+    document.getElementById('reviewScreen').classList.remove('open');
+    if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
+  } else {
+    showToast('Не получилось сохранить — проверь связь');
+  }
+};
+document.getElementById('deleteReview').onclick = async () => {
+  if (!reviewMovie) return;
+  const ok = await confirmAction('Удалить рецензию на этот тайтл?');
+  if (!ok) return;
+  try{
+    await sb.from('reviews').delete().eq('telegram_id', TG_ID).eq('movie_id', reviewMovie.id);
+    showToast('Рецензия удалена');
+    document.getElementById('reviewScreen').classList.remove('open');
+    if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
+  }catch(e){ showToast('Не получилось удалить'); }
+};
+
+/* ============ ЛЕНТА РЕЦЕНЗИЙ ============ */
+document.getElementById('openFeed').onclick = () => { document.getElementById('feedScreen').classList.add('open'); renderFeed(); };
+document.getElementById('closeFeed').onclick = () => document.getElementById('feedScreen').classList.remove('open');
+async function renderFeed(){
+  const body = document.getElementById('feedBody');
+  body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Загружаю ленту…</div>`;
+  const reviews = await getFeedReviews(40);
+  if (!reviews.length){ body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Пока никто не написал рецензию — стань первым</div>`; return; }
+  const profiles = await Promise.all([...new Set(reviews.map(r=>r.telegram_id))].map(id => getProfile(id)));
+  const profileMap = {};
+  profiles.forEach(p => { if (p) profileMap[p.telegram_id] = p; });
+  body.innerHTML = reviews.map(r => {
+    const name = r.telegram_id === TG_ID ? 'Ты' : friendDisplayName(profileMap[r.telegram_id]);
+    const photo = profileMap[r.telegram_id]?.photo_url;
+    const movie = movieById(r.movie_id);
+    const movieName = movie ? movie.title : `Тайтл #${r.movie_id}`;
+    const big = parseJsonField(r.big), small = parseJsonField(r.small);
+    const topCats = [...BIG_CATS.map(c=>({label:c.label, val:big[c.key]})), ...SMALL_CATS.map(c=>({label:c.label, val:small[c.key]}))]
+      .filter(c => c.val).sort((a,b)=>b.val-a.val).slice(0,3);
+    return `<div class="review-card" data-movie="${r.movie_id}" style="cursor:pointer;">
+      <div class="review-head">
+        <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
+        <div class="review-meta"><div class="review-name">${name}</div><div class="review-movie">${movieName}</div></div>
+        <div class="review-score">${r.total}/${SCORE_MAX}</div>
+      </div>
+      ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
+      ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${c.label}: ${c.val}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+  [...body.querySelectorAll('.review-card')].forEach(card => {
+    card.onclick = () => {
+      const movie = movieById(+card.dataset.movie);
+      if (movie){ document.getElementById('feedScreen').classList.remove('open'); openSheet(movie); }
+      else showToast('Этого тайтла сейчас нет в загруженном каталоге');
+    };
+  });
+}
 
 document.getElementById('sheetWish').onclick = function(){
   if (!sheetMovie) return;
@@ -2049,6 +2541,10 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
 (async () => {
   await Promise.all([loadState(), loadMovies()]);
   setupGenreChips();
+  if (MOVIES.length){
+    const realGenres = [...new Set(MOVIES.flatMap(m => m.genres))];
+    if (realGenres.length) buildOnboardingChips(realGenres);
+  }
   deck = sortByPopularity(MOVIES.filter(isUnseen));
   if (deck.length < 3) await refillDeck();
   renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
