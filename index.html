@@ -173,14 +173,17 @@
   .empty-note{ text-align:center; color:var(--text-dim); font-size:13px; padding:40px 20px; }
 
   /* ===== Detail sheet ===== */
-  .sheet-backdrop{ position:fixed; inset:0; background:rgba(10,9,7,0.65); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
+  .sheet-backdrop{ position:fixed; inset:0; background:rgba(10,9,7,0.65); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:30; }
   .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
-  .sheet{ position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--surface); border-radius:26px 26px 0 0; max-height:86vh; overflow-y:auto; overscroll-behavior:none; transform:translateY(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); padding-bottom:calc(22px + var(--safe-bottom)); border:1px solid var(--border); border-bottom:none; }
+  .sheet{ position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--surface); border-radius:26px 26px 0 0; max-height:86vh; overflow-y:auto; overscroll-behavior:none; transform:translateY(100%); transition:transform .2s cubic-bezier(.2,.8,.2,1); padding-bottom:calc(22px + var(--safe-bottom)); border:1px solid var(--border); border-bottom:none; }
   .sheet.open{ transform:translateY(0); }
-  .sheet .poster-lg{ height:300px; background-size:cover; background-position:center; border-radius:26px 26px 0 0; position:relative; }
-  .sheet .poster-lg::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(19,17,16,0) 45%, var(--surface) 100%); }
+  .sheet .poster-lg{ height:340px; border-radius:26px 26px 0 0; position:relative; overflow:hidden; background-color:#0d0c0a; }
+  .sheet .poster-lg::before{ content:''; position:absolute; inset:-12%; background:inherit; filter:blur(22px) brightness(.5) saturate(1.1); transform:scale(1.15); z-index:0; }
+  .sheet .poster-lg-fg{ position:absolute; inset:0; background-size:contain; background-repeat:no-repeat; background-position:center; z-index:1; }
+  .sheet .poster-lg::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(19,17,16,0) 45%, var(--surface) 100%); z-index:2; }
   .sheet-poster-icon{ position:relative; z-index:0; display:flex; align-items:center; justify-content:center; height:100%; opacity:.32; color:var(--text); }
   .sheet .handle{ width:38px; height:4px; background:var(--border); border-radius:4px; margin:10px auto; position:relative; z-index:2; }
+  .sheet-close{ position:absolute; top:14px; right:14px; z-index:3; width:32px; height:32px; border-radius:50%; background:rgba(19,17,16,0.55); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.12); color:#fff; display:flex; align-items:center; justify-content:center; }
   .sheet .body{ padding:0 22px; }
   .sheet .title{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:22px; margin-top:4px; }
   .sheet .meta{ color:var(--text-dim); font-size:13px; margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -326,20 +329,26 @@
   #splash.hide{ opacity:0; pointer-events:none; }
 
   /* ===== Onboarding ===== */
-  #onboarding{ position:fixed; inset:0; background:var(--bg); z-index:90; display:none; flex-direction:column; padding:calc(40px + var(--safe-top)) 24px calc(24px + var(--safe-bottom)); }
+  #onboarding{ position:fixed; inset:0; background:var(--bg); z-index:90; display:none; flex-direction:column; padding:calc(40px + var(--safe-top)) 24px calc(20px + var(--safe-bottom)); }
   #onboarding.show{ display:flex; }
-  #onboarding h1{ font-family:'Unbounded', sans-serif; font-size:24px; font-weight:700; line-height:1.3; }
-  #onboarding .ob-sub{ color:var(--text-dim); font-size:13.5px; margin-top:8px; }
-  .ob-chips{ display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+  #onboarding h1{ font-family:'Unbounded', sans-serif; font-size:24px; font-weight:700; line-height:1.3; flex:0 0 auto; }
+  #onboarding .ob-sub{ color:var(--text-dim); font-size:13.5px; margin-top:8px; flex:0 0 auto; }
+  .ob-scroll{ flex:1; min-height:0; overflow-y:auto; margin-top:4px; -webkit-overflow-scrolling:touch; }
+  .ob-chips{ display:flex; flex-wrap:wrap; gap:10px; padding:24px 0 8px; }
   .ob-chip{ padding:11px 16px; border-radius:14px; background:var(--surface); border:1px solid var(--border); font-size:14px; }
   .ob-chip.sel{ background:rgba(227,166,62,0.15); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  #onboarding .ob-actions{ margin-top:auto; display:flex; flex-direction:column; gap:10px; }
+  #onboarding .ob-actions{ flex:0 0 auto; display:flex; flex-direction:column; gap:10px; padding-top:14px; }
   #onboarding .ob-go{ background:var(--accent); color:#1a1408; border:none; padding:15px; border-radius:14px; font-weight:700; font-size:15px; }
   #onboarding .ob-skip{ background:none; border:none; color:var(--text-dim); font-size:13.5px; padding:6px; }
 
   #tutorial{ position:fixed; inset:0; background:rgba(10,9,8,0.72); backdrop-filter:blur(3px); z-index:95; display:none; align-items:center; justify-content:center; padding:24px; }
   #tutorial.show{ display:flex; }
   .tut-card{ width:100%; max-width:340px; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:28px 24px 22px; text-align:center; animation:rise .35s cubic-bezier(.2,.8,.2,1); }
+  .tut-demo{ height:0; display:flex; align-items:center; justify-content:center; overflow:visible; transition:height .25s ease; }
+  .tut-demo.show{ height:100px; margin-bottom:8px; }
+  .tut-demo-card{ width:64px; height:64px; border-radius:16px; background:var(--surface-2); border:1px solid var(--border); position:relative; display:flex; align-items:center; justify-content:center; }
+  .tut-demo-card::after{ content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg, rgba(227,166,62,.15), transparent); }
+  .tut-demo-stamp{ position:absolute; top:-26px; padding:3px 9px; border-radius:7px; border:1.5px solid; font-size:10px; font-weight:800; font-family:'Unbounded',sans-serif; opacity:0; white-space:nowrap; }
   .tut-icon{ width:56px; height:56px; border-radius:18px; background:var(--surface-2); color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
   .tut-title{ font-size:17px; font-weight:700; }
   .tut-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.5; margin-top:8px; }
@@ -364,6 +373,15 @@
   .quick-action-btn.active{ border-color:rgba(227,166,62,0.4); color:var(--accent); }
   .quick-action-btn.danger{ color:var(--skip); }
   .quick-action-btn .qa-icon{ width:22px; display:flex; justify-content:center; flex:0 0 auto; }
+
+  /* ===== Radial hold-menu ===== */
+  .radial-wheel{ position:fixed; top:0; left:0; width:0; height:0; z-index:70; display:none; }
+  .radial-wheel.show{ display:block; }
+  .radial-wheel::before{ content:''; position:fixed; inset:0; background:rgba(10,9,7,0.35); z-index:-1; }
+  .radial-center{ position:absolute; left:0; top:0; width:52px; height:52px; margin:-26px; border-radius:50%; background:var(--surface); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); }
+  .radial-opt{ position:absolute; width:52px; height:52px; margin:-26px; border-radius:50%; background:var(--surface-2); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text); transition:background .12s ease, border-color .12s ease, transform .12s ease, color .12s ease; box-shadow:0 8px 20px -8px rgba(0,0,0,0.5); }
+  .radial-opt.on{ color:var(--accent); border-color:rgba(227,166,62,0.4); }
+  .radial-opt.hover{ background:var(--accent); color:#1a1408; border-color:var(--accent); transform:scale(1.18); }
   #toast.show{ transform:translate(-50%,0); }
 </style>
 </head>
@@ -382,7 +400,7 @@
 <div id="onboarding">
   <h1>Что тебе обычно заходит?</h1>
   <div class="ob-sub">Выбери пару жанров — так карточки в ленте будут точнее</div>
-  <div class="ob-chips" id="obChips"></div>
+  <div class="ob-scroll"><div class="ob-chips" id="obChips"></div></div>
   <div class="ob-actions">
     <button class="ob-go" id="obGo">Готово</button>
     <button class="ob-skip" id="obSkip">Пропустить</button>
@@ -391,6 +409,11 @@
 
 <div id="tutorial">
   <div class="tut-card">
+    <div class="tut-demo" id="tutDemo">
+      <div class="tut-demo-card" id="tutDemoCard">
+        <div class="tut-demo-stamp" id="tutDemoStamp"></div>
+      </div>
+    </div>
     <div class="tut-icon" id="tutIcon"></div>
     <div class="tut-title" id="tutTitle"></div>
     <div class="tut-desc" id="tutDesc"></div>
@@ -505,8 +528,8 @@
     Чекнуть
   </button>
   <button data-tab="home" class="active nav-home">
-    <span class="nav-home-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M16 3v18"/></svg></span>
-    Главная
+    <span class="nav-home-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="7" width="14" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+    Лента
   </button>
   <button data-tab="watching">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5v-7z"/></svg>
@@ -559,6 +582,7 @@
 </div>
 
 <!-- QUICK ACTIONS (долгое нажатие на карточку) -->
+<div id="radialWheel" class="radial-wheel"></div>
 <div class="sheet-backdrop" id="quickBackdrop"></div>
 <div class="sheet" id="quickSheet" style="max-height:60vh;">
   <div class="handle"></div>
@@ -661,7 +685,7 @@
     <div class="set-group">
       <div class="set-group-title">О приложении</div>
       <div class="set-row"><div class="set-text"><div class="set-label">Источник данных</div><div class="set-sub">TMDB</div></div></div>
-      <div class="set-row"><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA · версия 0.4</div></div></div>
+      <div class="set-row"><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA · версия 0.5</div></div></div>
     </div>
 
     <div class="set-group danger">
@@ -719,7 +743,8 @@
 <div class="sheet-backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet">
   <div class="handle"></div>
-  <div class="poster-lg" id="sheetPoster"></div>
+  <button class="sheet-close" id="sheetClose"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="poster-lg" id="sheetPoster"><div class="poster-lg-fg" id="sheetPosterFg"></div></div>
   <div class="body">
     <div class="title" id="sheetTitle"></div>
     <div class="meta" id="sheetMeta"></div>
@@ -787,22 +812,26 @@ const tg = window.Telegram?.WebApp;
 function applySafeArea(){
   const csa = tg?.contentSafeAreaInset || {};
   const sa = tg?.safeAreaInset || {};
-  const top = (csa.top ?? sa.top ?? 0);
+  let top = (csa.top ?? sa.top ?? 0);
   const bottom = (csa.bottom ?? sa.bottom ?? 0);
+  // В fullscreen Telegram рисует свои плавающие кнопки (закрыть/меню) поверх контента,
+  // а contentSafeAreaInset иногда возвращает 0 на старых клиентах — держим разумный минимум,
+  // чтобы наш topbar точно не оказался под ними.
+  if (tg?.isFullscreen) top = Math.max(top, 54);
   document.documentElement.style.setProperty('--safe-top', top + 'px');
   document.documentElement.style.setProperty('--safe-bottom', Math.max(bottom, 0) + 'px');
 }
 if (tg) {
   tg.ready();
-  // requestFullscreen() рисует поверх контента маленький системный квадратик-кнопку выхода из
-  // fullscreen у Telegram — от него и была "хуйня сверху". Возвращаемся на expand(): окно занимает
-  // весь размер, но без системной fullscreen-кнопки. disableVerticalSwipes() не даёт свайпом вниз
-  // случайно свернуть мини-апп.
-  try{ tg.expand(); }catch(e){}
+  // fullscreen убирает системную плашку-индикатор сверху; чтобы кнопки Telegram (закрыть/меню),
+  // которые в этом режиме плавают поверх контента, не перекрывали лого — используем
+  // contentSafeAreaInset (см. applySafeArea) для отступа сверху.
+  try{ tg.requestFullscreen(); }catch(e){ try{ tg.expand(); }catch(e2){} }
   try { tg.disableVerticalSwipes(); } catch(e){}
   if (tg.onEvent){
     tg.onEvent('safeAreaChanged', applySafeArea);
     tg.onEvent('viewportChanged', applySafeArea);
+    tg.onEvent('fullscreenChanged', applySafeArea);
   }
   applySafeArea();
   tg.setHeaderColor && tg.setHeaderColor('#131110');
@@ -1124,6 +1153,40 @@ const TUTORIAL_STEPS = [
   { icon:'fire', title:'Не теряй стрик', desc:'Заходи каждый день — профиль считает подряд идущие дни и открывает ачивки.' },
 ];
 let tutStep = 0;
+let tutDemoTimer = null, tutDirIdx = 0;
+const TUT_DIRS = [
+  { dx:58, dy:0, rot:16, label:'СМОТРЕЛ', color:'var(--watched)' },
+  { dx:-58, dy:0, rot:-16, label:'МИМО', color:'var(--skip)' },
+  { dx:0, dy:-52, rot:0, label:'ЧЕКНУТЬ', color:'var(--wish)' },
+  { dx:0, dy:52, rot:0, label:'СМОТРЮ', color:'var(--accent)' },
+];
+function tutDemoTick(){
+  const card = document.getElementById('tutDemoCard');
+  const stamp = document.getElementById('tutDemoStamp');
+  if (!card) return;
+  const d = TUT_DIRS[tutDirIdx % TUT_DIRS.length];
+  tutDirIdx++;
+  stamp.textContent = d.label; stamp.style.color = d.color; stamp.style.borderColor = d.color;
+  card.style.transition = 'transform .55s cubic-bezier(.3,.8,.3,1)';
+  card.style.transform = `translate(${d.dx}px, ${d.dy}px) rotate(${d.rot}deg)`;
+  stamp.style.transition = 'opacity .3s ease';
+  stamp.style.opacity = '1';
+  setTimeout(() => { stamp.style.opacity = '0'; }, 650);
+  setTimeout(() => {
+    card.style.transition = 'none';
+    card.style.transform = 'translate(0,0) rotate(0)';
+    void card.offsetWidth;
+  }, 950);
+}
+function startTutDemo(){
+  stopTutDemo();
+  tutDirIdx = 0;
+  tutDemoTick();
+  tutDemoTimer = setInterval(tutDemoTick, 1300);
+}
+function stopTutDemo(){
+  if (tutDemoTimer){ clearInterval(tutDemoTimer); tutDemoTimer = null; }
+}
 function renderTutStep(){
   const s = TUTORIAL_STEPS[tutStep];
   document.getElementById('tutIcon').innerHTML = ICON(s.icon, 26);
@@ -1131,10 +1194,14 @@ function renderTutStep(){
   document.getElementById('tutDesc').textContent = s.desc;
   document.getElementById('tutDots').innerHTML = TUTORIAL_STEPS.map((_,i)=>`<span class="${i===tutStep?'active':''}"></span>`).join('');
   document.getElementById('tutNext').textContent = tutStep === TUTORIAL_STEPS.length-1 ? 'Начать' : 'Далее';
+  const demo = document.getElementById('tutDemo');
+  if (tutStep === 0){ demo.classList.add('show'); startTutDemo(); }
+  else { demo.classList.remove('show'); stopTutDemo(); }
 }
 function closeTutorial(){
   document.getElementById('tutorial').classList.remove('show');
   localStorage.setItem('smotra_tutorial_done', '1');
+  stopTutDemo();
 }
 document.getElementById('tutNext').onclick = () => {
   haptic('selection');
@@ -1768,6 +1835,52 @@ function undoLastSwipe(){
 document.getElementById('undoBtn').onclick = undoLastSwipe;
 
 /* ============ ДОЛГОЕ НАЖАТИЕ — БЫСТРЫЕ ДЕЙСТВИЯ ============ */
+const RADIAL_ACTIONS = [
+  { key:'wishlist', iconOn:'starFill', iconOff:'star', angle:-90, on:(m)=>state.wishlist.includes(m.id) },
+  { key:'watched', iconOn:'check', iconOff:'check', angle:30, on:(m)=>state.watched.includes(m.id) },
+  { key:'watching', iconOn:'pause', iconOff:'play', angle:150, on:(m)=>state.watching.includes(m.id) },
+];
+const RADIAL_RADIUS = 68, RADIAL_DEADZONE = 26;
+let radialMovie = null, radialAnchorX = 0, radialAnchorY = 0, radialHoverKey = null;
+function showRadialWheel(x, y, movie){
+  radialMovie = movie; radialAnchorX = x; radialAnchorY = y; radialHoverKey = null;
+  const wheel = document.getElementById('radialWheel');
+  wheel.style.left = x+'px'; wheel.style.top = y+'px';
+  wheel.innerHTML = `<div class="radial-center">${ICON('clapper',20)}</div>` + RADIAL_ACTIONS.map(a => {
+    const rad = a.angle * Math.PI/180;
+    const ox = Math.cos(rad)*RADIAL_RADIUS, oy = Math.sin(rad)*RADIAL_RADIUS;
+    const on = a.on(movie);
+    return `<div class="radial-opt ${on?'on':''}" data-key="${a.key}" style="left:${ox}px; top:${oy}px;">${ICON(on ? a.iconOn : a.iconOff, 19)}</div>`;
+  }).join('');
+  wheel.classList.add('show');
+  haptic('impact','medium');
+}
+function updateRadialHover(x, y){
+  const dx = x - radialAnchorX, dy = y - radialAnchorY;
+  const dist = Math.hypot(dx, dy);
+  let key = null;
+  if (dist > RADIAL_DEADZONE){
+    let best = null, bestDiff = 999;
+    const ang = Math.atan2(dy, dx) * 180/Math.PI;
+    RADIAL_ACTIONS.forEach(a => {
+      let diff = Math.abs(((ang - a.angle + 540) % 360) - 180);
+      if (diff < bestDiff){ bestDiff = diff; best = a.key; }
+    });
+    key = best;
+  }
+  if (key !== radialHoverKey){
+    radialHoverKey = key;
+    haptic('selection');
+    [...document.querySelectorAll('.radial-opt')].forEach(el => el.classList.toggle('hover', el.dataset.key === key));
+  }
+}
+function hideRadialWheel(commit){
+  const wheel = document.getElementById('radialWheel');
+  wheel.classList.remove('show');
+  if (commit && radialHoverKey && radialMovie){ toggleQuick(radialHoverKey, radialMovie); }
+  radialMovie = null; radialHoverKey = null;
+}
+
 function closeQuick(){
   document.getElementById('quickSheet').classList.remove('open');
   document.getElementById('quickBackdrop').classList.remove('open');
@@ -1828,26 +1941,32 @@ function openQuickActions(movie){
 function initLongPress(containerId){
   const el = document.getElementById(containerId);
   if (!el) return;
-  let pressTimer = null, startX = 0, startY = 0, moved = false, activeCard = null;
+  let pressTimer = null, startX = 0, startY = 0, moved = false, activeCard = null, wheelOpen = false, pid = null;
   el.addEventListener('pointerdown', e => {
     const card = e.target.closest('.poster-card, .row-card');
     if (!card) return;
-    activeCard = card; moved = false; startX = e.clientX; startY = e.clientY;
+    activeCard = card; moved = false; wheelOpen = false; startX = e.clientX; startY = e.clientY; pid = e.pointerId;
     pressTimer = setTimeout(() => {
       pressTimer = null;
       if (moved) return;
-      haptic('impact','medium');
+      wheelOpen = true;
+      card._suppressClick = true;
+      try{ card.setPointerCapture(pid); }catch(err){}
       const movie = movieById(+card.dataset.id);
-      if (movie){ card._suppressClick = true; openQuickActions(movie); }
-    }, 480);
+      if (movie) showRadialWheel(startX, startY, movie);
+    }, 420);
   });
   const cancel = () => { if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } };
   el.addEventListener('pointermove', e => {
+    if (wheelOpen){ updateRadialHover(e.clientX, e.clientY); return; }
     if (!activeCard || moved) return;
     if (Math.abs(e.clientX-startX) > 8 || Math.abs(e.clientY-startY) > 8){ moved = true; cancel(); }
   });
-  el.addEventListener('pointerup', cancel);
-  el.addEventListener('pointercancel', cancel);
+  el.addEventListener('pointerup', e => {
+    cancel();
+    if (wheelOpen){ hideRadialWheel(true); wheelOpen = false; }
+  });
+  el.addEventListener('pointercancel', () => { cancel(); if (wheelOpen){ hideRadialWheel(false); wheelOpen = false; } });
   el.addEventListener('click', e => {
     const card = e.target.closest('.poster-card, .row-card');
     if (card && card._suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); card._suppressClick = false; }
@@ -2253,8 +2372,16 @@ function renderCastChips(movie){
 
 function openSheet(movie){
   sheetMovie = movie;
-  document.getElementById('sheetPoster').style.cssText = posterStyle(movie, 'w780');
-  document.getElementById('sheetPoster').innerHTML = hasArt(movie) ? '' : `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;
+  const posterEl = document.getElementById('sheetPoster');
+  const fgEl = document.getElementById('sheetPosterFg');
+  posterEl.style.cssText = posterStyle(movie, 'w780');
+  if (hasArt(movie)) {
+    fgEl.style.backgroundImage = `url('${posterUrl(movie, 'w780')}')`;
+    fgEl.innerHTML = '';
+  } else {
+    fgEl.style.backgroundImage = 'none';
+    fgEl.innerHTML = `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;
+  }
   document.getElementById('sheetTitle').textContent = movie.title;
   const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
   document.getElementById('sheetMeta').innerHTML = `${movie.year} · ${ICON('starFill', 12)} ${movie.rating} <span id="sheetSmotrimetry"></span> ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
@@ -2274,6 +2401,7 @@ function openSheet(movie){
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
+document.getElementById('sheetClose').onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
 
 /* Свайп вниз по шапке шторки — закрыть и вернуться к ленте */
 (function initSheetSwipeDown(){
