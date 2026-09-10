@@ -70,7 +70,6 @@
 
   /* ===== Top bar ===== */
   .topbar{ display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 20px 8px; }
-  body.tg-fullscreen .topbar{ padding-right:96px; }
   .topbar .wordmark{ font-size:19px; }
   .topbar .wordmark b{ color:var(--accent); font-weight:800; }
   .topbar-icons{ display:flex; align-items:center; gap:14px; }
@@ -794,14 +793,6 @@
       </div>
     </div>
     <div class="set-sub" style="padding:0 4px;">Влияет только на карточки в ленте — в каталоге всё останется как есть</div>
-
-    <div class="set-group" style="margin-top:14px;">
-      <div class="set-row">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></div>
-        <div class="set-text"><div class="set-label">Только популярное и голливудское</div><div class="set-sub">Без региональных малорейтинговых тайтлов</div></div>
-        <div class="switch" id="switchQuality" data-key="smotra_quality"></div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -876,50 +867,23 @@ const tg = window.Telegram?.WebApp;
 function applySafeArea(){
   const csa = tg?.contentSafeAreaInset || {};
   const sa = tg?.safeAreaInset || {};
-  let top = (csa.top ?? 0) + (sa.top ?? 0);
-  if (!top) top = (csa.top ?? sa.top ?? 0);
+  const top = (csa.top ?? sa.top ?? 0);
   const bottom = (csa.bottom ?? sa.bottom ?? 0);
-  // Во fullscreen Telegram рисует свою кнопку-пилюлю справа сверху — даём гарантированный
-  // отступ, чтобы шапка приложения (лого/стрик/шестерёнка) не оказалась под ней.
-  if (tg?.isFullscreen && top < 44) top = 44;
   document.documentElement.style.setProperty('--safe-top', top + 'px');
   document.documentElement.style.setProperty('--safe-bottom', Math.max(bottom, 0) + 'px');
-  document.body.classList.toggle('tg-fullscreen', !!tg?.isFullscreen);
 }
 if (tg) {
   tg.ready();
-  // Fullscreen убирает НАТИВНУЮ шапку Telegram и серый грабер-«квадратик» сверху.
-  // В fullscreen Telegram показывает свои кнопки закрытия/меню маленькой пилюлей в правом верхнем
-  // углу. Контент отодвигаем вниз через safe-area, чтобы ничего не залезало под статус-бар.
-  // expand() + disableVerticalSwipes() — фолбэк для старых клиентов без fullscreen.
+  // ТОЛЬКО full size: expand() растягивает мини-апп на всю высоту окна, но НЕ уводит в
+  // системный fullscreen (без него Telegram не рисует свою круглую кнопку-пилюлю сверху).
+  // disableVerticalSwipes() не даёт свайпом вниз случайно свернуть/закрыть мини-апп.
   try{ tg.expand(); }catch(e){}
   try { tg.disableVerticalSwipes(); } catch(e){}
-  function supportsFullscreen(){
-    try{
-      if (typeof tg.requestFullscreen !== 'function') return false;
-      // requestFullscreen появился в Bot API 8.0; на старых клиентах не дёргаем.
-      if (tg.isVersionAtLeast && !tg.isVersionAtLeast('8.0')) return false;
-      return true;
-    }catch(e){ return false; }
-  }
-  function tryFullscreen(){
-    if (!supportsFullscreen()) return;
-    if (tg.isFullscreen) return;
-    try{ tg.requestFullscreen(); }catch(e){}
-  }
-  // Некоторые клиенты игнорируют вызов сразу после ready() — просим повторно с задержками
-  // и один раз по первому касанию (это точно «жест пользователя»).
-  tryFullscreen();
-  setTimeout(tryFullscreen, 120);
-  setTimeout(tryFullscreen, 600);
-  const fsOnFirstTouch = () => { tryFullscreen(); window.removeEventListener('pointerdown', fsOnFirstTouch); };
-  window.addEventListener('pointerdown', fsOnFirstTouch, { once:true });
+  // На всякий случай выходим из fullscreen, если клиент вдруг открыл нас в нём.
+  try{ if (tg.isFullscreen && typeof tg.exitFullscreen === 'function') tg.exitFullscreen(); }catch(e){}
   if (tg.onEvent){
     tg.onEvent('safeAreaChanged', applySafeArea);
     tg.onEvent('viewportChanged', applySafeArea);
-    tg.onEvent('fullscreenChanged', applySafeArea);
-    // Если клиент не смог во fullscreen — просто остаёмся в expand(), без падений.
-    tg.onEvent('fullscreenFailed', ()=>{});
   }
   applySafeArea();
   tg.setHeaderColor && tg.setHeaderColor('#131110');
@@ -1479,14 +1443,6 @@ initSwitch(document.getElementById('switchTypeFilm'), true, onTypeFilterChange);
 initSwitch(document.getElementById('switchTypeSeries'), true, onTypeFilterChange);
 initSwitch(document.getElementById('switchTypeAnime'), true, onTypeFilterChange);
 initSwitch(document.getElementById('switchTypeCartoon'), true, onTypeFilterChange);
-initSwitch(document.getElementById('switchQuality'), true, async () => {
-  showToast('Обновляю каталог…');
-  try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
-  await loadMovies();
-  setupGenreChips();
-  deck = sortByPopularity(MOVIES.filter(isUnseen));
-  renderStack(); renderCatalog(); updateStats();
-});
 
 /* ============ DATA (TMDB) ============ */
 const TMDB_KEY = '4a37646c1145e683d01fb159ab035fe7';
@@ -1503,12 +1459,15 @@ async function loadGenres(){
   (gm.genres||[]).forEach(g => GENRE_MOVIE[g.id] = g.name);
   (gt.genres||[]).forEach(g => GENRE_TV[g.id] = g.name);
 }
+// Кириллица в строке = у тайтла есть русское название (а не англ. фолбэк от TMDB).
+function hasCyrillic(s){ return /[а-яё]/i.test(s || ''); }
 async function fetchList(url, type, genreMap){
   const data = await fetch(url).then(r=>r.json());
   return (data.results||[]).map(item => ({
     id: item.id,
     type,
     title: item.title || item.name,
+    originalTitle: item.original_title || item.original_name || '',
     year: (item.release_date || item.first_air_date || '').slice(0,4),
     rating: item.vote_average ? Math.round(item.vote_average*10)/10 : 0,
     popularity: item.popularity || 0,
@@ -1526,7 +1485,17 @@ async function fetchList(url, type, genreMap){
   }));
 }
 
-const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v1';
+// Оставляем только карточки с русским названием и постером — чтобы в ленте не было
+// англоязычного мусора без перевода и без обложки. Аниме исключаем из строгой проверки
+// названия (у многих русское имя = транслит латиницей), но постер обязателен всегда.
+function isRussianCard(m){
+  if (!m.posterPath) return false;
+  if (m.type === 'anime') return true;
+  return hasCyrillic(m.title);
+}
+function keepRussian(list){ return list.filter(isRussianCard); }
+
+const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v3_ru';
 const TMDB_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 часов — не дёргаем TMDB на каждый запуск
 function loadTmdbCache(){
   try{
@@ -1543,13 +1512,15 @@ let tmdbPage = 1;
 function discoverUrls(page){
   const K = TMDB_KEY;
   const adult = getFlag('smotra_adult', false) ? 'true' : 'false';
-  const quality = getFlag('smotra_quality', true);
-  const qFilter = quality ? '&with_original_language=en&vote_count.gte=150' : '';
+  // language=ru-RU — TMDB отдаёт русские названия и описания, где они есть. Мусорные тайтлы
+  // без перевода/постера мы потом отфильтруем сами (keepRussian). vote_count.gte отсекает
+  // совсем безвестные записи, чтобы в ленте было узнаваемое кино.
+  const base = `language=ru-RU&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=40`;
   return {
-    film:    `https://api.themoviedb.org/3/discover/movie?language=ru-RU&sort_by=popularity.desc&include_adult=${adult}${qFilter}&page=${page}&api_key=${K}`,
-    series:  `https://api.themoviedb.org/3/discover/tv?language=ru-RU&sort_by=popularity.desc&include_adult=${adult}${qFilter}&page=${page}&api_key=${K}`,
-    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=${adult}&page=${page}&api_key=${K}`,
-    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=${adult}${quality ? '&vote_count.gte=80' : ''}&page=${page}&api_key=${K}`,
+    film:    `https://api.themoviedb.org/3/discover/movie?${base}&page=${page}&api_key=${K}`,
+    series:  `https://api.themoviedb.org/3/discover/tv?${base}&page=${page}&api_key=${K}`,
+    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=10&page=${page}&api_key=${K}`,
+    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=20&page=${page}&api_key=${K}`,
   };
 }
 async function loadMovies(){
@@ -1571,10 +1542,11 @@ async function loadMovies(){
       fetchList(u.anime, 'anime', GENRE_TV),
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
-    const combined = [...films, ...series, ...anime, ...cartoons];
+    const combined = keepRussian([...films, ...series, ...anime, ...cartoons]);
     if (combined.length){
       MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false;
-      fetchMorePages(); // догружаем вторую страницу в фоне, чтобы колода не мелела быстро
+      // Догружаем сразу несколько страниц в фоне, чтобы колода была большой и не кончалась.
+      prefetchDeck(4);
     }
     else { tmdbFailed = true; }
   }catch(e){
@@ -1591,7 +1563,7 @@ async function retryLoadMovies(){
 }
 
 /* Подгружает следующую страницу TMDB, чтобы карточки в ленте никогда не заканчивались */
-const TMDB_MAX_PAGE = 25; // жёсткий потолок, чтобы MOVIES не разрасталась в тысячи карточек и не тормозила телефон
+const TMDB_MAX_PAGE = 500; // TMDB отдаёт до 500 страниц discover — практически бесконечная лента
 async function fetchMorePages(){
   if (tmdbFailed || tmdbPage >= TMDB_MAX_PAGE) return 0;
   tmdbPage += 1;
@@ -1604,10 +1576,24 @@ async function fetchMorePages(){
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
     const existing = new Set(MOVIES.map(m => m.type + '_' + m.id));
-    const fresh = [...films, ...series, ...anime, ...cartoons].filter(m => !existing.has(m.type + '_' + m.id));
+    const fresh = keepRussian([...films, ...series, ...anime, ...cartoons]).filter(m => !existing.has(m.type + '_' + m.id));
     if (fresh.length){ MOVIES = MOVIES.concat(fresh); saveTmdbCache(MOVIES); }
     return fresh.length;
   }catch(e){ tmdbPage -= 1; return 0; }
+}
+
+/* Догружает подряд несколько страниц TMDB в фоне — чтобы карточки в ленте практически
+   не заканчивались. Останавливается, когда страницы перестали давать новое. */
+let prefetching = false;
+async function prefetchDeck(pages){
+  if (prefetching) return;
+  prefetching = true;
+  try{
+    for (let i = 0; i < (pages || 3); i++){
+      const added = await fetchMorePages();
+      if (!added) break;
+    }
+  } finally { prefetching = false; }
 }
 
 /* Карточка, с которой ты уже что-то сделал (смотрел/пропустил/чекнул/смотрю),
@@ -1643,11 +1629,12 @@ function sortByPopularity(arr){
 async function refillDeck(){
   let fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
   let attempts = 0;
-  while (!fresh.length && attempts < 5){
+  // Тянем новые страницы, пока не наберём приличный запас (или пока TMDB не иссякнет).
+  while (fresh.length < 12 && attempts < 15){
     const added = await fetchMorePages();
     attempts++;
     if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
-    if (!added) break;
+    else break;
   }
   deck = deck.concat(sortByPopularity(fresh));
 }
@@ -1832,16 +1819,16 @@ function renderStack(){
     if (tmdbFailed) {
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
       document.getElementById('retryTmdb').onclick = retryLoadMovies;
-    } else if (deckRefreshing) {
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Секунду…</div><div>Подгружаю ещё карточки</div></div>`;
     } else {
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Новых пока нет</div><div>Мы поискали, но карточки закончились</div><button id="loadMoreBtn">${ICON('shuffle',16)} Загрузить ещё</button></div>`;
-      document.getElementById('loadMoreBtn').onclick = async (e) => {
-        const btn = e.currentTarget;
-        btn.disabled = true; btn.innerHTML = `${ICON('shuffle',16)} Гружу…`;
-        await refillDeck();
-        renderStack();
-      };
+      // Колода пуста — не показываем тупик с кнопкой, а сами подгружаем ещё.
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Ищу ещё кино…</div><div>Подтягиваю новые карточки</div></div>`;
+      if (!deckRefreshing){
+        deckRefreshing = true;
+        refillDeck().then(()=>{
+          deckRefreshing = false;
+          if (document.getElementById('home')?.classList.contains('active')) renderStack();
+        });
+      }
     }
     return;
   }
@@ -2311,7 +2298,7 @@ function renderCatalog(){
   const list = MOVIES.filter(m =>
     (activeType==='all' || m.type===activeType) &&
     (activeGenre==='Все' || m.genres.includes(activeGenre)) &&
-    (!searchQuery || m.title.toLowerCase().includes(searchQuery))
+    (!searchQuery || m.title.toLowerCase().includes(searchQuery) || (m.originalTitle||'').toLowerCase().includes(searchQuery))
   );
   const grid = document.getElementById('catGrid');
   const moreWrap = document.getElementById('catShowMore');
