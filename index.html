@@ -1897,9 +1897,11 @@ async function refillDeck(){
     if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
     else break;
   }
+  if (fresh.length) deckRefillTries = 0;
   deck = deck.concat(sortByPopularity(fresh));
 }
 function shakeDeck(){
+  deckRefillTries = 0;
   deck = shuffle(deck);
   haptic('impact','medium');
   renderStack();
@@ -2074,6 +2076,15 @@ const stackEl = document.getElementById('stack');
 let deck = [];
 
 let deckRefreshing = false;
+// Сколько раз подряд мы безуспешно пытались добить колоду. Без этого счётчика
+// «пустая колода → refill → пустая колода» крутилось бесконечно и подвешивало апп.
+let deckRefillTries = 0;
+const DECK_REFILL_TRIES_MAX = 2;
+function deckExhaustedNote(){
+  stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Кино закончилось</div><div>Ты разобрал всю подборку. Загляни позже или включи больше типов в фильтре.</div><button id="retryDeck">Обновить подборку</button></div>`;
+  const btn = document.getElementById('retryDeck');
+  if (btn) btn.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
+}
 function renderStack(){
   stackEl.innerHTML = '';
   const deckCountEl = document.getElementById('deckCount');
@@ -2082,16 +2093,14 @@ function renderStack(){
     if (tmdbFailed) {
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
       document.getElementById('retryTmdb').onclick = retryLoadMovies;
-    } else {
-      // Колода пуста — не показываем тупик с кнопкой, а сами подгружаем ещё.
+    } else if (deckRefreshing){
+      // Колода пуста — показываем «ищу», догрузка уже идёт.
       stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Ищу ещё кино…</div><div>Подтягиваю новые карточки</div></div>`;
-      if (!deckRefreshing){
-        deckRefreshing = true;
-        refillDeck().then(()=>{
-          deckRefreshing = false;
-          if (document.getElementById('home')?.classList.contains('active')) renderStack();
-        });
-      }
+    } else if (deckRefillTries < DECK_REFILL_TRIES_MAX){
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Ищу ещё кино…</div><div>Подтягиваю новые карточки</div></div>`;
+      refillOnce();
+    } else {
+      deckExhaustedNote();
     }
     return;
   }
@@ -2126,7 +2135,8 @@ function makeDraggable(card, movie){
 
   card.addEventListener('pointerdown', e=>{
     dragging = true; moved = false; radialOn = false; startX = e.clientX; startY = e.clientY;
-    card.setPointerCapture(e.pointerId); card.style.transition = 'none';
+    try{ card.setPointerCapture(e.pointerId); }catch(err){}
+    card.style.transition = 'none';
     const posterEl = card.querySelector('.poster');
     const thumbStyle = posterEl ? posterEl.getAttribute('style') : '';
     holdTimer = setTimeout(()=>{
@@ -2175,6 +2185,22 @@ function makeDraggable(card, movie){
   card.addEventListener('contextmenu', e => e.preventDefault());
 }
 
+/* Догружаем колоду один раз. Если новых карточек нет — просто останавливаемся.
+   Раньше здесь был бесконечный цикл refill → renderStack → refill, из-за которого
+   приложение подвисало, когда заканчивались тайтлы. */
+function refillOnce(){
+  if (deckRefreshing) return;
+  deckRefreshing = true;
+  refillDeck().then(()=>{
+    deckRefreshing = false;
+    if (document.getElementById('home')?.classList.contains('active')){
+      if (deck.length) deckRefillTries = 0;
+      else deckRefillTries++;
+      renderStack();
+    }
+  });
+}
+
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
   const undoInfo = { movie, action };
@@ -2199,13 +2225,7 @@ function resolveSwipe(card, movie, action){
     renderStack();
     // Догружаем запас в фоне, не блокируя показ следующей карточки —
     // так кнопка "Загрузить ещё" почти никогда не всплывает по-настоящему.
-    if (deck.length < 4 && !deckRefreshing){
-      deckRefreshing = true;
-      refillDeck().then(()=>{
-        deckRefreshing = false;
-        if (document.getElementById('home')?.classList.contains('active')) renderStack();
-      });
-    }
+    if (deck.length < 4) refillOnce();
   }, 260);
 }
 
@@ -3173,6 +3193,7 @@ async function refillAndRender(){
   renderStack();
   await refillDeck();
   deckRefreshing = false;
+  if (deck.length) deckRefillTries = 0;
   renderStack();
 }
 let feedEverLoaded = false;
