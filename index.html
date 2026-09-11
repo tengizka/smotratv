@@ -125,7 +125,6 @@
   .topbar-icons{ display:flex; align-items:center; gap:14px; }
   .icon-btn{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); position:relative; }
   .icon-btn svg{ width:17px; height:17px; }
-  .dot-badge{ position:absolute; top:-3px; right:-3px; width:8px; height:8px; border-radius:50%; background:var(--accent); border:2px solid var(--bg); }
   .streak{ display:flex; align-items:center; gap:5px; font-size:13px; color:var(--accent); font-weight:600; background:var(--accent-soft); padding:6px 10px; border-radius:10px; }
 
   /* ===== Screens ===== */
@@ -182,7 +181,7 @@
     background:var(--surface); border:1px solid var(--border);
     box-shadow:0 24px 50px -22px rgba(0,0,0,0.65);
     touch-action:none; display:flex; flex-direction:column; justify-content:flex-end;
-    transition:transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s ease;
+    transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
     will-change:transform;
   }
   .card .poster{ position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(0.92) contrast(1.03); }
@@ -214,8 +213,6 @@
   .actions .no svg,.actions .yes svg{ width:26px; height:26px; }
   .actions .wishbtn{ width:54px; height:54px; color:var(--wish); background:rgba(255,159,224,0.10); border-color:rgba(255,159,224,0.30); }
   .actions .wishbtn svg{ width:22px; height:22px; }
-  .actions .no{ color:var(--skip); }
-  .actions .yes{ color:var(--watched); }
   .actions .wishbtn.active{ background:var(--wish); color:var(--on-accent); border-color:var(--wish); }
 
   /* Пока колода догружается — красивая заглушка вместо пустоты */
@@ -227,8 +224,7 @@
   @keyframes deckSpin{ to{ transform:rotate(360deg); } }
   .deck-loading-text{ position:relative; font-size:13.5px; font-weight:600; color:var(--text); }
   .deck-loading-sub{ position:relative; font-size:12px; }
-  /* Карточки колоды всегда с плавным переходом — подъём после свайпа без рывков */
-  .card{ transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
+  /* Пока палец ведёт карточку — никаких transition, движение строго за пальцем */
   .card.swiping{ transition:none !important; }
   @keyframes cardShuffle{ 0%{ transform:translate(0,0) rotate(0) scale(1); } 35%{ transform:translate(var(--sh-x,0), -26px) rotate(var(--sh-r,-8deg)) scale(.94); } 70%{ transform:translate(0,0) rotate(0) scale(1.02); } 100%{ transform:translate(0,0) rotate(0) scale(1); } }
   .card.shuffling{ animation:cardShuffle .62s cubic-bezier(.3,.7,.3,1) both; animation-delay:var(--sh-d,0s); }
@@ -278,7 +274,7 @@
   /* ===== Detail sheet ===== */
   .sheet-backdrop{ position:fixed; inset:0; background:rgba(10,9,7,0.65); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
   .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
-  .sheet{ position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--surface); border-radius:26px 26px 0 0; max-height:86vh; overflow-y:auto; overscroll-behavior:none; transform:translateY(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); padding-bottom:calc(22px + var(--safe-bottom)); border:1px solid var(--border); border-bottom:none; }
+  .sheet{ position:fixed; left:0; right:0; bottom:0; z-index:31; background:var(--surface); border-radius:26px 26px 0 0; max-height:86vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y; transform:translateY(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); padding-bottom:calc(22px + var(--safe-bottom)); border:1px solid var(--border); border-bottom:none; }
   .sheet.open{ transform:translateY(0); }
   .sheet .poster-lg{ height:360px; border-radius:26px 26px 0 0; position:relative; overflow:hidden; background-position:center; background-size:cover; }
   /* Размытая заливка позади — постер целиком (contain) ложится поверх, ничего не обрезаем */
@@ -333,6 +329,7 @@
   .score-total span:first-child{ color:var(--text-dim); font-size:14px; }
   .score-total span:last-child{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:24px; color:var(--text); }
   .score-total span:last-child b{ color:var(--accent); font-weight:800; }
+  .score-total.pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
   .review-text{ font-size:13px; color:var(--text-dim); margin-top:10px; line-height:1.5; }
   .review-mini-cats{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .review-mini-cats span{ font-size:11px; color:var(--text-dim); background:var(--surface-2); border-radius:8px; padding:3px 8px; }
@@ -341,8 +338,6 @@
   .progress-label{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); margin-bottom:6px; }
   .progress-track{ height:8px; background:var(--surface-2); border-radius:6px; overflow:hidden; }
   .progress-fill{ height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
-  .progress-btn{ margin-top:10px; width:100%; padding:11px; border-radius:12px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); font-weight:600; font-size:13.5px; }
-  .progress-btn:disabled{ opacity:.5; }
   .sheet .cast-label{ font-size:13px; color:var(--text-dim); margin:18px 0 8px; }
   .cast-row{ display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
   .cast-chip{ flex:0 0 auto; padding:8px 14px; border-radius:12px; background:var(--surface-2); font-size:13px; }
@@ -544,7 +539,6 @@
   .tut-actions{ display:flex; gap:8px; flex:0 0 auto; }
   .tut-next{ flex:1; background:var(--accent); color:var(--on-accent); border:none; padding:15px; border-radius:14px; font-weight:700; font-size:15px; transition:transform .12s ease; }
   .tut-next:active{ transform:scale(.98); }
-  .tut-skip{ background:none; border:none; color:var(--text-dim); font-size:13px; padding:4px; }
   /* На низких экранах сцена чуть меньше — подписи и кнопки всегда на месте */
   @media (max-height: 720px){
     .tut-demo:not(.tut-demo-radial):not(.tut-demo-panel):not(.tut-demo-center){ width:168px; height:238px; }
@@ -586,13 +580,7 @@
   .rad-item .rad-lbl{ font-size:9px; font-weight:600; max-width:56px; text-align:center; line-height:1; }
   .rad-item.hot{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); transform:var(--rad-pos) scale(1.18) !important; box-shadow:0 12px 30px -6px var(--accent-glow); }
   .rad-item.danger.hot{ background:var(--skip); border-color:var(--skip); color:#fff; box-shadow:0 12px 30px -6px rgba(193,73,63,0.6); }
-  .rad-hint{ position:absolute; left:50%; transform:translateX(-50%); bottom:calc(40px + var(--safe-bottom)); background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim); font-size:12px; padding:8px 16px; border-radius:20px; z-index:4; white-space:nowrap; }
 
-  .quick-action-btn{ display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-weight:500; text-align:left; transition:background .15s ease, transform .15s ease; }
-  .quick-action-btn:active{ transform:scale(.97); background:var(--surface-2); }
-  .quick-action-btn.active{ border-color:var(--accent-border); color:var(--accent); }
-  .quick-action-btn.danger{ color:var(--skip); }
-  .quick-action-btn .qa-icon{ width:22px; display:flex; justify-content:center; flex:0 0 auto; }
   #toast.show{ transform:translate(-50%,0); }
 
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
@@ -830,7 +818,6 @@
   <div class="rad-wrap" id="radWrap">
     <div class="rad-center" id="radCenter"></div>
   </div>
-  <div class="rad-hint" id="radHint">Веди палец к действию · отпусти в центре — отмена</div>
 </div>
 
 <!-- FRIEND PROFILE OVERLAY -->
@@ -884,12 +871,12 @@
 
     <div class="set-group">
       <div class="set-group-title">Отклик</div>
-      <div class="set-row" id="rowHaptic" style="cursor:pointer;">
+      <div class="set-row" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg></div>
         <div class="set-text"><div class="set-label">Вибро-отклик</div></div>
         <div class="switch" id="switchHaptic" data-key="smotra_haptic"></div>
       </div>
-      <div class="set-row" id="rowAdult" style="cursor:pointer;">
+      <div class="set-row" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg></div>
         <div class="set-text"><div class="set-label">Показывать 18+</div></div>
         <div class="switch" id="switchAdult" data-key="smotra_adult"></div>
@@ -965,8 +952,12 @@
    0.6 — главная без пустоты и счётчиков, живой подъём колоды, анимация «Перемешать»,
          круговое меню на всех обложках с заморозкой скролла, туториал без уезжающей
          кнопки, компактные настройки, объёмные Смотриметры, ленивые обложки,
-         починка безопасности (XSS, ключи TMDB, проверка ошибок Supabase). */
-const APP_VERSION = '0.6';
+         починка безопасности (XSS, ключи TMDB, проверка ошибок Supabase).
+   0.7 — устранены дубли тайтлов (фильм/мультфильм и сериал/аниме с одним TMDB-id),
+         шторка фильма снова нормально прокручивается и закрывается протяжкой,
+         индекс каталога (O(1) вместо перебора), проверка ошибок Supabase везде,
+         чистка мёртвого кода и мелких багов. */
+const APP_VERSION = '0.7';
 const APP_BUILD_DATE = '2026-09-11';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1101,21 +1092,30 @@ function getTelegramId(){
 }
 const TG_ID = getTelegramId();
 
-async function dbSwipe(movieId, action){ try{ await sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: movieId, action }); }catch(e){ console.error(e); } }
-async function dbSwipeRemove(movieId, action){ try{ await sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId).eq('action', action); }catch(e){ console.error(e); } }
-async function dbWishAdd(movieId){ try{ await sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: movieId }); }catch(e){ console.error(e); } }
-async function dbWishRemove(movieId){ try{ await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){ console.error(e); } }
-async function dbWatchingAdd(movieId){ try{ await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId }); }catch(e){ /* таблицы watching может ещё не быть в Supabase — не роняем приложение */ } }
-async function dbWatchingRemove(movieId){ try{ await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId); }catch(e){} }
+/* supabase-js не бросает исключение — он возвращает {data, error}. Раньше проверка была
+   только в паре мест, и неудачная запись выглядела как успешная. Теперь один помощник. */
+function sbFail(res, label){
+  if (res && res.error){ console.error('[supabase] ' + label, res.error); return true; }
+  return false;
+}
+
+async function dbSwipe(movieId, action){ try{ sbFail(await sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: movieId, action }), 'swipes insert'); }catch(e){ console.error(e); } }
+async function dbSwipeRemove(movieId, action){ try{ sbFail(await sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId).eq('action', action), 'swipes delete'); }catch(e){ console.error(e); } }
+async function dbWishAdd(movieId){ try{ sbFail(await sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: movieId }), 'wishlist upsert'); }catch(e){ console.error(e); } }
+async function dbWishRemove(movieId){ try{ sbFail(await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId), 'wishlist delete'); }catch(e){ console.error(e); } }
+async function dbWatchingAdd(movieId){ try{ sbFail(await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId }), 'watching upsert'); }catch(e){ /* таблицы watching может ещё не быть — не роняем приложение */ } }
+async function dbWatchingRemove(movieId){ try{ sbFail(await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId), 'watching delete'); }catch(e){ /* см. выше */ } }
 async function dbEpisode(movieId, seasons){
   const total = Object.values(seasons).reduce((a,b)=>a+b, 0);
-  try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total, seasons }); }
-  catch(e){
-    // старая схема таблицы без колонки seasons — сохраняем хотя бы общий счётчик
-    try{ await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total }); }catch(e2){ console.error(e2); }
-  }
+  try{
+    const res = await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total, seasons });
+    if (sbFail(res, 'episodes upsert')){
+      // старая схема таблицы без колонки seasons — сохраняем хотя бы общий счётчик
+      sbFail(await sb.from('episodes_progress').upsert({ telegram_id: TG_ID, movie_id: movieId, watched_count: total }), 'episodes upsert (без сезонов)');
+    }
+  }catch(e){ console.error(e); }
 }
-async function dbBadge(badgeId){ try{ await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }); }catch(e){ console.error(e); } }
+async function dbBadge(badgeId){ try{ sbFail(await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }), 'badges insert'); }catch(e){ console.error(e); } }
 
 /* ============ РЕЦЕНЗИИ — СОБСТВЕННАЯ ШКАЛА СМОТРЫ (10–80) ============ */
 const BIG_CATS = [
@@ -1148,19 +1148,22 @@ async function dbSaveReview(movieId, big, small, text){
 }
 async function getMyReview(movieId){
   try{
-    const { data } = await sb.from('reviews').select('*').eq('telegram_id', TG_ID).eq('movie_id', movieId).maybeSingle();
+    const { data, error } = await sb.from('reviews').select('*').eq('telegram_id', TG_ID).eq('movie_id', movieId).maybeSingle();
+    if (error) throw error;
     return data;
   }catch(e){ return null; }
 }
 async function getFeedReviews(limit){
   try{
-    const { data } = await sb.from('reviews').select('*').order('updated_at', { ascending:false }).limit(limit || 40);
+    const { data, error } = await sb.from('reviews').select('*').order('updated_at', { ascending:false }).limit(limit || 40);
+    if (error) throw error;
     return data || [];
   }catch(e){ return []; }
 }
 function parseJsonField(v){
   if (!v) return {};
-  return typeof v === 'string' ? JSON.parse(v) : v;
+  if (typeof v !== 'string') return v;
+  try{ return JSON.parse(v); }catch(e){ return {}; } // битый JSON из базы не должен ломать ленту
 }
 
 /* ============ ДРУЗЬЯ И ПРОФИЛИ ============ */
@@ -1168,14 +1171,15 @@ async function upsertProfile(){
   const u = tg?.initDataUnsafe?.user;
   if (!u) return;
   try{
-    await sb.from('profiles').upsert({
+    sbFail(await sb.from('profiles').upsert({
       telegram_id: TG_ID,
       first_name: u.first_name || '',
       last_name: u.last_name || '',
       username: u.username || '',
       photo_url: u.photo_url || '',
       updated_at: new Date().toISOString(),
-    });
+    }), 'profiles upsert');
+    profileCache.delete(TG_ID); // свой профиль могли переименовать в Telegram — сбрасываем кэш
   }catch(e){ /* таблицы profiles ещё нет — просто не сохранится */ }
 }
 async function addFriend(friendId){
@@ -1192,13 +1196,22 @@ async function addFriend(friendId){
 }
 async function getFriendIds(){
   try{
-    const { data } = await sb.from('friends').select('friend_id').eq('telegram_id', TG_ID);
+    const { data, error } = await sb.from('friends').select('friend_id').eq('telegram_id', TG_ID);
+    if (error) throw error;
     return (data||[]).map(r=>r.friend_id);
   }catch(e){ return []; }
 }
+/* Профили друзей меняются редко, а запрашиваются на каждой перерисовке ленты и шторки —
+   держим их в памяти 5 минут, чтобы не дёргать базу десятками одинаковых запросов. */
+const profileCache = new Map();
+const PROFILE_CACHE_TTL = 5 * 60 * 1000;
 async function getProfile(id){
+  const hit = profileCache.get(id);
+  if (hit && Date.now() - hit.ts < PROFILE_CACHE_TTL) return hit.data;
   try{
-    const { data } = await sb.from('profiles').select('*').eq('telegram_id', id).maybeSingle();
+    const { data, error } = await sb.from('profiles').select('*').eq('telegram_id', id).maybeSingle();
+    if (error) throw error;
+    profileCache.set(id, { ts: Date.now(), data });
     return data;
   }catch(e){ return null; }
 }
@@ -1261,41 +1274,46 @@ async function loadState(){
     if (a.error) console.error('[supabase] swipes', a.error); else sw = a.data || [];
     if (b.error) console.error('[supabase] wishlist', b.error); else wl = b.data || [];
   }catch(e){ console.error('[supabase] state load failed', e); }
-  state.watched = (sw||[]).filter(r=>r.action==='watched').map(r=>normalizeStoredKey(r.movie_id));
-  state.skipped = (sw||[]).filter(r=>r.action==='skipped').map(r=>normalizeStoredKey(r.movie_id));
-  state.wishlist = (wl||[]).map(r=>normalizeStoredKey(r.movie_id));
+  // Set — потому что до 0.7 один и тот же фильм мог лежать в базе и как «фильм»,
+  // и как «мультфильм»: нормализация сводит их в один ключ, а дубль ключа ломает счётчики.
+  const uniq = arr => [...new Set(arr)];
+  state.watched = uniq((sw||[]).filter(r=>r.action==='watched').map(r=>normalizeStoredKey(r.movie_id)));
+  state.skipped = uniq((sw||[]).filter(r=>r.action==='skipped').map(r=>normalizeStoredKey(r.movie_id)));
+  state.wishlist = uniq((wl||[]).map(r=>normalizeStoredKey(r.movie_id)));
   state.unlocked = [];
   state.badgeDates = {};
   try{
-    const { data: bd, error } = await sb.from('badges').select('badge_id,created_at').eq('telegram_id', TG_ID);
-    if (error) throw error;
-    state.unlocked = (bd||[]).map(r=>r.badge_id);
-    (bd||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
-  }catch(e){
-    try{
-      const { data: bd } = await sb.from('badges').select('badge_id').eq('telegram_id', TG_ID);
-      state.unlocked = (bd||[]).map(r=>r.badge_id);
-    }catch(e2){}
-  }
+    let res = await sb.from('badges').select('badge_id,created_at').eq('telegram_id', TG_ID);
+    if (res.error){
+      // в старой схеме таблицы badges нет колонки created_at — тянем только id
+      res = await sb.from('badges').select('badge_id').eq('telegram_id', TG_ID);
+    }
+    if (!sbFail(res, 'badges select')){
+      state.unlocked = (res.data||[]).map(r=>r.badge_id);
+      (res.data||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
+    }
+  }catch(e){ console.error(e); }
   state.episodes = {};
   try{
-    const { data: ep, error } = await sb.from('episodes_progress').select('movie_id,watched_count,seasons').eq('telegram_id', TG_ID);
-    if (error) throw error;
-    (ep||[]).forEach(r=>{
-      let seasons = {};
-      if (r.seasons) seasons = typeof r.seasons === 'string' ? JSON.parse(r.seasons) : r.seasons;
-      state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: seasons || {} };
-    });
-  }catch(e){
-    // в таблице ещё нет колонки seasons — тянем как раньше и кладём всё в «сезон 1»
-    try{
-      const { data: ep } = await sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID);
-      (ep||[]).forEach(r => state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: { '1': r.watched_count || 0 } });
-    }catch(e2){}
-  }
+    let res = await sb.from('episodes_progress').select('movie_id,watched_count,seasons').eq('telegram_id', TG_ID);
+    if (res.error){
+      // в таблице ещё нет колонки seasons — кладём всё в «сезон 1»
+      res = await sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID);
+      if (!sbFail(res, 'episodes select (без сезонов)')){
+        (res.data||[]).forEach(r => state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: { '1': r.watched_count || 0 } });
+      }
+    } else {
+      (res.data||[]).forEach(r=>{
+        let seasons = {};
+        if (r.seasons) seasons = typeof r.seasons === 'string' ? (parseJsonField(r.seasons) || {}) : r.seasons;
+        state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: seasons || {} };
+      });
+    }
+  }catch(e){ console.error(e); }
   try{
-    const { data: wa } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
-    state.watching = (wa||[]).map(r=>normalizeStoredKey(r.movie_id));
+    const { data: wa, error } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
+    if (error) throw error;
+    state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
   }catch(e){ state.watching = []; }
 }
 
@@ -1330,7 +1348,7 @@ function recordVisitAndGetStreak(){
   try{ days = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]'); }catch(e){}
   const today = dateKey(new Date());
   if (!days.includes(today)) days.push(today);
-  days = [...new Set(days)];
+  days = [...new Set(days)].sort().slice(-400); // история заходов не должна расти вечно
   try{ localStorage.setItem(STREAK_KEY, JSON.stringify(days)); }catch(e){}
   let streak = 0;
   const cursor = new Date();
@@ -1360,6 +1378,11 @@ const currentStreak = recordVisitAndGetStreak();
 })();
 document.getElementById('streakNum').textContent = currentStreak;
 document.getElementById('statStreak').textContent = currentStreak;
+document.getElementById('streakBadge').onclick = () => {
+  haptic('selection');
+  const days = currentStreak % 10 === 1 && currentStreak % 100 !== 11 ? 'день' : 'дней';
+  showToast(currentStreak > 0 ? `${currentStreak} ${days} подряд — не разрывай серию` : 'Заходи каждый день, чтобы рос стрик', 'fire');
+};
 
 /* ============ ПАСХАЛКА: анимированные модельки на месте грабера ============ */
 const GRABBER_TOYS = [
@@ -1443,11 +1466,13 @@ const TUT_FALLBACK_POSTERS = [
 ];
 const TUT_FALLBACK_TITLES = ['Тёмный рыцарь', 'Побег из Шоушенка', 'Достать ножи'];
 const TUT_FAVORITE_IDS = [155, 278, 546554]; // те же три тайтла — если они есть в каталоге
+let tutMoviesCache = null; // сбрасывается, когда каталог догрузился
 function tutMovies(){
+  if (tutMoviesCache) return tutMoviesCache;
   const withArt = MOVIES.filter(m => m.posterPath && m.title);
-  if (!withArt.length) return [];
   const favs = TUT_FAVORITE_IDS.map(id => withArt.find(m => m.id === id)).filter(Boolean);
-  return favs.concat(withArt.filter(m => !favs.includes(m)));
+  tutMoviesCache = favs.concat(withArt.filter(m => !favs.includes(m)));
+  return tutMoviesCache;
 }
 function tutMovie(idx){
   const list = tutMovies();
@@ -1641,15 +1666,18 @@ document.getElementById('resetAll').onclick = async () => {
   const ok = await confirmAction('Точно сбросить всё? Пропадёт весь прогресс, «Хочу чекнуть», «Смотрю», ачивки и стрик — без возможности отменить.');
   if (!ok) return;
   showToast('Сбрасываю всё…');
+  const failed = [];
   try{
-    await Promise.all([
+    const res = await Promise.all([
       sb.from('swipes').delete().eq('telegram_id', TG_ID),
       sb.from('wishlist').delete().eq('telegram_id', TG_ID),
       sb.from('episodes_progress').delete().eq('telegram_id', TG_ID),
       sb.from('badges').delete().eq('telegram_id', TG_ID),
+      sb.from('watching').delete().eq('telegram_id', TG_ID),
     ]);
-  }catch(e){ showToast('Часть данных не сбросилась — проверь связь'); }
-  try{ await sb.from('watching').delete().eq('telegram_id', TG_ID); }catch(e){}
+    res.forEach((r, i) => { if (r && r.error) failed.push(['swipes','wishlist','episodes_progress','badges','watching'][i]); });
+  }catch(e){ failed.push('сеть'); }
+  if (failed.length) showToast('Часть данных не сбросилась — проверь связь');
 
   state.watched = []; state.skipped = []; state.wishlist = []; state.watching = []; state.unlocked = []; state.episodes = {};
   try{
@@ -1709,13 +1737,20 @@ function initSwitch(el, def, onChange){
   const key = el.dataset.key;
   let val = getFlag(key, def);
   el.classList.toggle('on', val);
-  el.onclick = () => {
+  const toggle = () => {
     val = !val;
     setFlag(key, val);
     el.classList.toggle('on', val);
     haptic('selection');
     onChange && onChange(val);
   };
+  el.onclick = (e) => { e.stopPropagation(); toggle(); };
+  // На телефоне в маленький тумблер легко не попасть — строка целиком тоже переключает.
+  const row = el.closest('.set-row');
+  if (row && !row.dataset.switchBound){
+    row.dataset.switchBound = '1';
+    row.onclick = toggle;
+  }
 }
 // Тумблер уведомлений убран: он ничего не делал (пушей нет) — лучше не врать пользователю.
 initSwitch(document.getElementById('switchHaptic'), true);
@@ -1730,7 +1765,7 @@ initSwitch(document.getElementById('switchAdult'), false, async (val) => {
 });
 
 function onTypeFilterChange(){
-  deck = deck.filter(m => typeEnabled(m.type));
+  deck = deck.filter(m => typeEnabledFor(m));
   if (deck.length < 3) { refillAndRender(); } else { renderStack(); }
 }
 
@@ -1832,14 +1867,37 @@ function isRussianCard(m){
   return hasCyrillic(m.title);
 }
 function keepRussian(list){ return list.filter(isRussianCard); }
-/* Один и тот же тайтл приходит из двух запросов discover (например, мультфильм есть
-   и в популярном кино, и в мультфильмах). Без дедупликации в ленте появлялись дубли. */
+/* TMDB выдаёт фильмам и сериалам пересекающиеся числовые id: фильм 550 и сериал 550 —
+   совершенно разные тайтлы. Поэтому сериалы и аниме живут в отдельном числовом
+   пространстве (id + смещение), а старые записи без смещения переводим при загрузке. */
+const SERIES_ID_OFFSET = 1000000000;
+function isTvLike(m){ return !!m && (m.type === 'series' || m.type === 'anime'); }
+function mid(m){ return isTvLike(m) ? m.id + SERIES_ID_OFFSET : m.id; }
+/* Главный источник повторов в приложении: один и тот же тайтл приходит из двух разных
+   discover-запросов. Популярный мультфильм есть и в «популярных фильмах», и в «мультфильмах»,
+   популярное аниме — и в «сериалах», и в «аниме». Раньше это давало две одинаковые карточки
+   (в колоде, каталоге и истории). Теперь у тайтла один ключ (mid), а второй тип хранится
+   пометкой isCartoon/isAnime — карточка одна, а фильтры по типам продолжают работать. */
 function dedupeMovies(list){
-  const seen = new Set();
-  return list.filter(m => { const k = m.type + '_' + m.id; if (seen.has(k)) return false; seen.add(k); return true; });
+  const byKey = new Map();
+  list.forEach(m => {
+    const k = mid(m);
+    const prev = byKey.get(k);
+    if (!prev){ byKey.set(k, m); return; }
+    if (m.type === 'cartoon') prev.isCartoon = true;
+    if (m.type === 'anime') prev.isAnime = true;
+    if (!prev.overview && m.overview) prev.overview = m.overview;
+    if (!prev.posterPath && m.posterPath) prev.posterPath = m.posterPath;
+  });
+  return [...byKey.values()];
+}
+/* Собираем каталог из четырёх запросов: основу держат фильмы и сериалы, а «мультфильмы»
+   и «аниме» добавляют только те тайтлы, которых в основе нет. */
+function combineLists(parts){
+  return dedupeMovies(keepRussian([...parts.films, ...parts.series, ...parts.anime, ...parts.cartoons]));
 }
 
-const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v3_ru';
+const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v4_dedupe';
 const TMDB_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 часов — не дёргаем TMDB на каждый запуск
 function loadTmdbCache(){
   try{
@@ -1855,12 +1913,18 @@ function saveTmdbCache(movies){
   const now = Date.now();
   if (now - tmdbCacheSavedAt < 20000) return;
   tmdbCacheSavedAt = now;
+  // JSON.stringify сотен карточек — заметная работа для телефона, поэтому пишем кэш
+  // не в момент тапа по карточке, а следом за кадром.
+  setTimeout(() => { try{ writeTmdbCache(movies); }catch(e){} }, 0);
+}
+function writeTmdbCache(movies){
   try{
     // Обрезаем служебные поля и размер, чтобы кэш не разрастался до мегабайтов.
     const slim = movies.slice(0, 400).map(m => ({
       id:m.id, type:m.type, title:m.title, originalTitle:m.originalTitle, year:m.year,
       rating:m.rating, popularity:m.popularity, genres:m.genres, overview:m.overview,
       posterPath:m.posterPath, seasons:m.seasons, episodesTotal:m.episodesTotal, cast:m.cast,
+      isCartoon:!!m.isCartoon, isAnime:!!m.isAnime,
     }));
     localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies: slim, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV }));
   }catch(e){
@@ -1886,9 +1950,12 @@ function discoverUrls(page){
 async function loadMovies(){
   const cached = loadTmdbCache();
   if (cached){
-    MOVIES = cached.movies;
-    Object.assign(GENRE_MOVIE, cached.genreMovie);
-    Object.assign(GENRE_TV, cached.genreTv);
+    // Даже в кэше на всякий случай прогоняем дедупликацию: раньше в нём могли
+    // остаться двойники из разных discover-списков.
+    MOVIES = dedupeMovies(cached.movies || []);
+    rebuildMovieIndex(); tutMoviesCache = null;
+    Object.assign(GENRE_MOVIE, cached.genreMovie || {});
+    Object.assign(GENRE_TV, cached.genreTv || {});
     tmdbFailed = false;
     return;
   }
@@ -1902,11 +1969,12 @@ async function loadMovies(){
       fetchList(u.anime, 'anime', GENRE_TV),
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
-    const combined = dedupeMovies(keepRussian([...films, ...series, ...anime, ...cartoons]));
+    const combined = combineLists({ films, series, anime, cartoons });
     if (combined.length){
-      MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false;
-      // Догружаем сразу несколько страниц в фоне, чтобы колода была большой и не кончалась.
-      prefetchDeck(4);
+      MOVIES = combined; rebuildMovieIndex(); tutMoviesCache = null; saveTmdbCache(combined); tmdbFailed = false;
+      // Догружаем пару страниц в фоне: больше на старте — это десятки запросов к TMDB
+      // на мобильном интернете, а колода всё равно доберётся по мере надобности.
+      prefetchDeck(2);
     }
     else { tmdbFailed = true; }
   }catch(e){
@@ -1935,9 +2003,9 @@ async function fetchMorePages(){
       fetchList(u.anime, 'anime', GENRE_TV),
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
-    const existing = new Set(MOVIES.map(m => m.type + '_' + m.id));
-    const fresh = dedupeMovies(keepRussian([...films, ...series, ...anime, ...cartoons])).filter(m => !existing.has(m.type + '_' + m.id));
-    if (fresh.length){ MOVIES = MOVIES.concat(fresh); saveTmdbCache(MOVIES); }
+    const existing = new Set(MOVIES.map(m => mid(m)));
+    const fresh = combineLists({ films, series, anime, cartoons }).filter(m => !existing.has(mid(m)));
+    if (fresh.length){ MOVIES = MOVIES.concat(fresh); rebuildMovieIndex(); tutMoviesCache = null; saveTmdbCache(MOVIES); }
     return fresh.length;
   }catch(e){ tmdbPage -= 1; return 0; }
 }
@@ -1947,6 +2015,8 @@ async function fetchMorePages(){
 let prefetching = false;
 async function prefetchDeck(pages){
   if (prefetching) return;
+  // Режим экономии трафика в телефоне: без фоновых догрузок, только по требованию.
+  if (navigator.connection && navigator.connection.saveData) return;
   prefetching = true;
   try{
     for (let i = 0; i < (pages || 3); i++){
@@ -1962,25 +2032,36 @@ async function prefetchDeck(pages){
 function typeEnabled(type){
   return getFlag('smotra_type_' + type, true);
 }
-/* TMDB выдаёт фильмам и сериалам пересекающиеся числовые id: фильм 550 и сериал 550 —
-   совершенно разные тайтлы. Поэтому всё, что не фильм, храним в отдельном числовом
-   пространстве (id + смещение), а старые записи без смещения переводим при загрузке. */
-const SERIES_ID_OFFSET = 1000000000;
-function isTvLike(m){ return !!m && (m.type === 'series' || m.type === 'anime'); }
-function mid(m){ return isTvLike(m) ? m.id + SERIES_ID_OFFSET : m.id; }
-function keyToMovie(key){ return MOVIES.find(m => mid(m) === key) || null; }
+/* Индекс каталога по ключу: раньше каждый вызов keyToMovie перебирал весь список,
+   а он растёт до сотен тайтлов — теперь поиск O(1). */
+let MOVIE_INDEX = new Map();
+function rebuildMovieIndex(){
+  MOVIE_INDEX = new Map();
+  MOVIES.forEach(m => { const k = mid(m); if (!MOVIE_INDEX.has(k)) MOVIE_INDEX.set(k, m); });
+}
+function keyToMovie(key){ return MOVIE_INDEX.get(key) || null; }
 function normalizeStoredKey(v){
   v = +v || 0;
   if (!v || v >= SERIES_ID_OFFSET) return v;
-  if (MOVIES.some(m => m.type === 'film' && m.id === v)) return v;
-  const other = MOVIES.find(m => m.type !== 'film' && m.id === v);
-  return other ? mid(other) : v;
+  const asFilm = MOVIE_INDEX.get(v);
+  if (asFilm && !isTvLike(asFilm)) return v;
+  return MOVIE_INDEX.has(v + SERIES_ID_OFFSET) ? v + SERIES_ID_OFFSET : v;
 }
+/* Типы тайтла: у некоторых их два (фильм-мультфильм, сериал-аниме). */
+function movieTypes(m){
+  const list = [m.type];
+  if (m.isCartoon && m.type !== 'cartoon') list.push('cartoon');
+  if (m.isAnime && m.type !== 'anime') list.push('anime');
+  return list;
+}
+function typeMatches(m, type){ return type === 'all' || movieTypes(m).includes(type); }
+/* Тайтл показывается, если включён хотя бы один из его типов. */
+function typeEnabledFor(m){ return movieTypes(m).some(typeEnabled); }
 function isUnseen(m){
   const k = mid(m);
   return !state.watched.includes(k) && !state.skipped.includes(k)
       && !state.wishlist.includes(k) && !state.watching.includes(k)
-      && typeEnabled(m.type);
+      && typeEnabledFor(m);
 }
 function shuffle(arr){
   const a = arr.slice();
@@ -1993,7 +2074,7 @@ function shuffle(arr){
 function personalScore(m){
   let score = m.popularity || 0;
   if (selectedGenres && selectedGenres.length){
-    const matches = m.genres.filter(g => selectedGenres.includes(g)).length;
+    const matches = (m.genres||[]).filter(g => selectedGenres.includes(g)).length;
     if (matches > 0) score *= (1 + matches * 0.65); // реальный, ощутимый вес выбранных жанров, а не для галочки
   }
   return score;
@@ -2005,7 +2086,7 @@ async function refillDeck(){
   let fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
   let attempts = 0;
   // Тянем новые страницы, пока не наберём приличный запас (или пока TMDB не иссякнет).
-  while (fresh.length < 12 && attempts < 15){
+  while (fresh.length < 12 && attempts < 6){
     const added = await fetchMorePages();
     attempts++;
     if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
@@ -2015,6 +2096,9 @@ async function refillDeck(){
   // Пока мы ждали TMDB, часть карточек могла уехать свайпом — не возвращаем их в ленту.
   const stillFresh = dedupeByKey(fresh.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m))));
   deck = deck.concat(sortByPopularity(stillFresh));
+  // За сессию колода не должна разрастаться бесконечно: дальние карточки не нужны,
+  // их всегда можно догрузить заново.
+  if (deck.length > 200) deck = deck.slice(0, 200);
 }
 function shakeDeck(){
   deckRefillTries = 0;
@@ -2071,10 +2155,10 @@ function posterBG(m){
   const h = (m.id * 53) % 360;
   return `radial-gradient(120% 90% at 30% 15%, hsla(${h+30},70%,55%,0.22), transparent 60%), linear-gradient(165deg, hsl(${h},38%,20%), hsl(${h+25},45%,9%))`;
 }
-function posterIcon(m){ return TYPE_ICON[m.type] || GENRE_ICON[m.genres[0]] || 'film'; }
+function posterIcon(m){ return TYPE_ICON[m.type] || GENRE_ICON[(m.genres||[])[0]] || 'film'; }
 function hasArt(m){ return !!m.posterPath; }
 function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.posterPath}`; }
-function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${posterUrl(m, size)}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
+function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${esc(posterUrl(m, size))}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
 const BADGES = [
   { id:'b1', min:1, icon:'clapper', name:'Дебют', desc:'Отметь первый просмотренный тайтл' },
@@ -2083,6 +2167,10 @@ const BADGES = [
   { id:'b4', min:25, icon:'trophy', name:'Марафонец', desc:'Отметь 25 просмотренных тайтлов' },
 ];
 
+let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
+/* В списках состояния один и тот же ключ не должен появляться дважды: иначе счётчики
+   врут, а «Смотрю → Смотрел» может продублировать запись в базе. */
+function pushUnique(arr, key){ if (!arr.includes(key)) arr.push(key); return arr; }
 const state = {
   watched: [],
   skipped: [],
@@ -2298,10 +2386,9 @@ function renderStack(){
 }
 /* Плавный подъём колоды: верхняя карточка уже уехала, остальные переезжают
    в новые позиции с анимацией, а на задний план въезжает новая карточка. */
-function restackAfterTop(){
+function restackAfterTop(swipedEl){
   const cards = [...stackEl.querySelectorAll('.card')];
-  cards.forEach((card, i) => { card.dataset.depth = i; });
-  const top = cards[cards.length - 1];
+  const top = (swipedEl && swipedEl.parentElement === stackEl) ? swipedEl : cards[cards.length - 1];
   if (top) top.remove();
   const rest = [...stackEl.querySelectorAll('.card')];
   rest.reverse().forEach((card, i) => {
@@ -2428,22 +2515,24 @@ function resolveSwipe(card, movie, action){
   if (action === 'watched'){
     flyX = 900; rot = 28;
     undoInfo.wasWatching = state.watching.includes(mid(movie));
-    state.watched.push(mid(movie));
+    pushUnique(state.watched, mid(movie));
     state.watching = state.watching.filter(id=>id!==mid(movie));
     dbSwipe(mid(movie), 'watched'); dbWatchingRemove(mid(movie));
   }
-  if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(mid(movie)); dbSwipe(mid(movie), 'skipped'); }
-  if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(mid(movie))) state.wishlist.push(mid(movie)); dbWishAdd(mid(movie)); }
-  if (action === 'watching'){ flyY = 900; if (!state.watching.includes(mid(movie))) state.watching.push(mid(movie)); dbWatchingAdd(mid(movie)); }
+  if (action === 'skip'){ flyX = -900; rot = -28; pushUnique(state.skipped, mid(movie)); dbSwipe(mid(movie), 'skipped'); }
+  if (action === 'wish'){ flyY = -900; pushUnique(state.wishlist, mid(movie)); dbWishAdd(mid(movie)); }
+  if (action === 'watching'){ flyY = 900; pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); }
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
+  card.style.pointerEvents = 'none'; // улетающая карточка больше не ловит палец
   haptic('impact', action === 'watched' ? 'medium' : 'light');
   updateStats();
   if (action === 'watched') checkBadges();
   pushSwipeHistory(undoInfo);
   setTimeout(()=>{
     deck = deck.filter(m => !sameMovie(m, movie));
-    restackAfterTop();
+    if (card.isConnected) restackAfterTop(card);
+    else renderStack();          // состав DOM уже изменился (очень быстрые свайпы) — рисуем заново
     if (deck.length < 4) refillOnce();
     ensureDeckHeight();
   }, 300);
@@ -2515,18 +2604,18 @@ function toggleQuick(kind, movie){
   if (kind === 'wishlist'){
     const already = state.wishlist.includes(mid(movie));
     if (already){ state.wishlist = state.wishlist.filter(id=>id!==mid(movie)); dbWishRemove(mid(movie)); showToast('Убрано из «Хочу чекнуть»'); }
-    else { state.wishlist.push(mid(movie)); dbWishAdd(mid(movie)); showToast('Добавлено в «Хочу чекнуть»'); }
+    else { pushUnique(state.wishlist, mid(movie)); dbWishAdd(mid(movie)); showToast('Добавлено в «Хочу чекнуть»'); }
   }
   if (kind === 'watching'){
     const already = state.watching.includes(mid(movie));
     if (already){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); showToast('Убрано из «Смотрю»'); }
-    else { state.watching.push(mid(movie)); dbWatchingAdd(mid(movie)); showToast('Добавлено в «Смотрю»'); }
+    else { pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); showToast('Добавлено в «Смотрю»'); }
   }
   if (kind === 'watched'){
     const already = state.watched.includes(mid(movie));
     if (already){ state.watched = state.watched.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie),'watched'); showToast('Отметка снята'); }
     else {
-      state.watched.push(mid(movie));
+      pushUnique(state.watched, mid(movie));
       state.wishlist = state.wishlist.filter(id=>id!==mid(movie));
       state.watching = state.watching.filter(id=>id!==mid(movie));
       dbSwipe(mid(movie),'watched'); dbWishRemove(mid(movie)); dbWatchingRemove(mid(movie));
@@ -2571,7 +2660,7 @@ const Radial = (function(){
     wrap.style.left = cx + 'px';
     wrap.style.top = cy + 'px';
     defaultLabel = movie.title.length > 18 ? movie.title.slice(0,17)+'…' : movie.title;
-    center.innerHTML = `<div class="rad-center-bg" style="${thumbStyle||''}"></div><div class="rad-center-veil"></div><div class="rad-center-label" id="radCenterLabel">${defaultLabel}</div>`;
+    center.innerHTML = `<div class="rad-center-bg" style="${thumbStyle||''}"></div><div class="rad-center-veil"></div><div class="rad-center-label" id="radCenterLabel">${esc(defaultLabel)}</div>`;
     const acts = buildActions(movie);
     items = acts.map((a,i) => {
       const ang = (-90 + i*(360/acts.length)) * Math.PI/180;
@@ -2622,7 +2711,7 @@ const Radial = (function(){
     menu.classList.remove('show');
     items.forEach(it => it.el.remove());
     items = []; hot = -1;
-    const mv = curMovie; curMovie = null;
+    curMovie = null; // фильм нужен только внутри действий выше
     if (chosen){ haptic('impact','light'); chosen.run(); }
   }
   backdrop.addEventListener('pointerup', ()=> close(false));
@@ -2684,7 +2773,6 @@ document.getElementById('btnWish').onclick = function(){ pulseBtn(this); const c
 /* Перерисовываем только то, что реально видно: иначе каждый свайп пересобирал
    весь каталог (60 карточек), чек-лист, «Смотрю» и рейтинг друзей с сетью.
    Остальные экраны помечаем «устаревшими» и обновляем при входе в них. */
-let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
 function screenIsVisible(id){
   const el = document.getElementById(id);
   return !!el && (el.classList.contains('active') || el.classList.contains('open'));
@@ -2695,11 +2783,17 @@ function refreshVisibleScreens(){
   if (screenIsVisible('watchingScreen')){ watchingStale = false; renderWatching(); } else watchingStale = true;
   if (screenIsVisible('profile')){ rankStale = false; renderRank(); renderWeekActivity(); } else rankStale = true;
 }
+/* Счётчики обновляем сразу, а тяжёлую перерисовку экранов — один раз за кадр:
+   за один свайп updateStats() вызывается несколько раз, и каталог (до 60 карточек)
+   перерисовывался столько же раз. */
+let statsFramePending = false;
 function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
-  refreshVisibleScreens();
+  if (statsFramePending) return;
+  statsFramePending = true;
+  requestAnimationFrame(() => { statsFramePending = false; refreshVisibleScreens(); });
 }
 
 /* ============ WATCHING («смотрю сейчас») ============ */
@@ -2727,7 +2821,7 @@ function renderWatching(){
     row.style.animationDelay = (Math.min(i,14) * 0.025) + 's';
     const key = +row.dataset.key, id = +row.dataset.id;
     row.querySelector('[data-act=remove]').onclick = () => { state.watching = state.watching.filter(x=>x!==key); dbWatchingRemove(key); updateStats(); };
-    row.querySelector('[data-act=watched]').onclick = () => { state.watching = state.watching.filter(x=>x!==key); if(!state.watched.includes(key)) state.watched.push(key); haptic('impact','medium'); dbWatchingRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
+    row.querySelector('[data-act=watched]').onclick = () => { state.watching = state.watching.filter(x=>x!==key); pushUnique(state.watched, key); haptic('impact','medium'); dbWatchingRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
     row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id, row.dataset.type)); });
   });
 }
@@ -2759,6 +2853,7 @@ async function renderWeekActivity(){
 
 /* ============ CATALOG ============ */
 let activeType = 'all';
+let activeGenre = 'Все';
 document.getElementById('typeChips').innerHTML = TYPE_TABS.map(t => `<div class="chip ${t.key===activeType?'active':''}" data-t="${t.key}">${t.label}</div>`).join('');
 document.getElementById('typeChips').addEventListener('click', e=>{
   const c = e.target.closest('.chip'); if (!c) return;
@@ -2766,7 +2861,7 @@ document.getElementById('typeChips').addEventListener('click', e=>{
   [...document.querySelectorAll('#typeChips .chip')].forEach(x=>x.classList.toggle('active', x===c));
   renderCatalog();
 });
-let activeGenre = 'Все';
+setupGenreChips(); // первая отрисовка жанровых чипов
 let searchQuery = '';
 document.getElementById('catSearch').addEventListener('input', e=>{
   searchQuery = e.target.value.trim().toLowerCase(); catalogRenderLimit = 60;
@@ -2779,8 +2874,9 @@ document.getElementById('catChips').addEventListener('click', e=>{
   renderCatalog();
 });
 function setupGenreChips(){
-  const genres = ['Все', ...new Set(MOVIES.flatMap(m => m.genres))];
-  document.getElementById('catChips').innerHTML = genres.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${g}">${g}</div>`).join('');
+  const genres = ['Все', ...new Set(MOVIES.flatMap(m => m.genres || []))];
+  if (!genres.includes(activeGenre)) activeGenre = 'Все'; // жанр мог исчезнуть после смены каталога
+  document.getElementById('catChips').innerHTML = genres.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${esc(g)}">${esc(g)}</div>`).join('');
 }
 /* ============ Общие шаблоны карточек (грид/список) ============ */
 /* Обложки грузим только когда карточка приближается к экрану: в каталоге
@@ -2809,7 +2905,7 @@ function posterCardHTML(m){
   const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
               : wi ? `<div class="pc-flag wish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>`
               : wa ? `<div class="pc-flag watching">${ICON('play', 10)}</div>` : '';
-  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art" data-bg="${hasArt(m) ? posterUrl(m, 'w342') : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
+  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art" data-bg="${hasArt(m) ? esc(posterUrl(m, 'w342')) : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
 }
 // Маленькая обложка для карточки рецензии. movie может быть undefined (нет в каталоге).
 function reviewPosterHTML(movie){
@@ -2850,9 +2946,9 @@ let catalogRenderLimit = 60;
 function renderCatalog(){
   const view = syncViewToggle('catalog', 'grid');
   const list = MOVIES.filter(m =>
-    (activeType==='all' || m.type===activeType) &&
-    (activeGenre==='Все' || m.genres.includes(activeGenre)) &&
-    (!searchQuery || m.title.toLowerCase().includes(searchQuery) || (m.originalTitle||'').toLowerCase().includes(searchQuery))
+    typeMatches(m, activeType) &&
+    (activeGenre==='Все' || (m.genres||[]).includes(activeGenre)) &&
+    (!searchQuery || (m.title||'').toLowerCase().includes(searchQuery) || (m.originalTitle||'').toLowerCase().includes(searchQuery))
   );
   const grid = document.getElementById('catGrid');
   const moreWrap = document.getElementById('catShowMore');
@@ -2924,7 +3020,7 @@ function renderWishlist(){
     row.style.animationDelay = (Math.min(i,14) * 0.025) + 's';
     const key = +row.dataset.key, id = +row.dataset.id;
     row.querySelector('[data-act=remove]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==key); dbWishRemove(key); updateStats(); };
-    row.querySelector('[data-act=watched]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==key); if(!state.watched.includes(key)) state.watched.push(key); haptic('impact','medium'); dbWishRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
+    row.querySelector('[data-act=watched]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==key); pushUnique(state.watched, key); haptic('impact','medium'); dbWishRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
     row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id, row.dataset.type)); });
   });
 }
@@ -2944,7 +3040,7 @@ document.getElementById('histTypeChips').addEventListener('click', e=>{
 });
 function renderHistory(){
   const ids = histMode === 'watched' ? state.watched : state.skipped;
-  const items = ids.slice().reverse().map(keyToMovie).filter(Boolean).filter(m => histType==='all' || m.type===histType);
+  const items = ids.slice().reverse().map(keyToMovie).filter(Boolean).filter(m => typeMatches(m, histType));
   const el = document.getElementById('histList');
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
   el.innerHTML = items.map(m => `
@@ -2960,8 +3056,8 @@ function openHistoryAs(mode){
   document.getElementById('historyScreen').classList.add('open');
   renderHistory();
 }
-document.getElementById('openHistory').onclick = () => { document.getElementById('historyScreen').classList.add('open'); renderHistory(); };
-document.getElementById('openWatchingRow').onclick = () => { watchingStale = false; document.getElementById('watchingScreen').classList.add('open'); renderWatching(); };
+document.getElementById('openHistory').onclick = () => { keepDeckFull(); document.getElementById('historyScreen').classList.add('open'); renderHistory(); };
+document.getElementById('openWatchingRow').onclick = () => { keepDeckFull(); watchingStale = false; document.getElementById('watchingScreen').classList.add('open'); renderWatching(); };
 document.getElementById('closeWatching').onclick = () => document.getElementById('watchingScreen').classList.remove('open');
 document.getElementById('closeHistory').onclick = () => document.getElementById('historyScreen').classList.remove('open');
 document.getElementById('statCardWatched').onclick = () => { haptic('selection'); openHistoryAs('watched'); };
@@ -2971,7 +3067,7 @@ document.getElementById('statCardStreak').onclick = () => {
   document.getElementById('weekChart').scrollIntoView({ behavior:'smooth', block:'center' });
   showToast('Заходи каждый день — стрик растёт', 'fire');
 };
-document.getElementById('openSettings').onclick = () => document.getElementById('settingsScreen').classList.add('open');
+document.getElementById('openSettings').onclick = () => { keepDeckFull(); document.getElementById('settingsScreen').classList.add('open'); };
 document.getElementById('closeSettings').onclick = () => document.getElementById('settingsScreen').classList.remove('open');
 
 /* ============ RANK ============ */
@@ -3040,7 +3136,7 @@ function renderProgress(movie){
     const isFull = cur >= s.total;
     return `
       <div class="season-row" data-season="${s.number}">
-        <div class="season-top"><span>${s.name}</span><span>${cur}/${s.total}</span></div>
+        <div class="season-top"><span>${esc(s.name)}</span><span>${cur}/${s.total}</span></div>
         <div class="season-bar"><div class="season-fill" style="width:${sPct}%"></div></div>
         <div class="season-btns">
           <button class="season-fillall" data-full="${isFull ? 0 : s.total}">${isFull ? ICON('cross',12)+' Сбросить сезон' : ICON('check',12)+' Весь сезон'}</button>
@@ -3111,7 +3207,7 @@ function updateSheetButtons(movie){
 function renderCastChips(movie){
   const el = document.getElementById('sheetCast');
   if (movie.cast && movie.cast.length){
-    el.innerHTML = movie.cast.map(n=>`<div class="cast-chip">${n}</div>`).join('');
+    el.innerHTML = movie.cast.map(n=>`<div class="cast-chip">${esc(n)}</div>`).join('');
   } else if (movie._castFetched){
     el.innerHTML = `<div class="cast-chip" style="opacity:.5;">Нет данных об актёрах</div>`;
   } else {
@@ -3121,17 +3217,22 @@ function renderCastChips(movie){
 
 function openSheet(movie){
   sheetMovie = movie;
+  // Новая карточка всегда открывается сверху, а не в том месте, где докрутили прошлую.
+  sheet.scrollTop = 0;
+  sheet.style.transform = '';
+  sheet.style.touchAction = '';
   const pl = document.getElementById('sheetPoster');
   if (hasArt(movie)){
     const url = posterUrl(movie, 'w780');
     pl.style.cssText = '';
-    pl.innerHTML = `<div class="pl-blur" style="background-image:url('${url}');"></div><div class="pl-full" style="background-image:url('${url}');"></div>`;
+    pl.innerHTML = `<div class="pl-blur" style="background-image:url('${esc(url)}');"></div><div class="pl-full" style="background-image:url('${esc(url)}');"></div>`;
   } else {
     pl.style.cssText = `background:${posterBG(movie)};`;
     pl.innerHTML = `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;
   }
   document.getElementById('sheetTitle').textContent = movie.title;
-  const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
+  const typeChip = movieTypes(movie).filter(t => t !== 'film')
+    .map(t => `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[t] || ''}</span>`).join('');
   document.getElementById('sheetMeta').innerHTML = `${esc(movie.year)} · ${ICON('starFill', 12)} ${esc(movie.rating)} <span id="sheetSmotrimetry"></span> ${typeChip}${(movie.genres||[]).map(g=>`<span class="genre-tag">${esc(g)}</span>`).join('')}`;
   document.getElementById('sheetOverview').textContent = movie.overview;
   renderCastChips(movie);
@@ -3150,43 +3251,61 @@ function openSheet(movie){
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
 
-/* Шторку фильма можно стянуть вниз в любом месте (не только за шапку):
-   если список ещё не прокручен — жест закрывает карточку. */
+/* Шторка фильма закрывается протяжкой вниз из любого места — но только если список
+   ещё не прокручен. Прошлая версия вешала preventDefault на каждый touchmove и
+   полностью отбирала прокрутку у карточки (главный баг 0.7): теперь мы вообще не
+   трогаем жест, пока пользователь листает описание. */
 (function initSheetSwipeDown(){
-  let startY = 0, dy = 0, dragging = false, fromTop = false;
-  const INTERACTIVE = 'input, textarea, button, .season-stepper, .cast-row, .handle';
-  function onDown(e){
-    if (e.target.closest(INTERACTIVE)) return;
-    fromTop = sheet.scrollTop <= 0;
-    if (!fromTop) return;
-    dragging = true; dy = 0; startY = e.clientY; sheet.style.transition = 'none';
+  const INTERACTIVE = 'input, textarea, select, button, .season-stepper, .cast-row';
+  let startY = 0, dy = 0, dragging = false;
+  function start(y, target){
+    if (!sheet.classList.contains('open')) return;
+    if (target && target.closest && target.closest(INTERACTIVE)){ dragging = false; return; }
+    // Начинаем «тянуть» только из самого верха: иначе это обычная прокрутка контента.
+    if (sheet.scrollTop > 1){ dragging = false; return; }
+    dragging = true; dy = 0; startY = y;
   }
-  function onMove(e){
-    if (!dragging) return;
-    dy = Math.max(0, e.clientY - startY);
-    if (dy <= 0) return;
-    sheet.style.transform = `translateY(${dy}px)`;
-    if (e.cancelable) e.preventDefault();
+  function move(e, y){
+    if (!dragging) return false;
+    dy = y - startY;
+    if (dy <= 0 || sheet.scrollTop > 1){ dragging = false; dy = 0; return false; } // вверх/внутри — отдаём скроллу
+    if (e && e.cancelable) e.preventDefault();
+    sheet.style.transform = `translateY(${Math.min(dy * 0.8, 240)}px)`;
+    return true;
   }
-  function onUp(){
+  function end(){
     if (!dragging) return;
     dragging = false;
-    sheet.style.transition = '';
+    const close = dy > 90;
     sheet.style.transform = '';
-    if (dy > 90){
-      haptic('impact','light');
-      sheet.classList.remove('open'); backdrop.classList.remove('open');
-    }
     dy = 0;
+    if (close){ haptic('impact','light'); sheet.classList.remove('open'); backdrop.classList.remove('open'); }
   }
-  // touchmove с preventDefault гасит прокрутку, пока тянем шторку вниз
-  sheet.addEventListener('touchmove', e => { if (dragging) e.preventDefault(); }, { passive:false });
-  sheet.addEventListener('touchstart', onDown, { passive:true });
-  sheet.addEventListener('touchend', onUp);
-  sheet.addEventListener('touchcancel', onUp);
-  sheet.addEventListener('mousedown', onDown);
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
+  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+  let touchActive = false; // после touchend браузер шлёт «эмулированные» mouse-события — не дублируем жест
+  if (isTouch){
+    sheet.addEventListener('touchstart', e => {
+      touchActive = true;
+      const t = e.touches && e.touches[0];
+      start(t ? t.clientY : 0, e.target);
+    }, { passive:true });
+    sheet.addEventListener('touchmove', e => {
+      const t = e.touches && e.touches[0];
+      move(e, t ? t.clientY : 0);
+    }, { passive:false });
+    sheet.addEventListener('touchend', e => { end(); setTimeout(() => { touchActive = false; }, 400); });
+    sheet.addEventListener('touchcancel', e => { end(); setTimeout(() => { touchActive = false; }, 400); });
+  }
+  sheet.addEventListener('mousedown', e => {
+    if (touchActive) return;
+    if (e.button !== 0) return;
+    if (window.getSelection && String(window.getSelection())) return; // не мешаем выделять текст
+    start(e.clientY, e.target);
+  });
+  window.addEventListener('mousemove', e => move(e, e.clientY));
+  window.addEventListener('mouseup', end);
+  // Если шторку закрыли любым другим способом — снимаем незавершённый сдвиг.
+  sheet.addEventListener('transitionend', () => { if (!sheet.classList.contains('open')) { sheet.style.transform = ''; } });
 })();
 
 /* ============ РЕЦЕНЗИИ: показ на карточке фильма ============ */
@@ -3253,6 +3372,8 @@ function updateReviewTotal(){
   document.getElementById('reviewTotalBadge').textContent = `${total}/${SCORE_MAX}`;
   const val = document.getElementById('reviewTotalValue');
   if (val) val.innerHTML = `${total}<b>/${SCORE_MAX}</b>`;
+  const row = document.getElementById('reviewTotalRow');
+  if (row){ row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse'); }
 }
 /* Заливка шкалы до бегунка — чтобы ползунок «читался» как объёмный */
 function paintSlider(input, max){
@@ -3371,7 +3492,7 @@ document.getElementById('sheetWish').onclick = function(){
     dbWishRemove(mid(sheetMovie));
     showToast('Убрано из «Хочу чекнуть»');
   } else {
-    state.wishlist.push(mid(sheetMovie));
+    pushUnique(state.wishlist, mid(sheetMovie));
     dbWishAdd(mid(sheetMovie));
     showToast('Добавлено в «Хочу чекнуть»');
   }
@@ -3392,7 +3513,7 @@ document.getElementById('sheetWatching').onclick = function(){
     dbWatchingRemove(mid(sheetMovie));
     showToast('Убрано из «Смотрю»');
   } else {
-    state.watching.push(mid(sheetMovie));
+    pushUnique(state.watching, mid(sheetMovie));
     dbWatchingAdd(mid(sheetMovie));
     showToast('Перемещено в «Смотрю»');
   }
@@ -3411,7 +3532,7 @@ document.getElementById('sheetWatched').onclick = function(){
     dbSwipeRemove(mid(sheetMovie), 'watched');
     showToast('Отмечено как непросмотренное');
   } else {
-    state.watched.push(mid(sheetMovie));
+    pushUnique(state.watched, mid(sheetMovie));
     state.wishlist = state.wishlist.filter(id=>id!==mid(sheetMovie));
     state.watching = state.watching.filter(id=>id!==mid(sheetMovie));
     dbSwipe(mid(sheetMovie),'watched'); dbWishRemove(mid(sheetMovie)); dbWatchingRemove(mid(sheetMovie));
