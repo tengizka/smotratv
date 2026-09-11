@@ -154,9 +154,10 @@
   .surprise-btn:active{ transform:scale(.96); }
 
   /* ===== Home / stack ===== */
-  /* Колода занимает ровно свободное место между фильтром и кнопками:
-     flex:1 1 auto + min-height:0, чтобы ничего не выдавливало панель вниз. */
-  #home{ align-items:stretch; position:relative; }
+  /* ВАЖНО: у #home не должно быть position — иначе ID-правило перебивает
+     .screen{position:absolute; inset:0}, экран перестаёт занимать всю высоту
+     и колода схлопывается в полоску (был именно такой баг). */
+  #home{ align-items:stretch; }
   .stack{ position:relative; flex:1 1 auto; min-height:0; margin-top:0; }
   /* Иконка фильтра в шапке ленты */
   .home-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 2px 8px; flex:0 0 auto; }
@@ -1022,7 +1023,7 @@ if (tg) {
   }
 }
 // Вне Telegram (браузер, десктоп) держим ту же стабильную высоту приложения.
-window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); });
+window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { syncAppHeight(); applySafeArea(); }, 250));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
 syncAppHeight();
@@ -2105,6 +2106,7 @@ function renderStack(){
     return;
   }
   const visible = deck.slice(0,3);
+  try{
   visible.slice().reverse().forEach((movie, revIdx) => {
     const depth = visible.length - 1 - revIdx;
     const card = document.createElement('div');
@@ -2118,7 +2120,7 @@ function renderStack(){
       <div class="stamp skip">МИМО</div>
       <div class="stamp wish">ЧЕКНУТЬ</div>
       <div class="stamp watching">СМОТРЮ</div>
-      <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${movie.genres.slice(0,2).map(g=>`<div class="genre-tag">${g}</div>`).join('')}</div>
+      <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${(movie.genres||[]).slice(0,2).map(g=>`<div class="genre-tag">${g}</div>`).join('')}</div>
       <div class="info">
         <div class="title">${movie.title}</div>
         <div class="meta">${movie.year} <span class="star">${ICON('starFill', 12)} ${movie.rating}</span></div>
@@ -2126,6 +2128,36 @@ function renderStack(){
     stackEl.appendChild(card);
     if (depth === 0) makeDraggable(card, movie);
   });
+  }catch(e){
+    // Одна битая карточка не должна оставлять пустой весь экран
+    console.error('renderStack failed', e);
+    if (!stackEl.querySelector('.card')){
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Не получилось показать карточки</div><div>Потяни за «Перемешать» или обнови подборку</div><button id="retryDeck2">Обновить подборку</button></div>`;
+      const b = document.getElementById('retryDeck2');
+      if (b) b.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
+    }
+  }
+  ensureDeckHeight();
+}
+
+/* Страховка от схлопывания колоды: если флекс-контейнер по какой-то причине
+   не растянул сцену, считаем доступную высоту руками и фиксируем её в px. */
+function ensureDeckHeight(){
+  const home = document.getElementById('home');
+  const stack = document.getElementById('stack');
+  if (!home || !stack) return;
+  if (!home.classList.contains('active')) return;
+  const used = ['.home-head', '.actions', '.my-actions', '.home-bottom']
+    .reduce((sum, sel) => { const el = home.querySelector(sel); return sum + (el ? el.getBoundingClientRect().height : 0); }, 0);
+  const cs = getComputedStyle(home);
+  const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  const avail = home.getBoundingClientRect().height - used - pad;
+  const current = stack.getBoundingClientRect().height;
+  if (avail > 80 && current < avail - 8){
+    stack.style.height = Math.floor(avail) + 'px';
+  } else if (stack.style.height){
+    stack.style.height = '';
+  }
 }
 
 function makeDraggable(card, movie){
@@ -3201,6 +3233,7 @@ function switchTab(id){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
   if (id === 'home' && deck.length < 3 && !deckRefreshing && !tmdbFailed) refillAndRender();
+  if (id === 'home') requestAnimationFrame(ensureDeckHeight);
   if (id === 'feed' && !feedEverLoaded){ feedEverLoaded = true; renderFeed(); }
   // Экран мог «протухнуть», пока мы были на другом табе — обновляем при входе.
   if (id === 'catalog' && catalogStale){ catalogStale = false; renderCatalog(); }
