@@ -68,15 +68,35 @@
   h1,h2,h3{margin:0;}
   .wordmark{ font-family:'Unbounded', sans-serif; font-weight:800; letter-spacing:-0.5px; }
 
-  /* Пасхалка-огонёк под грабером Telegram */
-  .grabber-fire{ position:fixed; top:6px; left:50%; transform:translateX(-50%); z-index:9; pointer-events:none; display:flex; align-items:center; justify-content:center; width:36px; height:20px; }
-  .grabber-fire .gf-flame{ display:flex; filter:drop-shadow(0 0 5px rgba(227,166,62,0.85)); transform-origin:center bottom; animation:gfFlicker 1.5s ease-in-out infinite; }
-  @keyframes gfFlicker{
-    0%,100%{ transform:scale(1) rotate(-2deg); opacity:.95; }
-    25%{ transform:scale(1.12,0.95) rotate(2deg); opacity:1; }
-    50%{ transform:scale(0.96,1.08) rotate(-1deg); opacity:.9; }
-    75%{ transform:scale(1.06,1) rotate(1deg); opacity:1; }
-  }
+  /* ===== Пасхалка: анимированные модельки на месте грабера Telegram ===== */
+  .grabber-toy{ position:fixed; top:calc(2px + var(--safe-top)); left:50%; transform:translateX(-50%); z-index:9; width:44px; height:26px; padding:0; border:none; background:none; display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .grabber-toy svg{ width:22px; height:22px; overflow:visible; }
+  .toy{ transform-origin:center; }
+  /* появление новой модельки после смены */
+  @keyframes toySwap{ 0%{ transform:scale(0) rotate(-140deg); opacity:0; } 60%{ transform:scale(1.25) rotate(12deg); opacity:1; } 100%{ transform:scale(1) rotate(0); opacity:1; } }
+  .grabber-toy.swapping svg{ animation:toySwap .5s cubic-bezier(.2,1.5,.4,1); }
+
+  /* огонёк */
+  .toy-fire{ transform-origin:center bottom; animation:tFlicker 1.4s ease-in-out infinite; filter:drop-shadow(0 0 4px rgba(227,120,40,0.8)); }
+  @keyframes tFlicker{ 0%,100%{ transform:scale(1) rotate(-2deg);} 25%{ transform:scale(1.1,.94) rotate(2deg);} 50%{ transform:scale(.95,1.08) rotate(-1deg);} 75%{ transform:scale(1.05,1) rotate(1deg);} }
+  /* луна — покачивается */
+  .toy-moon{ animation:tRock 3.5s ease-in-out infinite; filter:drop-shadow(0 0 4px rgba(200,210,255,0.7)); }
+  @keyframes tRock{ 0%,100%{ transform:rotate(-8deg);} 50%{ transform:rotate(8deg);} }
+  /* солнце — крутится и пульсирует */
+  .toy-sun{ animation:tSpin 9s linear infinite; filter:drop-shadow(0 0 5px rgba(255,200,60,0.85)); }
+  @keyframes tSpin{ to{ transform:rotate(360deg);} }
+  /* сердце — бьётся */
+  .toy-heart{ animation:tBeat 1s ease-in-out infinite; filter:drop-shadow(0 0 4px rgba(225,90,120,0.8)); }
+  @keyframes tBeat{ 0%,100%{ transform:scale(1);} 15%{ transform:scale(1.28);} 30%{ transform:scale(1);} 45%{ transform:scale(1.18);} }
+  /* молния — вспыхивает */
+  .toy-bolt{ animation:tFlash 2.2s ease-in-out infinite; filter:drop-shadow(0 0 5px rgba(255,224,90,0.9)); transform-origin:center; }
+  @keyframes tFlash{ 0%,55%,100%{ opacity:.6; transform:scale(.95);} 60%{ opacity:1; transform:scale(1.2);} 66%{ opacity:.7;} 72%{ opacity:1; transform:scale(1.1);} 80%{ opacity:.85;} }
+  /* НЛО — парит и мигает огоньками */
+  .toy-ufo{ animation:tHover 2.6s ease-in-out infinite; filter:drop-shadow(0 0 5px rgba(120,230,160,0.8)); }
+  @keyframes tHover{ 0%,100%{ transform:translateY(0) rotate(-3deg);} 50%{ transform:translateY(-3px) rotate(3deg);} }
+  /* звезда — мерцает и крутится */
+  .toy-star{ animation:tTwinkle 2s ease-in-out infinite; filter:drop-shadow(0 0 5px rgba(255,215,110,0.9)); transform-origin:center; }
+  @keyframes tTwinkle{ 0%,100%{ transform:scale(.85) rotate(0); opacity:.7;} 50%{ transform:scale(1.15) rotate(20deg); opacity:1;} }
 
   /* ===== Top bar ===== */
   .topbar{ display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 20px 8px; }
@@ -238,7 +258,9 @@
   .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
   .cat-slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
 
-  .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; }
+  .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; display:flex; gap:12px; }
+  .review-poster{ width:46px; height:68px; border-radius:10px; flex:0 0 auto; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; color:var(--text-dim); border:1px solid var(--border); }
+  .review-body{ flex:1; min-width:0; }
   .review-head{ display:flex; align-items:center; gap:10px; }
   .review-avatar{ width:34px; height:34px; border-radius:11px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-weight:800; color:#1a1408; font-size:14px; flex:0 0 auto; background-size:cover; background-position:center; }
   .review-meta{ flex:1; min-width:0; }
@@ -458,13 +480,9 @@
 <body>
 <div class="grain"></div>
 
-<!-- Пасхалка: огонёк ровно там, где Telegram рисует свой грабер. Если вебвью
-     клиента заходит под грабер — увидим наш огонёк, если нет — просто не виден. -->
-<div class="grabber-fire" id="grabberFire" aria-hidden="true">
-  <div class="gf-flame">
-    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="url(#gfGrad)"/><defs><linearGradient id="gfGrad" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd76a"/><stop offset="0.5" stop-color="#e3a63e"/><stop offset="1" stop-color="#c1493f"/></linearGradient></defs></svg>
-  </div>
-</div>
+<!-- Пасхалка: набор анимированных моделек ровно на месте грабера Telegram.
+     Тап по ней меняет модельку со сменной анимацией. -->
+<button class="grabber-toy" id="grabberToy" aria-label="Пасхалка"></button>
 
 <!-- SPLASH -->
 <div id="splash">
@@ -1170,6 +1188,38 @@ function recordVisitAndGetStreak(){
 const currentStreak = recordVisitAndGetStreak();
 document.getElementById('streakNum').textContent = currentStreak;
 document.getElementById('statStreak').textContent = currentStreak;
+
+/* ============ ПАСХАЛКА: анимированные модельки на месте грабера ============ */
+const GRABBER_TOYS = [
+  { name:'fire', svg:`<g class="toy toy-fire"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="#e3a63e"/><path d="M12 21a4 4 0 0 0 1.5-7.7c-.2 1.2-1 1.9-2 2.2.3-1.4-.3-2.6-1.2-3.5-.2 1.3-1.3 2-1.3 3.6A3 3 0 0 0 12 21z" fill="#ffd76a"/></g>` },
+  { name:'moon', svg:`<g class="toy toy-moon"><path d="M20 14.5A8 8 0 1 1 10.2 4a6.5 6.5 0 0 0 9.8 10.5z" fill="#dfe6ff"/><circle cx="8.5" cy="9.5" r="1" fill="#b9c4ee"/><circle cx="11" cy="14" r="1.4" fill="#b9c4ee"/><circle cx="7.5" cy="13.5" r=".8" fill="#b9c4ee"/></g>` },
+  { name:'sun', svg:`<g class="toy toy-sun"><circle cx="12" cy="12" r="5" fill="#ffd05a"/><g stroke="#ffb733" stroke-width="2" stroke-linecap="round"><path d="M12 1.5v2.5M12 20v2.5M1.5 12h2.5M20 12h2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M19.8 4.2 18 6M6 18l-1.8 1.8"/></g></g>` },
+  { name:'heart', svg:`<g class="toy toy-heart"><path d="M12 21s-7.3-4.6-9.6-9.2C.9 8 2.4 4 6.3 4c2.1 0 4 1.6 5.7 4 1.7-2.4 3.6-4 5.7-4 3.9 0 5.4 4 3.9 7.8C19.3 16.4 12 21 12 21z" fill="#e15a78"/></g>` },
+  { name:'bolt', svg:`<g class="toy toy-bolt"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z" fill="#ffe05a" stroke="#f5b400" stroke-width="1" stroke-linejoin="round"/></g>` },
+  { name:'ufo', svg:`<g class="toy toy-ufo"><ellipse cx="12" cy="14.5" rx="9" ry="3.2" fill="#7fe6a2"/><path d="M7 12.5a5 5 0 0 1 10 0" fill="#bfeecb"/><path d="M8.5 9.5a3.5 3 0 0 1 7 0" fill="#e6fff0"/><circle cx="6.5" cy="14.6" r="1" fill="#fff36b"/><circle cx="12" cy="15.4" r="1" fill="#ff8f6b"/><circle cx="17.5" cy="14.6" r="1" fill="#6bd0ff"/></g>` },
+  { name:'star', svg:`<g class="toy toy-star"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1 6.1 20.3l1.3-6.5-4.9-4.5 6.6-.8z" fill="#ffd76a" stroke="#f5b400" stroke-width="1" stroke-linejoin="round"/></g>` },
+];
+(function initGrabberToy(){
+  const btn = document.getElementById('grabberToy');
+  if (!btn) return;
+  let idx = 0;
+  try{ idx = Math.max(0, GRABBER_TOYS.findIndex(t => t.name === localStorage.getItem('smotra_toy'))); }catch(e){}
+  if (idx < 0) idx = 0;
+  function render(){
+    btn.innerHTML = `<svg viewBox="0 0 24 24">${GRABBER_TOYS[idx].svg}</svg>`;
+  }
+  render();
+  btn.addEventListener('click', () => {
+    idx = (idx + 1) % GRABBER_TOYS.length;
+    try{ localStorage.setItem('smotra_toy', GRABBER_TOYS[idx].name); }catch(e){}
+    render();
+    btn.classList.remove('swapping');
+    void btn.offsetWidth; // рестарт анимации
+    btn.classList.add('swapping');
+    haptic('impact','light');
+  });
+  btn.addEventListener('animationend', () => btn.classList.remove('swapping'));
+})();
 
 /* ============ ONBOARDING ============ */
 const GENRES_FALLBACK = ['Драма','Комедия','Триллер','Ужасы','Фантастика','Боевик','Мелодрама','Документальный','Криминал'];
@@ -2312,6 +2362,12 @@ function posterCardHTML(m){
               : wa ? `<div class="pc-flag watching">${ICON('play', 10)}</div>` : '';
   return `<div class="poster-card" data-id="${m.id}"><div class="pc-art" style="${posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${m.title}</div></div>`;
 }
+// Маленькая обложка для карточки рецензии. movie может быть undefined (нет в каталоге).
+function reviewPosterHTML(movie){
+  if (movie && hasArt(movie)) return `<div class="review-poster" style="${posterStyle(movie,'w154')}"></div>`;
+  if (movie) return `<div class="review-poster" style="background:${posterBG(movie)}">${ICON(posterIcon(movie),20)}</div>`;
+  return `<div class="review-poster">${ICON('film',20)}</div>`;
+}
 function rowCardHTML(m, showActions){
   const actions = showActions ? `<div class="rc-actions"><button class="ok" data-act="watched">${ICON('check', 15)}</button><button data-act="remove">${ICON('cross', 14)}</button></div>` : '';
   return `<div class="row-card" data-id="${m.id}">
@@ -2684,11 +2740,14 @@ async function refreshSheetReviews(movie){
   if (mine){
     mineEl.innerHTML = `
       <div class="review-card" style="border-color:rgba(227,166,62,0.35);">
-        <div class="review-head">
-          <div class="review-meta"><div class="review-name">Твоя рецензия</div></div>
-          <div class="review-score">${mine.total}/${SCORE_MAX}</div>
+        ${reviewPosterHTML(movie)}
+        <div class="review-body">
+          <div class="review-head">
+            <div class="review-meta"><div class="review-name">Твоя рецензия</div></div>
+            <div class="review-score">${mine.total}/${SCORE_MAX}</div>
+          </div>
+          ${mine.text ? `<div class="review-text">${mine.text}</div>` : ''}
         </div>
-        ${mine.text ? `<div class="review-text">${mine.text}</div>` : ''}
       </div>`;
   } else {
     mineEl.innerHTML = '';
@@ -2715,12 +2774,15 @@ async function refreshSheetReviews(movie){
       const name = friendDisplayName(profileMap[r.telegram_id]);
       const photo = profileMap[r.telegram_id]?.photo_url;
       return `<div class="review-card">
-        <div class="review-head">
-          <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
-          <div class="review-meta"><div class="review-name">${name}</div></div>
-          <div class="review-score">${r.total}/${SCORE_MAX}</div>
+        ${reviewPosterHTML(movie)}
+        <div class="review-body">
+          <div class="review-head">
+            <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
+            <div class="review-meta"><div class="review-name">${name}</div></div>
+            <div class="review-score">${r.total}/${SCORE_MAX}</div>
+          </div>
+          ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
         </div>
-        ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
       </div>`;
     }).join('');
   }catch(e){ /* таблицы reviews ещё нет — просто не показываем блок */ }
@@ -2811,13 +2873,16 @@ async function renderFeed(){
     const topCats = [...BIG_CATS.map(c=>({label:c.label, val:big[c.key]})), ...SMALL_CATS.map(c=>({label:c.label, val:small[c.key]}))]
       .filter(c => c.val).sort((a,b)=>b.val-a.val).slice(0,3);
     return `<div class="review-card" data-movie="${r.movie_id}" style="cursor:pointer;">
-      <div class="review-head">
-        <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
-        <div class="review-meta"><div class="review-name">${name}</div><div class="review-movie">${movieName}</div></div>
-        <div class="review-score">${r.total}/${SCORE_MAX}</div>
+      ${reviewPosterHTML(movie)}
+      <div class="review-body">
+        <div class="review-head">
+          <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
+          <div class="review-meta"><div class="review-name">${name}</div><div class="review-movie">${movieName}</div></div>
+          <div class="review-score">${r.total}/${SCORE_MAX}</div>
+        </div>
+        ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
+        ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${c.label}: ${c.val}</span>`).join('')}</div>` : ''}
       </div>
-      ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
-      ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${c.label}: ${c.val}</span>`).join('')}</div>` : ''}
     </div>`;
   }).join('');
   [...body.querySelectorAll('.review-card')].forEach(card => {
