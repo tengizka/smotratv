@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://image.tmdb.org">
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
 <style>
   /* Основная тема — «неон» (синяя). Янтарь включается классом body.theme-amber.
      Все «светящиеся» цвета (обводки, тени, подложки) идут через переменные,
@@ -446,8 +446,10 @@
   #splash .s-word{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:40px; letter-spacing:-1px; display:flex; }
   #splash .s-word span{ opacity:0; transform:translateY(16px); animation:letterIn .5s cubic-bezier(.2,.8,.2,1) forwards; }
   #splash .s-line{ width:0; height:2px; background:var(--accent); animation:lineGrow 1.4s 1.1s ease forwards; }
-  #splash .s-sub{ font-family:'Caveat', cursive; font-size:28px; font-weight:600; color:var(--text); opacity:0; letter-spacing:.01em; animation:fadeUp .6s 1.6s ease forwards; }
-  #splash .s-sub em{ font-style:normal; color:var(--accent); }
+  /* Слоган — строгая антиква с курсивом: серьёзно и по-редакционному, без «детского» почерка */
+  #splash .s-sub{ font-family:'Playfair Display', Georgia, 'Times New Roman', serif; font-size:27px; font-weight:500; font-style:italic;
+    color:var(--text); opacity:0; letter-spacing:.035em; line-height:1.25; text-align:center; animation:fadeUp .6s 1.6s ease forwards; }
+  #splash .s-sub em{ font-style:italic; font-weight:600; color:var(--accent); }
   #splash .s-credit{ position:absolute; bottom:calc(28px + var(--safe-bottom)); font-size:11px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 2.3s ease forwards; }
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes letterIn{ to{ opacity:1; transform:translateY(0);} }
@@ -956,8 +958,10 @@
    0.7 — устранены дубли тайтлов (фильм/мультфильм и сериал/аниме с одним TMDB-id),
          шторка фильма снова нормально прокручивается и закрывается протяжкой,
          индекс каталога (O(1) вместо перебора), проверка ошибок Supabase везде,
-         чистка мёртвого кода и мелких багов. */
-const APP_VERSION = '0.7';
+         чистка мёртвого кода и мелких багов.
+   0.8 — слоган на заставке набран строгой антиквой (Playfair Display, курсив)
+         вместо рукописного Caveat. */
+const APP_VERSION = '0.8';
 const APP_BUILD_DATE = '2026-09-11';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
