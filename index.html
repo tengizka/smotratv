@@ -8,7 +8,8 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Основная тема — «неон» (синяя). Янтарь включается классом body.theme-amber.
      Все «светящиеся» цвета (обводки, тени, подложки) идут через переменные,
@@ -139,8 +140,9 @@
 
   .eyebrow{ font-size:13px; color:var(--text-dim); margin:18px 0 10px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
   .eyebrow span.count{ color:var(--text); background:var(--surface); padding:2px 9px; border-radius:20px; font-size:12px; }
-  .view-toggle{ display:flex; gap:3px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:3px; flex:0 0 auto; }
-  .view-toggle button{ width:26px; height:24px; border-radius:7px; background:none; border:none; color:var(--text-dim); font-size:13px; display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease; }
+  .view-toggle{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; flex:0 0 auto; }
+  .view-toggle button{ appearance:none; -webkit-appearance:none; margin:0; padding:0; line-height:0; width:32px; height:28px; border-radius:9px; background:transparent; border:none; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease; }
+  .view-toggle button svg{ width:15px; height:15px; display:block; }
   .view-toggle button.active{ background:var(--accent); color:var(--on-accent); }
 
   /* ===== Genre chips ===== */
@@ -157,18 +159,15 @@
   /* ВАЖНО: у #home не должно быть position — иначе ID-правило перебивает
      .screen{position:absolute; inset:0}, экран перестаёт занимать всю высоту
      и колода схлопывается в полоску (был именно такой баг). */
-  #home{ align-items:stretch; }
+  #home{ align-items:stretch; padding:8px 16px 10px; }
   .stack{ position:relative; flex:1 1 auto; min-height:0; margin-top:0; }
-  /* Иконка фильтра в шапке ленты */
-  .home-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 2px 8px; flex:0 0 auto; }
-  .home-title{ font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:8px; }
-  .home-title .count{ color:var(--text); background:var(--surface); padding:2px 9px; border-radius:20px; font-size:12px; }
-  .stack-filter{ width:38px; height:38px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:transform .15s ease, background .2s ease, color .2s ease; }
+  /* Иконка фильтра живёт прямо на обложке верхней карточки */
+  .stack-filter{ position:absolute; top:16px; right:16px; z-index:14; width:40px; height:40px; border-radius:14px; background:rgba(9,10,16,0.55); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.16); color:#fff; display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:transform .15s ease, background .2s ease, color .2s ease; }
   .stack-filter svg{ width:18px; height:18px; }
   .stack-filter:active{ transform:scale(.9); }
   .stack-filter.open{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
   /* Выдвижная панель фильтра */
-  .filter-pop{ position:absolute; top:52px; right:20px; z-index:15; width:min(280px, calc(100% - 8px)); background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px 16px 16px; box-shadow:0 20px 44px -14px rgba(0,0,0,0.7); transform:translateY(-8px) scale(.96); transform-origin:top right; opacity:0; pointer-events:none; transition:transform .22s cubic-bezier(.2,.9,.3,1.1), opacity .18s ease; }
+  .filter-pop{ position:absolute; top:64px; right:16px; z-index:15; width:min(280px, calc(100% - 8px)); background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px 16px 16px; box-shadow:0 20px 44px -14px rgba(0,0,0,0.7); transform:translateY(-8px) scale(.96); transform-origin:top right; opacity:0; pointer-events:none; transition:transform .22s cubic-bezier(.2,.9,.3,1.1), opacity .18s ease; }
   .filter-pop.open{ transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
   .filter-pop-title{ font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
   .filter-pop-chips{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -204,24 +203,41 @@
   @keyframes popPulse{ 0%{transform:scale(1);} 45%{transform:scale(1.22);} 100%{transform:scale(1);} }
   .pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
 
-  .actions{ display:flex; justify-content:center; align-items:flex-start; gap:26px; padding:14px 0 4px; flex:0 0 auto; }
-  .act-item{ display:flex; flex-direction:column; align-items:center; gap:5px; }
-  .act-lbl{ font-size:10.5px; color:var(--text-dim); font-weight:600; }
-  .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease, border-color .2s ease; }
-  .actions .no,.actions .yes{ width:52px; height:52px; font-size:20px; }
-  .actions .wishbtn{ width:42px; height:42px; font-size:16px; color:var(--wish); }
+  .actions{ display:flex; justify-content:center; align-items:center; gap:20px; padding:16px 0 6px; flex:0 0 auto; }
+  .act-item{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .act-lbl{ font-size:11.5px; color:var(--text-dim); font-weight:600; letter-spacing:.01em; }
+  .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .actions button:active{ transform:scale(.92); }
+  .actions .no,.actions .yes{ width:66px; height:66px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
+  .actions .no{ color:var(--skip); background:rgba(225,91,111,0.10); border-color:rgba(225,91,111,0.35); }
+  .actions .yes{ color:var(--watched); background:rgba(67,184,138,0.10); border-color:rgba(67,184,138,0.35); }
+  .actions .no svg,.actions .yes svg{ width:26px; height:26px; }
+  .actions .wishbtn{ width:54px; height:54px; color:var(--wish); background:rgba(255,159,224,0.10); border-color:rgba(255,159,224,0.30); }
+  .actions .wishbtn svg{ width:22px; height:22px; }
   .actions .no{ color:var(--skip); }
   .actions .yes{ color:var(--watched); }
   .actions .wishbtn.active{ background:var(--wish); color:var(--on-accent); border-color:var(--wish); }
 
-  /* Быстрые ссылки на свои списки — всегда на месте, без скролла */
-  .my-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:8px 0 0; flex:0 0 auto; }
-  .my-action{ display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); font-size:11.5px; font-weight:600; transition:transform .15s ease, color .2s ease, border-color .2s ease; }
-  .my-action.hot{ color:var(--accent); border-color:var(--accent-border); background:var(--accent-soft); }
-  .my-action:active{ transform:scale(.95); }
-  .my-action:disabled{ opacity:.45; }
-  .my-action .ma-num{ color:var(--text); font-weight:700; font-size:11.5px; }
-  .my-action.hot .ma-num{ color:var(--accent); }
+  /* Пока колода догружается — красивая заглушка вместо пустоты */
+  .deck-loading{ position:absolute; inset:0; border-radius:26px; border:1px solid var(--border); background:var(--surface);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; color:var(--text-dim); overflow:hidden; }
+  .deck-loading::before{ content:''; position:absolute; inset:0; background:linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.05) 40%, transparent 60%); background-size:220% 100%; animation:deckShimmer 1.5s linear infinite; }
+  @keyframes deckShimmer{ from{ background-position:120% 0; } to{ background-position:-120% 0; } }
+  .deck-spinner{ width:52px; height:52px; border-radius:50%; border:3px solid var(--surface-2); border-top-color:var(--accent); animation:deckSpin .8s linear infinite; }
+  @keyframes deckSpin{ to{ transform:rotate(360deg); } }
+  .deck-loading-text{ position:relative; font-size:13.5px; font-weight:600; color:var(--text); }
+  .deck-loading-sub{ position:relative; font-size:12px; }
+  /* Карточки колоды всегда с плавным переходом — подъём после свайпа без рывков */
+  .card{ transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
+  .card.swiping{ transition:none !important; }
+  @keyframes cardShuffle{ 0%{ transform:translate(0,0) rotate(0) scale(1); } 35%{ transform:translate(var(--sh-x,0), -26px) rotate(var(--sh-r,-8deg)) scale(.94); } 70%{ transform:translate(0,0) rotate(0) scale(1.02); } 100%{ transform:translate(0,0) rotate(0) scale(1); } }
+  .card.shuffling{ animation:cardShuffle .62s cubic-bezier(.3,.7,.3,1) both; animation-delay:var(--sh-d,0s); }
+
+  /* Пока палец держит обложку или открыто круговое меню — фон не прокручивается.
+     На телефоне без этого страница «скатывалась» под пальцем (главный баг фазы 3). */
+  body.radial-open{ overflow:hidden; }
+  body.radial-open .screen, body.radial-open .ov-body, body.radial-open #home{ touch-action:none; }
+
   .empty-deck{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; color:var(--text-dim); padding:0 20px; }
   .empty-deck .wordmark{ font-size:17px; color:var(--text); }
   .empty-deck button{ background:var(--accent); color:var(--on-accent); border:none; padding:12px 22px; border-radius:12px; font-weight:700; font-size:14px; }
@@ -287,12 +303,20 @@
   .season-stepper{ display:flex; gap:8px; flex:0 0 auto; }
 
   /* ===== Рецензии / шкала СМОТРЫ ===== */
-  .cat-row{ margin-bottom:14px; }
-  .cat-top{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
-  .cat-top span:first-child{ color:var(--text); }
-  .cat-top .cat-val{ color:var(--accent); font-weight:700; }
-  .cat-slider{ width:100%; -webkit-appearance:none; appearance:none; height:5px; border-radius:4px; background:var(--surface-2); outline:none; }
-  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+  /* Объёмные «смотриметры»: крупная цифра, толстая шкала, большой бегунок */
+  .cat-row{ margin-bottom:22px; }
+  .cat-top{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px; }
+  .cat-top span:first-child{ color:var(--text); font-size:15.5px; font-weight:500; }
+  .cat-top .cat-val{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; color:var(--accent); line-height:1; }
+  .cat-slider{ --pct:50%; width:100%; -webkit-appearance:none; appearance:none; height:12px; border-radius:8px; outline:none;
+    background:linear-gradient(90deg, var(--accent) 0%, var(--accent-2) var(--pct), var(--surface-2) var(--pct), var(--surface-2) 100%);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.45), inset 0 -1px 0 rgba(255,255,255,0.05); }
+  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 70%); border:3px solid var(--bg-2);
+    box-shadow:0 4px 12px -2px rgba(0,0,0,0.7), 0 0 0 4px var(--accent-soft); transition:transform .12s ease; }
+  .cat-slider:active::-webkit-slider-thumb{ transform:scale(1.12); }
+  .cat-slider::-moz-range-thumb{ width:26px; height:26px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 4px 12px -2px rgba(0,0,0,0.7); }
+  .cat-slider::-moz-range-track{ height:12px; border-radius:8px; background:var(--surface-2); }
   .cat-slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
 
   .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; display:flex; gap:12px; }
@@ -304,6 +328,11 @@
   .review-name{ font-size:13.5px; font-weight:600; }
   .review-movie{ font-size:11.5px; color:var(--text-dim); }
   .review-score{ flex:0 0 auto; background:var(--surface-2); border-radius:11px; padding:5px 10px; font-weight:800; font-size:13px; color:var(--accent); }
+  /* Итог по смотриметрам — крупная строка, как на макете */
+  .score-total{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding:16px 4px 0; border-top:1px solid var(--border); }
+  .score-total span:first-child{ color:var(--text-dim); font-size:14px; }
+  .score-total span:last-child{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:24px; color:var(--text); }
+  .score-total span:last-child b{ color:var(--accent); font-weight:800; }
   .review-text{ font-size:13px; color:var(--text-dim); margin-top:10px; line-height:1.5; }
   .review-mini-cats{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .review-mini-cats span{ font-size:11px; color:var(--text-dim); background:var(--surface-2); border-radius:8px; padding:3px 8px; }
@@ -355,7 +384,15 @@
   .rank-row.me .rank-name{ color:var(--accent); font-weight:700; }
 
   /* ===== Settings ===== */
-  .set-group{ background:var(--surface); border:1px solid var(--border); border-radius:18px; margin-bottom:18px; overflow:hidden; }
+  .set-group{ background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:12px; overflow:hidden; }
+  .set-row .set-icon{ width:32px; height:32px; border-radius:10px; background:transparent; border:1px solid var(--border); }
+  .set-row{ padding:12px 14px; }
+  .set-label{ font-size:14px; }
+  .set-group-title{ font-size:10.5px; letter-spacing:.12em; padding:12px 14px 4px; opacity:.75; }
+  .set-hero{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:12px; }
+  .set-hero-text{ min-width:0; }
+  .set-hero-label{ font-size:14px; font-weight:600; }
+  .set-hero-sub{ font-size:11.5px; color:var(--text-dim); margin-top:3px; }
   .set-group.danger{ border-color:rgba(193,73,63,0.35); }
   .set-group.danger .set-icon{ background:rgba(193,73,63,0.14); color:var(--skip); }
   .set-group.danger .set-label{ color:var(--skip); }
@@ -374,13 +411,14 @@
   .switch.on{ background:linear-gradient(135deg, var(--accent), var(--accent-2)); }
   .switch.on::after{ left:22px; background:#fff; }
 
-  .theme-picker{ display:flex; gap:10px; padding:14px 16px 16px; }
-  .theme-swatch{ flex:1; border-radius:14px; border:2px solid var(--border); padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:8px; transition:border-color .2s ease, transform .15s ease; }
-  .theme-swatch.active{ border-color:var(--accent); }
-  .theme-swatch:active{ transform:scale(.96); }
-  .theme-swatch-dot{ width:28px; height:28px; border-radius:50%; }
-  .theme-swatch span{ font-size:12px; color:var(--text-dim); }
-  .theme-swatch.active span{ color:var(--text); font-weight:600; }
+  /* Компактный выбор темы: две «капли» без подписей и огромной карточки */
+  .theme-swatches{ display:flex; gap:10px; }
+  .theme-swatch{ appearance:none; -webkit-appearance:none; width:38px; height:38px; padding:0; border-radius:50%; border:2px solid transparent; position:relative; transition:transform .15s ease, box-shadow .2s ease; }
+  .theme-swatch::after{ content:''; position:absolute; inset:4px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.18); }
+  .theme-swatch[data-theme="neon"]{ background:linear-gradient(135deg,#7c6bff,#4f8bff); }
+  .theme-swatch[data-theme="amber"]{ background:linear-gradient(135deg,#e3a63e,#c9832a); }
+  .theme-swatch.active{ border-color:var(--text); box-shadow:0 0 0 4px var(--accent-soft); }
+  .theme-swatch:active{ transform:scale(.92); }
 
   /* ===== Overlay screens (History / Settings) ===== */
   .overlay-screen{ position:fixed; inset:0; background:var(--bg); z-index:25; transform:translateX(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column; }
@@ -413,7 +451,8 @@
   #splash .s-word{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:40px; letter-spacing:-1px; display:flex; }
   #splash .s-word span{ opacity:0; transform:translateY(16px); animation:letterIn .5s cubic-bezier(.2,.8,.2,1) forwards; }
   #splash .s-line{ width:0; height:2px; background:var(--accent); animation:lineGrow 1.4s 1.1s ease forwards; }
-  #splash .s-sub{ font-size:12.5px; color:var(--text-dim); opacity:0; animation:fadeUp .5s 1.6s ease forwards; }
+  #splash .s-sub{ font-family:'Caveat', cursive; font-size:28px; font-weight:600; color:var(--text); opacity:0; letter-spacing:.01em; animation:fadeUp .6s 1.6s ease forwards; }
+  #splash .s-sub em{ font-style:normal; color:var(--accent); }
   #splash .s-credit{ position:absolute; bottom:calc(28px + var(--safe-bottom)); font-size:11px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 2.3s ease forwards; }
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes letterIn{ to{ opacity:1; transform:translateY(0);} }
@@ -441,7 +480,7 @@
 
   /* Туториал: всё в три зоны — шапка, сцена, подпись+кнопки.
      Ничего не наезжает друг на друга, сцена сама обрезает «улетающие» карточки. */
-  #tutorial{ position:fixed; inset:0; background:var(--bg); z-index:95; display:none; flex-direction:column; gap:14px; padding:calc(12px + var(--safe-top)) 20px calc(14px + var(--safe-bottom)); }
+  #tutorial{ position:fixed; inset:0; height:auto; background:var(--bg); z-index:95; display:none; flex-direction:column; gap:12px; padding:calc(12px + var(--safe-top)) 20px calc(14px + var(--safe-bottom)); }
   #tutorial.show{ display:flex; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
   .tut-back{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
@@ -454,8 +493,8 @@
   .tut-progress span.done b{ width:100%; }
   .tut-progress span.active b{ width:100%; }
   .tut-skip-top{ background:none; border:none; color:var(--text-dim); font-size:12.5px; padding:7px 2px; flex:0 0 auto; }
-  .tut-stage{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
-  .tut-demo{ position:relative; width:200px; height:284px; flex:0 0 auto; }
+  .tut-stage{ flex:1 1 auto; min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .tut-demo{ position:relative; width:200px; height:284px; max-height:100%; flex:0 0 auto; }
   .tut-demo-card{ position:absolute; inset:0; border-radius:22px; overflow:hidden; background:var(--surface); border:1px solid var(--border); box-shadow:0 24px 50px -22px rgba(0,0,0,0.7); display:flex; flex-direction:column; justify-content:flex-end; }
   .tut-demo-card .tdc-poster{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .tut-demo-card .tdc-shade{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(9,10,16,0.96) 100%); }
@@ -491,9 +530,14 @@
   @keyframes demoSkip{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(-150px,-10px) rotate(-14deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
   @keyframes demoWish{ 0%,12%{ transform:translate(0,0); } 45%,55%{ transform:translate(0,-140px); } 88%,100%{ transform:translate(0,0);} }
   @keyframes demoWatching{ 0%,12%{ transform:translate(0,0); } 45%,55%{ transform:translate(0,130px); } 88%,100%{ transform:translate(0,0);} }
+  /* Шаг «вверх и вниз»: карточка едет сначала вверх (чекнуть), потом вниз (смотрю) */
+  @keyframes demoWishBoth{ 0%,8%{ transform:translate(0,0) rotate(0); } 26%,34%{ transform:translate(0,-132px) rotate(0); } 48%,56%{ transform:translate(0,0) rotate(0); } 72%,80%{ transform:translate(0,116px) rotate(0); } 96%,100%{ transform:translate(0,0) rotate(0);} }
+  @keyframes tutStampUp{ 0%,18%{ opacity:0; } 28%,36%{ opacity:1; } 46%,100%{ opacity:0; } }
+  @keyframes tutStampDown{ 0%,62%{ opacity:0; } 72%,82%{ opacity:1; } 94%,100%{ opacity:0; } }
+  @keyframes handMoveBoth{ 0%{ opacity:0; } 8%{ opacity:1; } 88%{ opacity:1; } 100%{ opacity:0; } }
   @keyframes handMove{ 0%{ opacity:0; } 10%{ opacity:1; } 55%{ opacity:1; } 70%,100%{ opacity:0; } }
   @keyframes tutStamp{ 0%,20%{ opacity:0; } 45%,55%{ opacity:1; } 80%,100%{ opacity:0; } }
-  .tut-caption{ text-align:center; flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 2px; }
+  .tut-caption{ text-align:center; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 2px; overflow:hidden; }
   .tut-caption .tc-title{ font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; line-height:1.25; }
   .tut-caption .tc-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.55; margin:0; max-width:330px; }
   .tut-try{ display:inline-flex; align-items:center; gap:6px; margin:0; font-size:12px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:7px 14px; border-radius:20px; line-height:1.2; }
@@ -521,7 +565,7 @@
   #toast{ position:fixed; top:calc(14px + var(--safe-top)); left:50%; transform:translate(-50%,-140%); background:var(--surface-2); border:1px solid var(--accent-border); color:var(--text); padding:11px 18px; border-radius:14px; font-size:13px; z-index:60; transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px; }
   .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
 
-  .undo-pill{ position:fixed; left:50%; bottom:calc(96px + var(--safe-bottom)); transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--surface-2); border:1px solid var(--border); color:var(--text); padding:11px 20px; border-radius:30px; font-size:13px; font-weight:600; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px rgba(0,0,0,0.6); }
+  .undo-pill{ position:fixed; left:50%; bottom:calc(104px + var(--safe-bottom)); transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
   .undo-pill.show{ transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
   @keyframes cardUndoIn{ 0%{ transform:scale(.85) translateY(50px) rotate(-4deg); opacity:.3; } 100%{ transform:scale(1) translateY(0) rotate(0); opacity:1; } }
   .card-undo-in{ animation:cardUndoIn .42s cubic-bezier(.2,.8,.2,1); }
@@ -568,7 +612,7 @@
 <div id="splash">
   <div class="s-word" id="sWord"></div>
   <div class="s-line"></div>
-  <div class="s-sub">свайпай кино, а не выбирай его</div>
+  <div class="s-sub">свайпай <em>и вайбуй</em></div>
   <div class="s-credit">made <b>tengizka</b></div>
 </div>
 
@@ -619,24 +663,20 @@
 
   <!-- HOME -->
   <section id="home" class="screen active">
-    <div class="home-head">
-      <div class="home-title">Лента <span class="count" id="deckCount">0</span></div>
-      <button class="stack-filter" id="openFilters" aria-label="Фильтр">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-      </button>
-    </div>
     <div class="filter-backdrop" id="filterBackdrop"></div>
     <div class="filter-pop" id="filterPop">
       <div class="filter-pop-title">Показывать в ленте</div>
       <div class="filter-pop-chips" id="filterPopChips"></div>
     </div>
     <div class="stack" id="stack"></div>
+    <button class="stack-filter" id="openFilters" aria-label="Фильтр">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+    </button>
     <div class="actions">
       <div class="act-item"><button class="no" id="btnSkip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="act-lbl">Мимо</span></div>
       <div class="act-item"><button class="wishbtn" id="btnWish"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 3 1-6.1-4.4-4.3 6.1-.9z"/></svg></button><span class="act-lbl">Чекнуть</span></div>
       <div class="act-item"><button class="yes" id="btnWatched"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button><span class="act-lbl">Смотрел</span></div>
     </div>
-    <div class="my-actions" id="myActions"></div>
     <div class="home-bottom">
       <button class="surprise-btn" id="shakeBtn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><path d="M3 7h3.5L15 17h5.5M17.5 7H21M3 17h3.5L11 12"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/></svg> Перемешать</button>
     </div>
@@ -675,7 +715,7 @@
       <div class="avatar" id="avatarInit" style="overflow:hidden; background-size:cover; background-position:center;">Г</div>
       <div>
         <div class="profile-name" id="userName">Гость</div>
-        <div class="profile-sub">в SMOTRA с сентября 2026</div>
+        <div class="profile-sub" id="profileSince">в SMOTRA с сентября 2026</div>
       </div>
     </div>
 
@@ -793,14 +833,6 @@
   <div class="rad-hint" id="radHint">Веди палец к действию · отпусти в центре — отмена</div>
 </div>
 
-<!-- QUICK ACTIONS (долгое нажатие на карточку) -->
-<div class="sheet-backdrop" id="quickBackdrop"></div>
-<div class="sheet" id="quickSheet" style="max-height:60vh;">
-  <div class="handle"></div>
-  <div id="quickHeader" style="display:flex; gap:12px; align-items:center; padding:2px 20px 14px;"></div>
-  <div id="quickActionsList" style="padding:0 20px 24px; display:flex; flex-direction:column; gap:8px;"></div>
-</div>
-
 <!-- FRIEND PROFILE OVERLAY -->
 <div class="overlay-screen" id="friendProfileScreen">
   <div class="ov-head">
@@ -819,11 +851,12 @@
   </div>
   <div class="ov-body">
     <div id="reviewMovieHeader" style="display:flex; gap:12px; align-items:center; margin-bottom:6px;"></div>
-    <div class="set-group-title" style="padding-left:0;">Главное (1–8)</div>
+    <div class="set-group-title" style="padding-left:0; padding-top:0;">Главное · до 8</div>
     <div id="reviewBigSliders"></div>
-    <div class="set-group-title" style="padding-left:0; margin-top:8px;">Детали (1–5)</div>
+    <div class="set-group-title" style="padding-left:0; padding-top:0; margin-top:6px;">Детали · до 5</div>
     <div id="reviewSmallSliders"></div>
-    <div class="set-group-title" style="padding-left:0; margin-top:8px;">Текст рецензии</div>
+    <div class="score-total" id="reviewTotalRow"><span>Смотриметр</span><span id="reviewTotalValue">0<b>/68</b></span></div>
+    <div class="set-group-title" style="padding-left:0; padding-top:0; margin-top:14px;">Текст рецензии</div>
     <textarea id="reviewText" rows="5" placeholder="Что понравилось, что нет, кому советуешь…" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; color:var(--text); font-family:'Inter'; font-size:14px; resize:vertical;"></textarea>
     <button id="submitReview" style="width:100%; margin-top:16px; padding:14px; border-radius:14px; background:var(--accent); color:var(--on-accent); font-weight:700; font-size:15px; border:none;">Опубликовать</button>
     <button id="deleteReview" style="width:100%; margin-top:10px; padding:12px; border-radius:14px; background:none; border:1px solid var(--border); color:var(--skip); font-weight:600; font-size:13.5px; display:none;">Удалить рецензию</button>
@@ -838,33 +871,25 @@
     <div class="wordmark">Настройки</div>
   </div>
   <div class="ov-body">
-    <div class="set-group">
-      <div class="set-group-title">Оформление</div>
-      <div class="theme-picker" id="themePicker">
-        <div class="theme-swatch" data-theme="neon">
-          <div class="theme-swatch-dot" style="background:linear-gradient(135deg,#7c6bff,#4f8bff);"></div>
-          <span>Синий · основной</span>
-        </div>
-        <div class="theme-swatch" data-theme="amber">
-          <div class="theme-swatch-dot" style="background:linear-gradient(135deg,#e3a63e,#c9832a);"></div>
-          <span>Янтарь</span>
-        </div>
+    <div class="set-hero">
+      <div class="set-hero-text">
+        <div class="set-hero-label">Тема</div>
+        <div class="set-hero-sub" id="themeNameLabel">Синий</div>
+      </div>
+      <div class="theme-swatches" id="themePicker">
+        <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема"></button>
+        <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема"></button>
       </div>
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">Уведомления и отклик</div>
-      <div class="set-row">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
-        <div class="set-text"><div class="set-label">Уведомления</div><div class="set-sub">Напоминание раз в день</div></div>
-        <div class="switch" id="switchNotif" data-key="smotra_notif"></div>
-      </div>
-      <div class="set-row">
+      <div class="set-group-title">Отклик</div>
+      <div class="set-row" id="rowHaptic" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg></div>
-        <div class="set-text"><div class="set-label">Вибро-отклик</div><div class="set-sub">На свайпах и ачивках</div></div>
+        <div class="set-text"><div class="set-label">Вибро-отклик</div></div>
         <div class="switch" id="switchHaptic" data-key="smotra_haptic"></div>
       </div>
-      <div class="set-row">
+      <div class="set-row" id="rowAdult" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg></div>
         <div class="set-text"><div class="set-label">Показывать 18+</div></div>
         <div class="switch" id="switchAdult" data-key="smotra_adult"></div>
@@ -872,35 +897,28 @@
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">Данные</div>
+      <div class="set-group-title">Настройка вкуса</div>
       <div class="set-row" id="redoOnboarding" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg></div>
-        <div class="set-text"><div class="set-label">Жанры заново</div><div class="set-sub">Перепройти подбор жанров</div></div>
+        <div class="set-text"><div class="set-label">Подобрать жанры заново</div></div>
         <div class="set-chevron">›</div>
       </div>
       <div class="set-row" id="redoTutorial" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div class="set-text"><div class="set-label">Показать обучение снова</div><div class="set-sub">Пройти интерактивный тур заново</div></div>
-        <div class="set-chevron">›</div>
-      </div>
-      <div class="set-row" id="resetSwipes" style="cursor:pointer;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6"/></svg></div>
-        <div class="set-text"><div class="set-label">Сбросить историю свайпов</div><div class="set-sub">Для тестов — очищает просмотрено/пропущено</div></div>
+        <div class="set-text"><div class="set-label">Обучение заново</div></div>
         <div class="set-chevron">›</div>
       </div>
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">О приложении</div>
       <div class="set-row"><div class="set-text"><div class="set-label">Источник данных</div><div class="set-sub">TMDB</div></div></div>
-      <div class="set-row"><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA · версия 0.5</div></div></div>
+      <div class="set-row"><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA</div></div></div>
     </div>
 
     <div class="set-group danger">
-      <div class="set-group-title" style="color:var(--skip);">Опасная зона</div>
       <div class="set-row" id="resetAll" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
-        <div class="set-text"><div class="set-label">Сбросить всё</div><div class="set-sub">Весь прогресс, чек-лист, «смотрю», ачивки — без возврата</div></div>
+        <div class="set-text"><div class="set-label">Сбросить всё</div><div class="set-sub">Прогресс, списки и ачивки — без возврата</div></div>
         <div class="set-chevron">›</div>
       </div>
     </div>
@@ -933,9 +951,24 @@
 </div>
 
 <div id="toast"></div>
-<button id="undoBtn" class="undo-pill"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11a5 5 0 0 1 0 10h-5"/><path d="M7 3L3 7l4 4"/></svg>Вернуть карточку</button>
+<button id="undoBtn" class="undo-pill"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11a5 5 0 0 1 0 10h-5"/><path d="M7 3L3 7l4 4"/></svg>Вернуться</button>
 
 <script>
+/* ==========================================================================
+   ПРАВИЛО ПРОЕКТА (обязательное):
+   при КАЖДОМ обновлении приложения увеличивай APP_VERSION и не забывай
+   продублировать её в интерфейсе (настройки → Версия). Никогда не оставляй
+   старую версию — иначе невозможно понять, что у пользователя на руках.
+   ========================================================================== */
+/* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.5 — стабильная база: онбординг, свайпы, списки, рецензии, ачивки, лента.
+   0.6 — главная без пустоты и счётчиков, живой подъём колоды, анимация «Перемешать»,
+         круговое меню на всех обложках с заморозкой скролла, туториал без уезжающей
+         кнопки, компактные настройки, объёмные Смотриметры, ленивые обложки,
+         починка безопасности (XSS, ключи TMDB, проверка ошибок Supabase). */
+const APP_VERSION = '0.6';
+const APP_BUILD_DATE = '2026-09-11';
+
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
 const ICONS = {
   fire: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="currentColor" stroke="none"/>',
@@ -974,6 +1007,14 @@ function ICON(name, size){
   return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;flex-shrink:0;">${ICONS[name] || ''}</svg>`;
 }
 
+/* Экранирование любого текста, который приходит извне (рецензии, имена, названия из TMDB):
+   без этого в innerHTML можно протащить HTML/скрипт. */
+function esc(v){
+  return String(v == null ? '' : v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 /* ============ TELEGRAM ============ */
 const tg = window.Telegram?.WebApp;
 function applySafeArea(){
@@ -994,6 +1035,9 @@ function syncAppHeight(){
     else if (window.visualViewport && window.visualViewport.height) h = window.visualViewport.height;
     else h = window.innerHeight;
   }catch(e){ h = window.innerHeight || 0; }
+  // Не даём высоте превысить реально видимую область, иначе низ экрана (кнопки
+  // туториала/настроек) уезжает за пределы окна — так было на телефоне.
+  if (window.innerHeight) h = Math.min(h, window.innerHeight);
   if (h && h > 240) document.documentElement.style.setProperty('--app-h', Math.round(h) + 'px');
 }
 if (tg) {
@@ -1089,24 +1133,18 @@ const SMALL_CATS = [
   { key:'originality', label:'Оригинальность' },
 ];
 const SCORE_MAX = BIG_CATS.length*8 + SMALL_CATS.length*5; // 68 — "смотриметры"
-const SCORE_NAME = 'смотриметр';
-function scoreLabel(n){
-  const abs = Math.abs(n) % 100;
-  const last = abs % 10;
-  if (abs > 10 && abs < 20) return `${n} ${SCORE_NAME}ов`;
-  if (last === 1) return `${n} ${SCORE_NAME}`;
-  if (last >= 2 && last <= 4) return `${n} ${SCORE_NAME}а`;
-  return `${n} ${SCORE_NAME}ов`;
-}
 function scoreTotal(big, small){
   return BIG_CATS.reduce((s,c)=>s+(big[c.key]||0),0) + SMALL_CATS.reduce((s,c)=>s+(small[c.key]||0),0);
 }
 async function dbSaveReview(movieId, big, small, text){
   const total = scoreTotal(big, small);
   try{
-    await sb.from('reviews').upsert({ telegram_id: TG_ID, movie_id: movieId, big, small, total, text: text || '', updated_at: new Date().toISOString() }, { onConflict: 'telegram_id,movie_id' });
+    // supabase-js не бросает исключение: он возвращает { error }. Без этой проверки
+    // приложение рапортовало «опубликовано», даже когда запись отклонялась.
+    const { error } = await sb.from('reviews').upsert({ telegram_id: TG_ID, movie_id: movieId, big, small, total, text: text || '', updated_at: new Date().toISOString() }, { onConflict: 'telegram_id,movie_id' });
+    if (error){ console.error('[supabase] reviews upsert', error); return false; }
     return true;
-  }catch(e){ return false; }
+  }catch(e){ console.error(e); return false; }
 }
 async function getMyReview(movieId){
   try{
@@ -1144,12 +1182,13 @@ async function addFriend(friendId){
   friendId = Number(friendId);
   if (!friendId || friendId === TG_ID || Number.isNaN(friendId)) return false;
   try{
-    await sb.from('friends').upsert([
+    const { error } = await sb.from('friends').upsert([
       { telegram_id: TG_ID, friend_id: friendId },
       { telegram_id: friendId, friend_id: TG_ID },
     ]);
+    if (error){ console.error('[supabase] friends upsert', error); return false; }
     return true;
-  }catch(e){ return false; }
+  }catch(e){ console.error(e); return false; }
 }
 async function getFriendIds(){
   try{
@@ -1176,9 +1215,9 @@ function friendDisplayName(profile){
 function avatarBlockHTML(name, photoUrl, size){
   size = size || 88;
   if (photoUrl){
-    return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background-image:url('${photoUrl}'); background-size:cover; background-position:center; margin:0 auto 14px;"></div>`;
+    return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background-image:url('${esc(photoUrl)}'); background-size:cover; background-position:center; margin:0 auto 14px;"></div>`;
   }
-  return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:var(--on-accent); margin:0 auto 14px;">${(name[0]||'?').toUpperCase()}</div>`;
+  return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:var(--on-accent); margin:0 auto 14px;">${esc((name[0]||'?').toUpperCase())}</div>`;
 }
 async function openFriendProfile(id){
   document.getElementById('friendProfileScreen').classList.add('open');
@@ -1191,8 +1230,8 @@ async function openFriendProfile(id){
   body.innerHTML = `
     <div style="text-align:center; padding-top:10px;">
       ${avatarBlockHTML(name, profile?.photo_url, 88)}
-      <div style="font-size:18px; font-weight:700;">${name}</div>
-      ${profile?.username ? `<div class="set-sub">@${profile.username}</div>` : ''}
+      <div style="font-size:18px; font-weight:700;">${esc(name)}</div>
+      ${profile?.username ? `<div class="set-sub">@${esc(profile.username)}</div>` : ''}
     </div>
     <div class="stats-row" style="margin-top:20px;">
       <div class="stat-card"><div class="stat-num">${watchedCount}</div><div class="stat-label">просмотрено</div></div>
@@ -1211,13 +1250,20 @@ function totalWatchedEpisodes(movieId){
 }
 
 async function loadState(){
-  const [{data:sw}, {data:wl}] = await Promise.all([
-    sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
-    sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
-  ]);
-  state.watched = (sw||[]).filter(r=>r.action==='watched').map(r=>r.movie_id);
-  state.skipped = (sw||[]).filter(r=>r.action==='skipped').map(r=>r.movie_id);
-  state.wishlist = (wl||[]).map(r=>r.movie_id);
+  // Никогда не бросаем наружу: если Supabase недоступен, приложение всё равно
+  // должно открыться (каталог из TMDB работает и без аккаунта).
+  let sw = [], wl = [];
+  try{
+    const [a, b] = await Promise.all([
+      sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
+      sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
+    ]);
+    if (a.error) console.error('[supabase] swipes', a.error); else sw = a.data || [];
+    if (b.error) console.error('[supabase] wishlist', b.error); else wl = b.data || [];
+  }catch(e){ console.error('[supabase] state load failed', e); }
+  state.watched = (sw||[]).filter(r=>r.action==='watched').map(r=>normalizeStoredKey(r.movie_id));
+  state.skipped = (sw||[]).filter(r=>r.action==='skipped').map(r=>normalizeStoredKey(r.movie_id));
+  state.wishlist = (wl||[]).map(r=>normalizeStoredKey(r.movie_id));
   state.unlocked = [];
   state.badgeDates = {};
   try{
@@ -1238,18 +1284,18 @@ async function loadState(){
     (ep||[]).forEach(r=>{
       let seasons = {};
       if (r.seasons) seasons = typeof r.seasons === 'string' ? JSON.parse(r.seasons) : r.seasons;
-      state.episodes[r.movie_id] = { seasons: seasons || {} };
+      state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: seasons || {} };
     });
   }catch(e){
     // в таблице ещё нет колонки seasons — тянем как раньше и кладём всё в «сезон 1»
     try{
       const { data: ep } = await sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID);
-      (ep||[]).forEach(r => state.episodes[r.movie_id] = { seasons: { '1': r.watched_count || 0 } });
+      (ep||[]).forEach(r => state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: { '1': r.watched_count || 0 } });
     }catch(e2){}
   }
   try{
     const { data: wa } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
-    state.watching = (wa||[]).map(r=>r.movie_id);
+    state.watching = (wa||[]).map(r=>normalizeStoredKey(r.movie_id));
   }catch(e){ state.watching = []; }
 }
 
@@ -1274,7 +1320,11 @@ setTimeout(()=>{
 
 /* ============ STREAK (реальные дни захода) ============ */
 const STREAK_KEY = 'smotra_visit_days';
-function dateKey(d){ return d.toISOString().slice(0,10); }
+// Локальная дата, а не UTC: иначе у пользователей восточнее Гринвича вечером
+// день уже «завтра» и стрик рвётся/накручивается.
+function dateKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function recordVisitAndGetStreak(){
   let days = [];
   try{ days = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]'); }catch(e){}
@@ -1291,6 +1341,23 @@ function recordVisitAndGetStreak(){
   return streak;
 }
 const currentStreak = recordVisitAndGetStreak();
+(function initSince(){
+  const el = document.getElementById('profileSince');
+  if (!el) return;
+  let since = null;
+  try{
+    since = localStorage.getItem('smotra_since');
+    if (!since){ since = new Date().toISOString(); localStorage.setItem('smotra_since', since); }
+  }catch(e){}
+  if (since){
+    const d = new Date(since);
+    el.textContent = 'в SMOTRA с ' + d.toLocaleDateString('ru-RU', { month:'long', year:'numeric' });
+  }
+})();
+(function initVersion(){
+  const el = document.getElementById('appVersionLabel');
+  if (el) el.textContent = `SMOTRA · версия ${APP_VERSION} · ${APP_BUILD_DATE}`;
+})();
 document.getElementById('streakNum').textContent = currentStreak;
 document.getElementById('statStreak').textContent = currentStreak;
 
@@ -1359,7 +1426,7 @@ function finishOnboarding(){
   localStorage.setItem('smotra_genres', JSON.stringify(selectedGenres));
   document.getElementById('onboarding').classList.remove('show');
   if (typeof MOVIES !== 'undefined' && MOVIES.length){
-    deck = sortByPopularity(MOVIES.filter(isUnseen));
+    deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
     renderStack();
   }
   maybeStartTutorial();
@@ -1410,29 +1477,46 @@ function demoCard(posterIdx, stampClass, stampText, anim){
         ${movie ? '' : `<div class="tdc-poster tdc-poster-icon">${ICON('film',64)}</div>`}
         <div class="tdc-shade"></div>
         <div class="tdc-stamp ${stampClass}" style="animation:tutStamp 2.6s ease-in-out infinite;">${stampText}</div>
-        <div class="tdc-info"><div class="tdc-title">${tutTitle(posterIdx)}</div><div class="tdc-meta">${tutMeta(posterIdx)}</div></div>
+        <div class="tdc-info"><div class="tdc-title">${esc(tutTitle(posterIdx))}</div><div class="tdc-meta">${esc(tutMeta(posterIdx))}</div></div>
       </div>
       <div class="tut-hand" style="animation:handMove 2.6s ease-in-out infinite;">${ICON('target',34)}</div>
     </div>`;
 }
+/* Карточка для шага «вверх и вниз»: сначала уезжает вверх (чекнуть), потом вниз (смотрю) */
+function demoCardBoth(){
+  const movie = tutMovie(2);
+  return `
+    <div class="tut-demo">
+      <div class="tut-demo-card" style="animation:demoWishBoth 3.4s ease-in-out infinite;">
+        <div class="tdc-poster" style="${tutPosterCSS(2)}"></div>
+        ${movie ? '' : `<div class="tdc-poster tdc-poster-icon">${ICON('film',64)}</div>`}
+        <div class="tdc-shade"></div>
+        <div class="tdc-stamp s-wish" style="animation:tutStampUp 3.4s ease-in-out infinite;">ЧЕКНУТЬ</div>
+        <div class="tdc-stamp s-watching" style="animation:tutStampDown 3.4s ease-in-out infinite;">СМОТРЮ</div>
+        <div class="tdc-info"><div class="tdc-title">${esc(tutTitle(2))}</div><div class="tdc-meta">${esc(tutMeta(2))}</div></div>
+      </div>
+      <div class="tut-hand" style="animation:handMoveBoth 3.4s ease-in-out infinite;">${ICON('target',34)}</div>
+    </div>`;
+}
+
 const TUTORIAL_STEPS = [
   {
-    title:'Свайпай вправо', desc:'Понравился тайтл или уже смотрел — тяни карточку вправо. Она уедет в «Смотрел».',
+    title:'Свайпай вправо', desc:'Понравился тайтл — тяни вправо, он уедет в «Смотрел».',
     try:'Свайп вправо → «Смотрел»',
     stage:()=> demoCard(0, 's-watched', 'СМОТРЕЛ', 'demoWatched'),
   },
   {
-    title:'Свайпай влево', desc:'Не твоё? Смахни влево — карточка отправится в «Мимо» и больше не будет мозолить глаза.',
+    title:'Свайпай влево', desc:'Не твоё — смахни влево, и оно больше не вернётся.',
     try:'Свайп влево → «Мимо»',
     stage:()=> demoCard(1, 's-skip', 'МИМО', 'demoSkip'),
   },
   {
-    title:'Вверх и вниз тоже работают', desc:'Вверх — «Хочу чекнуть» (посмотрю потом), вниз — «Смотрю сейчас». Четыре направления — четыре списка.',
+    title:'Ещё вверх и вниз', desc:'Вверх — «Чекнуть», вниз — «Смотрю сейчас».',
     try:'Вверх — чекнуть · Вниз — смотрю',
-    stage:()=> demoCard(2, 's-wish', 'ЧЕКНУТЬ', 'demoWish'),
+    stage:()=> demoCardBoth(),
   },
   {
-    title:'Зажми обложку', desc:'Задержи палец на любой обложке — в ленте, каталоге, «Чекнуть», «Смотрю» и даже на рецензиях. Вокруг раскроется круговое меню. Не отпуская, веди палец к нужному действию и отпусти. Отпустил в центре — отмена.',
+    title:'Зажми обложку', desc:'Держи палец на любой обложке — раскроется круговое меню действий.',
     try:'Удержание → круговое меню',
     stage:()=> `
       <div class="tut-demo tut-demo-radial">
@@ -1440,7 +1524,7 @@ const TUTORIAL_STEPS = [
           <div class="rad-center">
             <div class="rad-center-bg" style="${tutPosterCSS(0)}"></div>
             <div class="rad-center-veil"></div>
-            <div class="rad-center-label">${tutTitle(0)}</div>
+            <div class="rad-center-label">${esc(tutTitle(0))}</div>
           </div>
           <div class="trd-item" data-i="0">${ICON('check',18)}</div>
           <div class="trd-item" data-i="1">${ICON('star',18)}</div>
@@ -1452,7 +1536,7 @@ const TUTORIAL_STEPS = [
     onEnter: animateRadialDemo,
   },
   {
-    title:'Оценивай Смотриметрами', desc:'Вместо одной звезды — своя шкала до 68 баллов по категориям. Твои оценки и рецензии видят другие в «Ленте».',
+    title:'Оценивай Смотриметрами', desc:'Вместо звезды — шкала до 68 баллов. Оценки видят другие в «Ленте».',
     try:'До 68 баллов за тайтл',
     stage:()=> `<div class="tut-demo tut-demo-panel">
       <div class="tut-panel">
@@ -1465,7 +1549,7 @@ const TUTORIAL_STEPS = [
       </div></div>`,
   },
   {
-    title:'Заходи каждый день', desc:'SMOTRA считает дни подряд и открывает ачивки. Стрик в шапке напомнит, что пора чекнуть пару тайтлов.',
+    title:'Заходи каждый день', desc:'Дни подряд превращаются в стрик и ачивки.',
     try:'Стрик и ачивки за активность',
     stage:()=> `<div class="tut-demo tut-demo-center">
       <div class="tut-streak">
@@ -1546,15 +1630,6 @@ document.getElementById('redoTutorial').onclick = () => {
   document.getElementById('settingsScreen').classList.remove('open');
   maybeStartTutorial();
 };
-document.getElementById('resetSwipes').onclick = async () => {
-  try{
-    await sb.from('swipes').delete().eq('telegram_id', TG_ID);
-    state.watched = []; state.skipped = [];
-    deck = sortByPopularity(MOVIES.filter(isUnseen));
-    renderStack(); renderCatalog(); renderRank(); updateStats();
-    showToast('История свайпов очищена');
-  }catch(e){ showToast('Не получилось — проверь связь'); }
-};
 
 function confirmAction(message){
   return new Promise(resolve => {
@@ -1582,7 +1657,7 @@ document.getElementById('resetAll').onclick = async () => {
     localStorage.removeItem('smotra_onboarded');
   }catch(e){}
 
-  deck = sortByPopularity(MOVIES.filter(isUnseen));
+  deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
   renderWeekActivity();
   document.getElementById('streakNum').textContent = 0;
@@ -1605,6 +1680,7 @@ function syncTelegramColors(){
   try{ tg.setBackgroundColor && tg.setBackgroundColor(bg); }catch(e){}
   try{ tg.setBottomBarColor && tg.setBottomBarColor(bg); }catch(e){}
 }
+const THEME_NAMES = { neon:'Синий', amber:'Янтарь' };
 function applyTheme(name){
   document.body.classList.toggle('theme-amber', name === 'amber');
   const meta = document.querySelector('meta[name="theme-color"]');
@@ -1612,6 +1688,8 @@ function applyTheme(name){
   document.querySelectorAll('#themePicker .theme-swatch').forEach(el=>{
     el.classList.toggle('active', el.dataset.theme === name);
   });
+  const label = document.getElementById('themeNameLabel');
+  if (label) label.textContent = THEME_NAMES[name] || THEME_NAMES.neon;
   syncTelegramColors();
 }
 (function initTheme(){
@@ -1639,16 +1717,14 @@ function initSwitch(el, def, onChange){
     onChange && onChange(val);
   };
 }
-initSwitch(document.getElementById('switchNotif'), true, (val) => {
-  showToast(val ? 'Напоминания включены' : 'Напоминания выключены');
-});
+// Тумблер уведомлений убран: он ничего не делал (пушей нет) — лучше не врать пользователю.
 initSwitch(document.getElementById('switchHaptic'), true);
 initSwitch(document.getElementById('switchAdult'), false, async (val) => {
   showToast('Обновляю каталог…');
   try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
   await loadMovies();
   setupGenreChips();
-  deck = sortByPopularity(MOVIES.filter(isUnseen));
+  deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); updateStats();
   showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
 });
@@ -1736,10 +1812,10 @@ async function fetchList(url, type, genreMap){
     genres: (item.genre_ids||[]).map(id => genreMap[id]).filter(Boolean),
     overview: item.overview || 'Описание пока не переведено.',
     posterPath: item.poster_path || null,
-    // Условное число серий — сразу видно что-то в интерфейсе.
-    // Настоящее число подтягивается точечно через ensureEpisodeTotal(),
-    // когда пользователь реально открывает карточку сериала.
-    episodesTotal: (type==='series'||type==='anime') ? (6 + (item.id % 8)) : undefined,
+    // Раньше здесь было выдуманное «6 + id % 8» — из-за него в интерфейсе
+    // показывались неправильные серии. Теперь только реальные данные из TMDB
+    // (подтягиваются при открытии карточки через ensureEpisodeTotal).
+    episodesTotal: undefined,
     seasons: [],
     _epFetched: false,
     cast: [],
@@ -1756,6 +1832,12 @@ function isRussianCard(m){
   return hasCyrillic(m.title);
 }
 function keepRussian(list){ return list.filter(isRussianCard); }
+/* Один и тот же тайтл приходит из двух запросов discover (например, мультфильм есть
+   и в популярном кино, и в мультфильмах). Без дедупликации в ленте появлялись дубли. */
+function dedupeMovies(list){
+  const seen = new Set();
+  return list.filter(m => { const k = m.type + '_' + m.id; if (seen.has(k)) return false; seen.add(k); return true; });
+}
 
 const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v3_ru';
 const TMDB_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 часов — не дёргаем TMDB на каждый запуск
@@ -1766,8 +1848,24 @@ function loadTmdbCache(){
     return raw;
   }catch(e){ return null; }
 }
+let tmdbCacheSavedAt = 0;
 function saveTmdbCache(movies){
-  try{ localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV })); }catch(e){}
+  // Пишем кэш не чаще раза в 20 секунд: раньше он сохранялся на каждую догруженную
+  // страницу, раздувал localStorage и ронял запись по квоте.
+  const now = Date.now();
+  if (now - tmdbCacheSavedAt < 20000) return;
+  tmdbCacheSavedAt = now;
+  try{
+    // Обрезаем служебные поля и размер, чтобы кэш не разрастался до мегабайтов.
+    const slim = movies.slice(0, 400).map(m => ({
+      id:m.id, type:m.type, title:m.title, originalTitle:m.originalTitle, year:m.year,
+      rating:m.rating, popularity:m.popularity, genres:m.genres, overview:m.overview,
+      posterPath:m.posterPath, seasons:m.seasons, episodesTotal:m.episodesTotal, cast:m.cast,
+    }));
+    localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies: slim, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV }));
+  }catch(e){
+    try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e2){}
+  }
 }
 
 let tmdbPage = 1;
@@ -1804,7 +1902,7 @@ async function loadMovies(){
       fetchList(u.anime, 'anime', GENRE_TV),
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
-    const combined = keepRussian([...films, ...series, ...anime, ...cartoons]);
+    const combined = dedupeMovies(keepRussian([...films, ...series, ...anime, ...cartoons]));
     if (combined.length){
       MOVIES = combined; saveTmdbCache(combined); tmdbFailed = false;
       // Догружаем сразу несколько страниц в фоне, чтобы колода была большой и не кончалась.
@@ -1820,7 +1918,7 @@ async function retryLoadMovies(){
   showToast('Загружаю каталог…');
   await loadMovies();
   setupGenreChips();
-  deck = sortByPopularity(MOVIES.filter(isUnseen));
+  deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); updateStats();
 }
 
@@ -1838,7 +1936,7 @@ async function fetchMorePages(){
       fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
     ]);
     const existing = new Set(MOVIES.map(m => m.type + '_' + m.id));
-    const fresh = keepRussian([...films, ...series, ...anime, ...cartoons]).filter(m => !existing.has(m.type + '_' + m.id));
+    const fresh = dedupeMovies(keepRussian([...films, ...series, ...anime, ...cartoons])).filter(m => !existing.has(m.type + '_' + m.id));
     if (fresh.length){ MOVIES = MOVIES.concat(fresh); saveTmdbCache(MOVIES); }
     return fresh.length;
   }catch(e){ tmdbPage -= 1; return 0; }
@@ -1864,9 +1962,24 @@ async function prefetchDeck(pages){
 function typeEnabled(type){
   return getFlag('smotra_type_' + type, true);
 }
+/* TMDB выдаёт фильмам и сериалам пересекающиеся числовые id: фильм 550 и сериал 550 —
+   совершенно разные тайтлы. Поэтому всё, что не фильм, храним в отдельном числовом
+   пространстве (id + смещение), а старые записи без смещения переводим при загрузке. */
+const SERIES_ID_OFFSET = 1000000000;
+function isTvLike(m){ return !!m && (m.type === 'series' || m.type === 'anime'); }
+function mid(m){ return isTvLike(m) ? m.id + SERIES_ID_OFFSET : m.id; }
+function keyToMovie(key){ return MOVIES.find(m => mid(m) === key) || null; }
+function normalizeStoredKey(v){
+  v = +v || 0;
+  if (!v || v >= SERIES_ID_OFFSET) return v;
+  if (MOVIES.some(m => m.type === 'film' && m.id === v)) return v;
+  const other = MOVIES.find(m => m.type !== 'film' && m.id === v);
+  return other ? mid(other) : v;
+}
 function isUnseen(m){
-  return !state.watched.includes(m.id) && !state.skipped.includes(m.id)
-      && !state.wishlist.includes(m.id) && !state.watching.includes(m.id)
+  const k = mid(m);
+  return !state.watched.includes(k) && !state.skipped.includes(k)
+      && !state.wishlist.includes(k) && !state.watching.includes(k)
       && typeEnabled(m.type);
 }
 function shuffle(arr){
@@ -1889,24 +2002,37 @@ function sortByPopularity(arr){
   return arr.slice().sort((a,b) => personalScore(b) - personalScore(a));
 }
 async function refillDeck(){
-  let fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
+  let fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
   let attempts = 0;
   // Тянем новые страницы, пока не наберём приличный запас (или пока TMDB не иссякнет).
   while (fresh.length < 12 && attempts < 15){
     const added = await fetchMorePages();
     attempts++;
-    if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.includes(m));
+    if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
     else break;
   }
   if (fresh.length) deckRefillTries = 0;
-  deck = deck.concat(sortByPopularity(fresh));
+  // Пока мы ждали TMDB, часть карточек могла уехать свайпом — не возвращаем их в ленту.
+  const stillFresh = dedupeByKey(fresh.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m))));
+  deck = deck.concat(sortByPopularity(stillFresh));
 }
 function shakeDeck(){
   deckRefillTries = 0;
-  deck = shuffle(deck);
+  const cards = [...stackEl.querySelectorAll('.card')];
   haptic('impact','medium');
-  renderStack();
-  showToast('Колода перетасована', 'shuffle');
+  if (!cards.length){ deck = shuffle(deck); renderStack(); showToast('Колода перетасована', 'shuffle'); return; }
+  // Карточки реально «взбалтываются»: каждая уезжает в свою сторону и возвращается.
+  cards.forEach((card, i) => {
+    card.style.setProperty('--sh-x', (i % 2 ? 1 : -1) * (26 + i * 16) + 'px');
+    card.style.setProperty('--sh-r', (i % 2 ? 1 : -1) * (7 + i * 3) + 'deg');
+    card.style.setProperty('--sh-d', (i * 0.045) + 's');
+    card.classList.add('shuffling');
+  });
+  setTimeout(()=>{
+    deck = shuffle(deck);
+    renderStack();
+    showToast('Колода перетасована', 'shuffle');
+  }, 430);
 }
 
 async function ensureEpisodeTotal(movie){
@@ -1966,7 +2092,18 @@ const state = {
   badgeDates: {},
   episodes: {},
 };
-function movieById(id){ return MOVIES.find(m => m.id === id); }
+// ID у фильмов и сериалов живут в разных пространствах, поэтому тип — часть ключа.
+function movieById(id, type){
+  if (type) return MOVIES.find(m => m.id === id && m.type === type) || null;
+  return MOVIES.find(m => m.id === id) || null;
+}
+/* Один тайтл = один ключ: фильм и мультфильм с одним TMDB-id — это один и тот же фильм,
+   а сериал с тем же числом — другой тайтл (см. mid). */
+function sameMovie(a, b){ return !!a && !!b && mid(a) === mid(b); }
+function dedupeByKey(list){
+  const seen = new Set();
+  return list.filter(m => { const k = mid(m); if (seen.has(k)) return false; seen.add(k); return true; });
+}
 
 document.getElementById('shakeBtn').onclick = shakeDeck;
 
@@ -1987,7 +2124,7 @@ function shareApp(){
 let toastTimer;
 function showToast(text, iconName){
   const t = document.getElementById('toast');
-  t.innerHTML = (iconName ? `<span class="toast-icon">${ICON(iconName, 16)}</span>` : '') + text;
+  t.innerHTML = (iconName ? `<span class="toast-icon">${ICON(iconName, 16)}</span>` : '') + esc(text);
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);
@@ -2081,65 +2218,111 @@ let deckRefreshing = false;
 // «пустая колода → refill → пустая колода» крутилось бесконечно и подвешивало апп.
 let deckRefillTries = 0;
 const DECK_REFILL_TRIES_MAX = 2;
-function deckExhaustedNote(){
-  stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Кино закончилось</div><div>Ты разобрал всю подборку. Загляни позже или включи больше типов в фильтре.</div><button id="retryDeck">Обновить подборку</button></div>`;
-  const btn = document.getElementById('retryDeck');
-  if (btn) btn.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
-}
-function renderStack(){
-  stackEl.innerHTML = '';
-  const deckCountEl = document.getElementById('deckCount');
-  if (deckCountEl) deckCountEl.textContent = deck.length || '—';
-  if (!deck.length){
-    if (tmdbFailed) {
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет и ключ</div><button id="retryTmdb">Повторить</button></div>`;
-      document.getElementById('retryTmdb').onclick = retryLoadMovies;
-    } else if (deckRefreshing){
-      // Колода пуста — показываем «ищу», догрузка уже идёт.
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Ищу ещё кино…</div><div>Подтягиваю новые карточки</div></div>`;
-    } else if (deckRefillTries < DECK_REFILL_TRIES_MAX){
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Ищу ещё кино…</div><div>Подтягиваю новые карточки</div></div>`;
-      refillOnce();
-    } else {
-      deckExhaustedNote();
-    }
-    return;
-  }
-  const visible = deck.slice(0,3);
-  try{
-  visible.slice().reverse().forEach((movie, revIdx) => {
-    const depth = visible.length - 1 - revIdx;
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.style.transform = `translateY(${depth*10}px) scale(${1 - depth*0.045})`;
-    card.style.zIndex = 10 - depth;
-    card.innerHTML = `
+
+/* Колода V2: карточки не пересобираются целиком, а плавно «поднимаются» после
+   свайпа — верхняя уезжает, следующая красиво вырастает на её место. */
+const DECK_DEPTH_Y = 12, DECK_DEPTH_SCALE = 0.05;
+function cardHTML(movie){
+  return `
       <div class="poster" style="${posterStyle(movie, 'w500')}">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
       <div class="shade"></div>
       <div class="stamp watched">СМОТРЕЛ</div>
       <div class="stamp skip">МИМО</div>
       <div class="stamp wish">ЧЕКНУТЬ</div>
       <div class="stamp watching">СМОТРЮ</div>
-      <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${(movie.genres||[]).slice(0,2).map(g=>`<div class="genre-tag">${g}</div>`).join('')}</div>
+      <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${(movie.genres||[]).slice(0,2).map(g=>`<div class="genre-tag">${esc(g)}</div>`).join('')}</div>
       <div class="info">
-        <div class="title">${movie.title}</div>
-        <div class="meta">${movie.year} <span class="star">${ICON('starFill', 12)} ${movie.rating}</span></div>
+        <div class="title">${esc(movie.title)}</div>
+        <div class="meta">${esc(movie.year)} <span class="star">${ICON('starFill', 12)} ${esc(movie.rating)}</span></div>
       </div>`;
-    stackEl.appendChild(card);
-    if (depth === 0) makeDraggable(card, movie);
-  });
+}
+function deckLoadingHTML(text){
+  return `<div class="deck-loading"><div class="deck-spinner"></div><div class="deck-loading-text">${text || 'Подбираю кино…'}</div><div class="deck-loading-sub">Это займёт пару секунд</div></div>`;
+}
+function deckExhaustedNote(){
+  stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Кино закончилось</div><div>Ты разобрал всю подборку. Загляни позже или включи больше типов в фильтре.</div><button id="retryDeck">Обновить подборку</button></div>`;
+  const btn = document.getElementById('retryDeck');
+  if (btn) btn.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
+}
+/* В колоде не может быть тайтла, с которым уже что-то сделали — правило проекта. */
+function purgeDeck(){
+  const before = deck.length;
+  deck = deck.filter(m => isUnseen(m));
+  if (before !== deck.length) deckRefillTries = 0;
+  return before - deck.length;
+}
+function makeCard(movie, depth){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.id = movie.id;
+  card.dataset.type = movie.type;
+  card.style.transform = `translateY(${depth*DECK_DEPTH_Y}px) scale(${1 - depth*DECK_DEPTH_SCALE})`;
+  card.style.zIndex = 10 - depth;
+  card.innerHTML = cardHTML(movie);
+  if (depth === 0) makeDraggable(card, movie);
+  return card;
+}
+function renderStack(){
+  purgeDeck();
+  if (!deck.length){
+    if (tmdbFailed && !MOVIES.length){
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Каталог не загрузился</div><div>Не получилось достучаться до TMDB — проверь интернет</div><button id="retryTmdb">Повторить</button></div>`;
+      const b = document.getElementById('retryTmdb');
+      if (b) b.onclick = retryLoadMovies;
+    } else if (deckRefillTries >= DECK_REFILL_TRIES_MAX){
+      deckExhaustedNote();
+    } else {
+      // Пустоту не показываем никогда: вместо неё — крутящийся индикатор и догрузка.
+      stackEl.innerHTML = deckLoadingHTML();
+      refillOnce();
+    }
+    ensureDeckHeight();
+    return;
+  }
+  try{
+    stackEl.innerHTML = '';
+    const visible = deck.slice(0, 3);
+    // Рисуем от дальней карточки к ближней, чтобы верхняя была последней в DOM.
+    for (let depth = visible.length - 1; depth >= 0; depth--){
+      stackEl.appendChild(makeCard(visible[depth], depth));
+    }
   }catch(e){
-    // Одна битая карточка не должна оставлять пустой весь экран
     console.error('renderStack failed', e);
     if (!stackEl.querySelector('.card')){
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Не получилось показать карточки</div><div>Потяни за «Перемешать» или обнови подборку</div><button id="retryDeck2">Обновить подборку</button></div>`;
+      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Не получилось показать карточки</div><div>Попробуй обновить подборку</div><button id="retryDeck2">Обновить</button></div>`;
       const b = document.getElementById('retryDeck2');
       if (b) b.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
     }
   }
   ensureDeckHeight();
 }
-
+/* Плавный подъём колоды: верхняя карточка уже уехала, остальные переезжают
+   в новые позиции с анимацией, а на задний план въезжает новая карточка. */
+function restackAfterTop(){
+  const cards = [...stackEl.querySelectorAll('.card')];
+  cards.forEach((card, i) => { card.dataset.depth = i; });
+  const top = cards[cards.length - 1];
+  if (top) top.remove();
+  const rest = [...stackEl.querySelectorAll('.card')];
+  rest.reverse().forEach((card, i) => {
+    card.style.transform = `translateY(${i*DECK_DEPTH_Y}px) scale(${1 - i*DECK_DEPTH_SCALE})`;
+    card.style.zIndex = 10 - i;
+  });
+  const topCard = rest[0];
+  if (topCard) makeDraggable(topCard, deck[0]);
+  // Дорисовываем карточку на заднем плане
+  const shown = rest.length;
+  if (deck[shown]){
+    const back = makeCard(deck[shown], shown);
+    back.style.opacity = '0';
+    back.style.transform = `translateY(${shown*DECK_DEPTH_Y + 18}px) scale(${1 - shown*DECK_DEPTH_SCALE - 0.05})`;
+    stackEl.insertBefore(back, stackEl.firstChild);
+    requestAnimationFrame(()=>{
+      back.style.opacity = '1';
+      back.style.transform = `translateY(${shown*DECK_DEPTH_Y}px) scale(${1 - shown*DECK_DEPTH_SCALE})`;
+    });
+  }
+}
 /* Страховка от схлопывания колоды: если флекс-контейнер по какой-то причине
    не растянул сцену, считаем доступную высоту руками и фиксируем её в px. */
 function ensureDeckHeight(){
@@ -2147,7 +2330,7 @@ function ensureDeckHeight(){
   const stack = document.getElementById('stack');
   if (!home || !stack) return;
   if (!home.classList.contains('active')) return;
-  const used = ['.home-head', '.actions', '.my-actions', '.home-bottom']
+  const used = ['.actions', '.home-bottom']
     .reduce((sum, sel) => { const el = home.querySelector(sel); return sum + (el ? el.getBoundingClientRect().height : 0); }, 0);
   const cs = getComputedStyle(home);
   const pad = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
@@ -2168,14 +2351,14 @@ function makeDraggable(card, movie){
   card.addEventListener('pointerdown', e=>{
     dragging = true; moved = false; radialOn = false; startX = e.clientX; startY = e.clientY;
     try{ card.setPointerCapture(e.pointerId); }catch(err){}
-    card.style.transition = 'none';
+    card.classList.add('swiping');
     const posterEl = card.querySelector('.poster');
     const thumbStyle = posterEl ? posterEl.getAttribute('style') : '';
     holdTimer = setTimeout(()=>{
       holdTimer = null;
       if (moved) return;
       radialOn = true; dragging = false;
-      card.style.transition = ''; card.style.transform = '';
+      card.classList.remove('swiping'); card.style.transform = '';
       Radial.open(movie, startX, startY, thumbStyle);
     }, 360);
   });
@@ -2200,7 +2383,7 @@ function makeDraggable(card, movie){
     clearHold();
     if (radialOn){ Radial.close(true); radialOn = false; dx = 0; dy = 0; return; }
     if (!dragging) return;
-    dragging = false; card.style.transition = '';
+    dragging = false; card.classList.remove('swiping');
     const vertical = Math.abs(dy) > Math.abs(dx);
     if (vertical && Math.abs(dy) > 100){
       resolveSwipe(card, movie, dy < 0 ? 'wish' : 'watching');
@@ -2217,9 +2400,7 @@ function makeDraggable(card, movie){
   card.addEventListener('contextmenu', e => e.preventDefault());
 }
 
-/* Догружаем колоду один раз. Если новых карточек нет — просто останавливаемся.
-   Раньше здесь был бесконечный цикл refill → renderStack → refill, из-за которого
-   приложение подвисало, когда заканчивались тайтлы. */
+/* Догружаем колоду один раз. Если новых карточек нет — просто останавливаемся. */
 function refillOnce(){
   if (deckRefreshing) return;
   deckRefreshing = true;
@@ -2232,20 +2413,28 @@ function refillOnce(){
     }
   });
 }
+/* Фоновое пополнение: пользователь никогда не должен видеть пустую ленту.
+   Тихо дотягиваем колоду, пока он листает другие разделы. */
+function keepDeckFull(){
+  if (document.getElementById('home')?.classList.contains('active')) return;
+  if (deckRefreshing || tmdbFailed) return;
+  if (deck.filter(isUnseen).length >= 8) return;
+  refillOnce();
+}
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
   const undoInfo = { movie, action };
   if (action === 'watched'){
     flyX = 900; rot = 28;
-    undoInfo.wasWatching = state.watching.includes(movie.id);
-    state.watched.push(movie.id);
-    state.watching = state.watching.filter(id=>id!==movie.id);
-    dbSwipe(movie.id, 'watched'); dbWatchingRemove(movie.id);
+    undoInfo.wasWatching = state.watching.includes(mid(movie));
+    state.watched.push(mid(movie));
+    state.watching = state.watching.filter(id=>id!==mid(movie));
+    dbSwipe(mid(movie), 'watched'); dbWatchingRemove(mid(movie));
   }
-  if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(movie.id); dbSwipe(movie.id, 'skipped'); }
-  if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(movie.id)) state.wishlist.push(movie.id); dbWishAdd(movie.id); }
-  if (action === 'watching'){ flyY = 900; if (!state.watching.includes(movie.id)) state.watching.push(movie.id); dbWatchingAdd(movie.id); }
+  if (action === 'skip'){ flyX = -900; rot = -28; state.skipped.push(mid(movie)); dbSwipe(mid(movie), 'skipped'); }
+  if (action === 'wish'){ flyY = -900; if (!state.wishlist.includes(mid(movie))) state.wishlist.push(mid(movie)); dbWishAdd(mid(movie)); }
+  if (action === 'watching'){ flyY = 900; if (!state.watching.includes(mid(movie))) state.watching.push(mid(movie)); dbWatchingAdd(mid(movie)); }
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
   haptic('impact', action === 'watched' ? 'medium' : 'light');
@@ -2253,12 +2442,31 @@ function resolveSwipe(card, movie, action){
   if (action === 'watched') checkBadges();
   pushSwipeHistory(undoInfo);
   setTimeout(()=>{
-    deck = deck.filter(m => m.id !== movie.id);
-    renderStack();
-    // Догружаем запас в фоне, не блокируя показ следующей карточки —
-    // так кнопка "Загрузить ещё" почти никогда не всплывает по-настоящему.
+    deck = deck.filter(m => !sameMovie(m, movie));
+    restackAfterTop();
     if (deck.length < 4) refillOnce();
-  }, 260);
+    ensureDeckHeight();
+  }, 300);
+}
+/* Если тайтл отметили где-то ещё (шторка, круговое меню, список серий) — он должен
+   немедленно уйти из колоды: уже просмотренное/отложенное в ленте не показываем. */
+function syncDeckAfterExternalChange(){
+  if (!deck.length) return;
+  const top = deck[0];
+  const removed = purgeDeck();
+  if (!removed) return;
+  if (!document.getElementById('home')?.classList.contains('active')) return;
+  if (top && !isUnseen(top)){
+    const cards = [...stackEl.querySelectorAll('.card')];
+    const topCard = cards[cards.length - 1];
+    if (topCard){
+      topCard.classList.remove('swiping');
+      topCard.style.transition = 'transform .26s ease, opacity .26s ease';
+      topCard.style.transform = 'translateY(-115%) scale(.92)';
+      topCard.style.opacity = '0';
+      setTimeout(renderStack, 250);
+    } else renderStack();
+  } else renderStack();
 }
 
 /* ============ ОТМЕНА СВАЙПА ============ */
@@ -2279,14 +2487,14 @@ function undoLastSwipe(){
   if (!entry) return;
   const { movie, action, wasWatching } = entry;
   if (action === 'watched'){
-    state.watched = state.watched.filter(id=>id!==movie.id);
-    dbSwipeRemove(movie.id, 'watched');
-    if (wasWatching){ state.watching.push(movie.id); dbWatchingAdd(movie.id); }
+    state.watched = state.watched.filter(id=>id!==mid(movie));
+    dbSwipeRemove(mid(movie), 'watched');
+    if (wasWatching){ state.watching.push(mid(movie)); dbWatchingAdd(mid(movie)); }
   }
-  if (action === 'skip'){ state.skipped = state.skipped.filter(id=>id!==movie.id); dbSwipeRemove(movie.id, 'skipped'); }
-  if (action === 'wish'){ state.wishlist = state.wishlist.filter(id=>id!==movie.id); dbWishRemove(movie.id); }
-  if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==movie.id); dbWatchingRemove(movie.id); }
-  deck = deck.filter(m => m.id !== movie.id);
+  if (action === 'skip'){ state.skipped = state.skipped.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie), 'skipped'); }
+  if (action === 'wish'){ state.wishlist = state.wishlist.filter(id=>id!==mid(movie)); dbWishRemove(mid(movie)); }
+  if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); }
+  deck = deck.filter(m => !sameMovie(m, movie));
   deck.unshift(movie);
   haptic('impact','medium');
   updateStats();
@@ -2302,79 +2510,48 @@ function undoLastSwipe(){
 }
 document.getElementById('undoBtn').onclick = undoLastSwipe;
 
-/* ============ ДОЛГОЕ НАЖАТИЕ — БЫСТРЫЕ ДЕЙСТВИЯ ============ */
-function closeQuick(){
-  document.getElementById('quickSheet').classList.remove('open');
-  document.getElementById('quickBackdrop').classList.remove('open');
-}
-document.getElementById('quickBackdrop').onclick = closeQuick;
+/* ============ БЫСТРЫЕ ДЕЙСТВИЯ (из кругового меню) ============ */
 function toggleQuick(kind, movie){
   if (kind === 'wishlist'){
-    const already = state.wishlist.includes(movie.id);
-    if (already){ state.wishlist = state.wishlist.filter(id=>id!==movie.id); dbWishRemove(movie.id); showToast('Убрано из «Хочу чекнуть»'); }
-    else { state.wishlist.push(movie.id); dbWishAdd(movie.id); showToast('Добавлено в «Хочу чекнуть»'); }
+    const already = state.wishlist.includes(mid(movie));
+    if (already){ state.wishlist = state.wishlist.filter(id=>id!==mid(movie)); dbWishRemove(mid(movie)); showToast('Убрано из «Хочу чекнуть»'); }
+    else { state.wishlist.push(mid(movie)); dbWishAdd(mid(movie)); showToast('Добавлено в «Хочу чекнуть»'); }
   }
   if (kind === 'watching'){
-    const already = state.watching.includes(movie.id);
-    if (already){ state.watching = state.watching.filter(id=>id!==movie.id); dbWatchingRemove(movie.id); showToast('Убрано из «Смотрю»'); }
-    else { state.watching.push(movie.id); dbWatchingAdd(movie.id); showToast('Добавлено в «Смотрю»'); }
+    const already = state.watching.includes(mid(movie));
+    if (already){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); showToast('Убрано из «Смотрю»'); }
+    else { state.watching.push(mid(movie)); dbWatchingAdd(mid(movie)); showToast('Добавлено в «Смотрю»'); }
   }
   if (kind === 'watched'){
-    const already = state.watched.includes(movie.id);
-    if (already){ state.watched = state.watched.filter(id=>id!==movie.id); dbSwipeRemove(movie.id,'watched'); showToast('Отметка снята'); }
+    const already = state.watched.includes(mid(movie));
+    if (already){ state.watched = state.watched.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie),'watched'); showToast('Отметка снята'); }
     else {
-      state.watched.push(movie.id);
-      state.wishlist = state.wishlist.filter(id=>id!==movie.id);
-      state.watching = state.watching.filter(id=>id!==movie.id);
-      dbSwipe(movie.id,'watched'); dbWishRemove(movie.id); dbWatchingRemove(movie.id);
+      state.watched.push(mid(movie));
+      state.wishlist = state.wishlist.filter(id=>id!==mid(movie));
+      state.watching = state.watching.filter(id=>id!==mid(movie));
+      dbSwipe(mid(movie),'watched'); dbWishRemove(mid(movie)); dbWatchingRemove(mid(movie));
       checkBadges();
       showToast('Отмечено «Смотрел»', 'check');
     }
   }
   haptic('impact','light');
   updateStats();
-  closeQuick();
-}
-function buildQuickActions(movie){
-  const isWish = state.wishlist.includes(movie.id);
-  const isWatching = state.watching.includes(movie.id);
-  const isWatched = state.watched.includes(movie.id);
-  return [
-    { icon: isWish ? 'starFill' : 'star', label: isWish ? 'Убрать из «Хочу чекнуть»' : 'В «Хочу чекнуть»', active:isWish, onClick: () => toggleQuick('wishlist', movie) },
-    { icon: isWatching ? 'pause' : 'play', label: isWatching ? 'Убрать из «Смотрю»' : 'В «Смотрю»', active:isWatching, onClick: () => toggleQuick('watching', movie) },
-    { icon: 'check', label: isWatched ? 'Снять отметку «Смотрел»' : 'Отметить «Смотрел»', active:isWatched, onClick: () => toggleQuick('watched', movie) },
-    { icon: 'clapper', label: 'Смотриметры', onClick: () => { closeQuick(); openReviewScreen(movie); } },
-    { icon: 'share', label: 'Поделиться', onClick: () => { closeQuick(); shareMovie(movie); } },
-  ];
-}
-function openQuickActions(movie){
-  document.getElementById('quickHeader').innerHTML = `
-    <div class="thumb" style="${posterStyle(movie,'w154')}; width:44px; height:62px;">${hasArt(movie) ? '' : ICON(posterIcon(movie), 20)}</div>
-    <div><div style="font-weight:700; font-size:15px;">${movie.title}</div><div class="set-sub">${movie.year}${movie.genres[0] ? ' · '+movie.genres[0] : ''}</div></div>`;
-  const actions = buildQuickActions(movie);
-  document.getElementById('quickActionsList').innerHTML = actions.map((a,i) => `
-    <button class="quick-action-btn ${a.active?'active':''}" data-i="${i}">
-      <span class="qa-icon">${ICON(a.icon, 17)}</span>${a.label}
-    </button>`).join('');
-  [...document.getElementById('quickActionsList').querySelectorAll('button')].forEach((btn,i) => { btn.onclick = actions[i].onClick; });
-  document.getElementById('quickSheet').classList.add('open');
-  document.getElementById('quickBackdrop').classList.add('open');
+  syncDeckAfterExternalChange();
 }
 /* ============ РАДИАЛЬНОЕ МЕНЮ (зажми обложку → веди к сектору → отпусти) ============ */
 const Radial = (function(){
   const menu = document.getElementById('radialMenu');
   const wrap = document.getElementById('radWrap');
   const center = document.getElementById('radCenter');
-  const hint = document.getElementById('radHint');
   const backdrop = menu.querySelector('.rad-backdrop');
   const R = 104;           // радиус, на котором стоят кнопки
   const DEAD = 46;         // мёртвая зона в центре — отпустил здесь = отмена
   let active = false, items = [], hot = -1, cx = 0, cy = 0, curMovie = null, defaultLabel = '';
 
   function buildActions(movie){
-    const isWish = state.wishlist.includes(movie.id);
-    const isWatching = state.watching.includes(movie.id);
-    const isWatched = state.watched.includes(movie.id);
+    const isWish = state.wishlist.includes(mid(movie));
+    const isWatching = state.watching.includes(mid(movie));
+    const isWatched = state.watched.includes(mid(movie));
     return [
       { icon: isWatched?'cross':'check', lbl: isWatched?'Снять':'Смотрел', active:isWatched, run:()=>toggleQuick('watched', movie) },
       { icon: isWish?'starFill':'star', lbl: isWish?'Убрать':'Чекнуть', active:isWish, run:()=>toggleQuick('wishlist', movie) },
@@ -2386,6 +2563,7 @@ const Radial = (function(){
 
   function open(movie, x, y, thumbStyle){
     curMovie = movie;
+    document.body.classList.add('radial-open');
     // Центр меню держим внутри экрана, чтобы кнопки не уезжали за край
     const pad = R + 46;
     cx = Math.max(pad, Math.min(window.innerWidth - pad, x));
@@ -2439,6 +2617,7 @@ const Radial = (function(){
   function close(fire){
     if (!active) return;
     active = false;
+    document.body.classList.remove('radial-open');
     const chosen = (fire && hot>=0) ? items[hot].act : null;
     menu.classList.remove('show');
     items.forEach(it => it.el.remove());
@@ -2457,11 +2636,16 @@ const LONGPRESS_THUMB_SELECTOR = '.pc-art, .thumb, .review-poster';
 function initLongPress(containerId){
   const el = document.getElementById(containerId);
   if (!el) return;
-  let pressTimer = null, startX = 0, startY = 0, moved = false, activeCard = null, radialOn = false;
+  let pressTimer = null, startX = 0, startY = 0, moved = false, activeCard = null, radialOn = false, pressPending = false;
+  // Пока палец держит карточку (или открыто круговое меню) — гасим нативный скролл.
+  // Без этого страница «скатывалась» под пальцем и выбрать действие было невозможно.
+  el.addEventListener('touchmove', e => {
+    if (pressPending || radialOn){ e.preventDefault(); }
+  }, { passive:false });
   el.addEventListener('pointerdown', e => {
     const card = e.target.closest(LONGPRESS_CARD_SELECTOR);
     if (!card) return;
-    activeCard = card; moved = false; radialOn = false; startX = e.clientX; startY = e.clientY;
+    activeCard = card; moved = false; radialOn = false; pressPending = true; startX = e.clientX; startY = e.clientY;
     const thumbEl = card.querySelector(LONGPRESS_THUMB_SELECTOR);
     const thumbStyle = thumbEl ? thumbEl.getAttribute('style') : '';
     try{ el.setPointerCapture(e.pointerId); }catch(err){}
@@ -2469,17 +2653,20 @@ function initLongPress(containerId){
       pressTimer = null;
       if (moved) return;
       const id = +((card.dataset.id ?? card.dataset.movie) || 0);
-      const movie = movieById(id);
+      const movie = movieById(id, card.dataset.type);
       if (movie){ card._suppressClick = true; radialOn = true; Radial.open(movie, startX, startY, thumbStyle); }
     }, 420);
   });
-  const cancel = () => { if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } };
+  const cancel = () => { if (pressTimer){ clearTimeout(pressTimer); pressTimer = null; } pressPending = false; };
   el.addEventListener('pointermove', e => {
     if (radialOn){ Radial.update(e.clientX, e.clientY); return; }
     if (!activeCard || moved) return;
     if (Math.abs(e.clientX-startX) > 8 || Math.abs(e.clientY-startY) > 8){ moved = true; cancel(); }
   });
-  const finish = () => { cancel(); if (radialOn){ Radial.close(true); radialOn = false; } };
+  const finish = () => {
+    cancel();
+    if (radialOn){ Radial.close(true); radialOn = false; }
+  };
   el.addEventListener('pointerup', finish);
   el.addEventListener('pointercancel', () => { cancel(); if (radialOn){ Radial.close(false); radialOn = false; } });
   el.addEventListener('click', e => {
@@ -2493,31 +2680,6 @@ function initLongPress(containerId){
 document.getElementById('btnWatched').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
 document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
 document.getElementById('btnWish').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'wish'); };
-
-/* Быстрые ссылки на свои списки прямо на главной: они всегда на виду и не
-   «скатываются» вниз, потому что главная больше не скроллится. */
-function renderMyActions(){
-  const el = document.getElementById('myActions');
-  if (!el) return;
-  const items = [
-    { key:'watching', icon:'play',     label:'Смотрю',   n: state.watching.length },
-    { key:'wishlist', icon:'starFill', label:'Чекнуть',  n: state.wishlist.length },
-    { key:'watched',  icon:'check',    label:'Смотрел',  n: state.watched.length  },
-  ];
-  el.innerHTML = items.map(it => `
-    <button class="my-action ${it.n ? 'hot' : ''}" data-key="${it.key}" ${it.n ? '' : 'disabled'}>
-      ${ICON(it.icon, 13)} ${it.label} <span class="ma-num">${it.n}</span>
-    </button>`).join('');
-  el.querySelectorAll('.my-action').forEach(btn => {
-    btn.onclick = () => {
-      haptic('selection');
-      const key = btn.dataset.key;
-      if (key === 'watching'){ document.getElementById('watchingScreen').classList.add('open'); renderWatching(); }
-      else if (key === 'wishlist'){ switchTab('wishlist'); }
-      else { openHistoryAs('watched'); }
-    };
-  });
-}
 
 /* Перерисовываем только то, что реально видно: иначе каждый свайп пересобирал
    весь каталог (60 карточек), чек-лист, «Смотрю» и рейтинг друзей с сетью.
@@ -2537,14 +2699,13 @@ function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
-  renderMyActions();
   refreshVisibleScreens();
 }
 
 /* ============ WATCHING («смотрю сейчас») ============ */
 function renderWatching(){
   const view = syncViewToggle('watching', 'list');
-  const items = state.watching.slice().reverse().map(movieById).filter(Boolean);
+  const items = state.watching.slice().reverse().map(keyToMovie).filter(Boolean);
   document.getElementById('watchingCount').textContent = items.length;
   const rowCount = document.getElementById('watchingCountRow');
   if (rowCount) rowCount.textContent = items.length;
@@ -2553,9 +2714,10 @@ function renderWatching(){
   if (view === 'grid'){
     el.className = 'grid2';
     el.innerHTML = items.map(posterCardHTML).join('');
+    applyLazyArt(el);
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
-      card.onclick = () => openSheet(movieById(+card.dataset.id));
+      card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
     });
     return;
   }
@@ -2563,10 +2725,10 @@ function renderWatching(){
   el.innerHTML = items.map(m => rowCardHTML(m, true)).join('');
   [...el.querySelectorAll('.row-card')].forEach((row,i)=>{
     row.style.animationDelay = (Math.min(i,14) * 0.025) + 's';
-    const id = +row.dataset.id;
-    row.querySelector('[data-act=remove]').onclick = () => { state.watching = state.watching.filter(x=>x!==id); dbWatchingRemove(id); updateStats(); };
-    row.querySelector('[data-act=watched]').onclick = () => { state.watching = state.watching.filter(x=>x!==id); if(!state.watched.includes(id)) state.watched.push(id); haptic('impact','medium'); dbWatchingRemove(id); dbSwipe(id,'watched'); updateStats(); checkBadges(); };
-    row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id)); });
+    const key = +row.dataset.key, id = +row.dataset.id;
+    row.querySelector('[data-act=remove]').onclick = () => { state.watching = state.watching.filter(x=>x!==key); dbWatchingRemove(key); updateStats(); };
+    row.querySelector('[data-act=watched]').onclick = () => { state.watching = state.watching.filter(x=>x!==key); if(!state.watched.includes(key)) state.watched.push(key); haptic('impact','medium'); dbWatchingRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
+    row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id, row.dataset.type)); });
   });
 }
 
@@ -2578,7 +2740,8 @@ async function renderWeekActivity(){
   const counts = days.map(()=>0);
   try{
     const since = new Date(days[0]);
-    const { data } = await sb.from('swipes').select('created_at').eq('telegram_id', TG_ID).gte('created_at', since.toISOString());
+    const { data, error } = await sb.from('swipes').select('created_at').eq('telegram_id', TG_ID).gte('created_at', since.toISOString());
+    if (error) throw error;
     (data||[]).forEach(r=>{
       const d = new Date(r.created_at);
       const idx = days.findIndex(day => day.toDateString() === d.toDateString());
@@ -2620,12 +2783,33 @@ function setupGenreChips(){
   document.getElementById('catChips').innerHTML = genres.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${g}">${g}</div>`).join('');
 }
 /* ============ Общие шаблоны карточек (грид/список) ============ */
+/* Обложки грузим только когда карточка приближается к экрану: в каталоге
+   легко набирается сотня постеров, и все они тянулись разом даже с телефона. */
+let posterObserver = null;
+if ('IntersectionObserver' in window){
+  posterObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      if (el.dataset.bg) el.style.backgroundImage = `url('${el.dataset.bg}')`;
+      delete el.dataset.bg;
+      posterObserver.unobserve(el);
+    });
+  }, { rootMargin:'400px 0px' });
+}
+function applyLazyArt(root){
+  [...root.querySelectorAll('.pc-art[data-bg]')].forEach(el => {
+    if (!el.dataset.bg) return;
+    if (!posterObserver){ el.style.backgroundImage = `url('${el.dataset.bg}')`; delete el.dataset.bg; return; }
+    posterObserver.observe(el);
+  });
+}
 function posterCardHTML(m){
-  const w = state.watched.includes(m.id), wi = state.wishlist.includes(m.id), wa = state.watching.includes(m.id);
+  const w = state.watched.includes(mid(m)), wi = state.wishlist.includes(mid(m)), wa = state.watching.includes(mid(m));
   const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
               : wi ? `<div class="pc-flag wish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>`
               : wa ? `<div class="pc-flag watching">${ICON('play', 10)}</div>` : '';
-  return `<div class="poster-card" data-id="${m.id}"><div class="pc-art" style="${posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${m.title}</div></div>`;
+  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art" data-bg="${hasArt(m) ? posterUrl(m, 'w342') : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
 }
 // Маленькая обложка для карточки рецензии. movie может быть undefined (нет в каталоге).
 function reviewPosterHTML(movie){
@@ -2635,9 +2819,9 @@ function reviewPosterHTML(movie){
 }
 function rowCardHTML(m, showActions){
   const actions = showActions ? `<div class="rc-actions"><button class="ok" data-act="watched">${ICON('check', 15)}</button><button data-act="remove">${ICON('cross', 14)}</button></div>` : '';
-  return `<div class="row-card" data-id="${m.id}">
+  return `<div class="row-card" data-id="${m.id}" data-type="${m.type}" data-key="${mid(m)}">
       <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
-      <div class="rc-body"><div class="rc-title">${m.title}</div><div class="rc-meta">${m.year} · ${m.genres.join(', ')}</div></div>
+      <div class="rc-body"><div class="rc-title">${esc(m.title)}</div><div class="rc-meta">${esc(m.year)} · ${esc((m.genres||[]).join(', '))}</div></div>
       ${actions}
     </div>`;
 }
@@ -2688,14 +2872,15 @@ function renderCatalog(){
     grid.innerHTML = shown.map(m => rowCardHTML(m, false)).join('');
     [...grid.querySelectorAll('.row-card')].forEach((row,i) => {
       if (i < 24){ row.classList.add('card-enter'); row.style.animationDelay = (i * 0.02) + 's'; }
-      row.onclick = () => openSheet(movieById(+row.dataset.id));
+      row.onclick = () => openSheet(movieById(+row.dataset.id, row.dataset.type));
     });
   } else {
     grid.className = 'grid2';
     grid.innerHTML = shown.map(posterCardHTML).join('');
+    applyLazyArt(grid);
     [...grid.querySelectorAll('.poster-card')].forEach((el,i) => {
       if (i < 24){ el.classList.add('card-enter'); el.style.animationDelay = (i * 0.025) + 's'; }
-      el.onclick = () => openSheet(movieById(+el.dataset.id));
+      el.onclick = () => openSheet(movieById(+el.dataset.id, el.dataset.type));
     });
   }
   if (list.length > shown.length){
@@ -2718,7 +2903,7 @@ document.getElementById('wishSort').addEventListener('click', e=>{
 });
 function renderWishlist(){
   const view = syncViewToggle('wishlist', 'list');
-  let items = state.wishlist.slice().reverse().map(movieById).filter(Boolean);
+  let items = state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
   if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
   else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
   const el = document.getElementById('wishList');
@@ -2726,9 +2911,10 @@ function renderWishlist(){
   if (view === 'grid'){
     el.className = 'grid2';
     el.innerHTML = items.map(posterCardHTML).join('');
+    applyLazyArt(el);
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
-      card.onclick = () => openSheet(movieById(+card.dataset.id));
+      card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
     });
     return;
   }
@@ -2736,10 +2922,10 @@ function renderWishlist(){
   el.innerHTML = items.map(m => rowCardHTML(m, true)).join('');
   [...el.querySelectorAll('.row-card')].forEach((row,i)=>{
     row.style.animationDelay = (Math.min(i,14) * 0.025) + 's';
-    const id = +row.dataset.id;
-    row.querySelector('[data-act=remove]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==id); dbWishRemove(id); updateStats(); };
-    row.querySelector('[data-act=watched]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==id); if(!state.watched.includes(id)) state.watched.push(id); haptic('impact','medium'); dbWishRemove(id); dbSwipe(id,'watched'); updateStats(); checkBadges(); };
-    row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id)); });
+    const key = +row.dataset.key, id = +row.dataset.id;
+    row.querySelector('[data-act=remove]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==key); dbWishRemove(key); updateStats(); };
+    row.querySelector('[data-act=watched]').onclick = () => { state.wishlist = state.wishlist.filter(x=>x!==key); if(!state.watched.includes(key)) state.watched.push(key); haptic('impact','medium'); dbWishRemove(key); dbSwipe(key,'watched'); updateStats(); checkBadges(); };
+    row.addEventListener('click', e => { if (!e.target.closest('button')) openSheet(movieById(id, row.dataset.type)); });
   });
 }
 
@@ -2758,15 +2944,15 @@ document.getElementById('histTypeChips').addEventListener('click', e=>{
 });
 function renderHistory(){
   const ids = histMode === 'watched' ? state.watched : state.skipped;
-  const items = ids.slice().reverse().map(movieById).filter(Boolean).filter(m => histType==='all' || m.type===histType);
+  const items = ids.slice().reverse().map(keyToMovie).filter(Boolean).filter(m => histType==='all' || m.type===histType);
   const el = document.getElementById('histList');
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
   el.innerHTML = items.map(m => `
-    <div class="row-card" data-id="${m.id}">
+    <div class="row-card" data-id="${m.id}" data-type="${m.type}">
       <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
-      <div class="rc-body"><div class="rc-title">${m.title}</div><div class="rc-meta">${m.year} · ${m.genres.join(', ')}</div></div>
+      <div class="rc-body"><div class="rc-title">${esc(m.title)}</div><div class="rc-meta">${esc(m.year)} · ${esc((m.genres||[]).join(', '))}</div></div>
     </div>`).join('');
-  [...el.querySelectorAll('.row-card')].forEach(row => row.onclick = () => openSheet(movieById(+row.dataset.id)));
+  [...el.querySelectorAll('.row-card')].forEach(row => row.onclick = () => openSheet(movieById(+row.dataset.id, row.dataset.type)));
 }
 function openHistoryAs(mode){
   histMode = mode;
@@ -2810,7 +2996,7 @@ async function renderRank(){
   const rowsHtml = rows.map((r,i) => `
     <div class="rank-row ${r.isMe?'me':''}" data-id="${r.id}" ${r.isMe?'':'style="cursor:pointer;"'}>
       <div class="rank-num">${i+1}</div>
-      <div class="rank-name">${r.name}</div>
+      <div class="rank-name">${esc(r.name)}</div>
       <div class="rank-count">${r.count}</div>
     </div>`).join('');
   const emptyNote = friendIds.length ? '' : `<div class="empty-note" style="padding:14px 4px;">Друзей в рейтинге пока нет — пригласи или добавь по ID</div>`;
@@ -2842,8 +3028,8 @@ let sheetMovie = null;
 function renderProgress(movie){
   const prog = document.getElementById('sheetProgress');
   if (!(movie.type === 'series' || movie.type === 'anime')) { prog.style.display = 'none'; return; }
-  const epState = getEpisodeState(movie.id);
-  const watchedEp = totalWatchedEpisodes(movie.id);
+  const epState = getEpisodeState(mid(movie));
+  const watchedEp = totalWatchedEpisodes(mid(movie));
   const total = movie.episodesTotal || 0;
   const pct = total ? Math.min(100, Math.round(watchedEp/total*100)) : 0;
   const seasons = movie.seasons || [];
@@ -2877,16 +3063,16 @@ function renderProgress(movie){
     if (next === cur) return;
     epState.seasons[num] = next;
     haptic('impact','light');
-    dbEpisode(movie.id, epState.seasons);
-    const newTotal = totalWatchedEpisodes(movie.id);
+    dbEpisode(mid(movie), epState.seasons);
+    const newTotal = totalWatchedEpisodes(mid(movie));
     if (movie.episodesTotal && newTotal >= movie.episodesTotal){
-      if (!state.watched.includes(movie.id)){
-        state.watched.push(movie.id);
-        haptic('notification','success'); showToast('Сериал досмотрен', 'check'); dbSwipe(movie.id,'watched'); checkBadges();
+      if (!state.watched.includes(mid(movie))){
+        state.watched.push(mid(movie));
+        haptic('notification','success'); showToast('Сериал досмотрен', 'check'); dbSwipe(mid(movie),'watched'); checkBadges();
       }
-    } else if (state.watched.includes(movie.id)) {
-      state.watched = state.watched.filter(id=>id!==movie.id);
-      dbSwipeRemove(movie.id, 'watched');
+    } else if (state.watched.includes(mid(movie))) {
+      state.watched = state.watched.filter(id=>id!==mid(movie));
+      dbSwipeRemove(mid(movie), 'watched');
     }
     updateStats(); renderProgress(movie); updateSheetButtons(movie);
   }
@@ -2911,9 +3097,9 @@ function updateSheetButtons(movie){
   const wishBtn = document.getElementById('sheetWish');
   const watchedBtn = document.getElementById('sheetWatched');
   const watchingBtn = document.getElementById('sheetWatching');
-  const isWish = state.wishlist.includes(movie.id);
-  const isWatched = state.watched.includes(movie.id);
-  const isWatching = state.watching.includes(movie.id);
+  const isWish = state.wishlist.includes(mid(movie));
+  const isWatched = state.watched.includes(mid(movie));
+  const isWatching = state.watching.includes(mid(movie));
   wishBtn.classList.toggle('active', isWish);
   wishBtn.innerHTML = ICON(isWish ? 'starFill' : 'star', 15) + ' Чекнуть';
   watchedBtn.classList.toggle('active', isWatched);
@@ -2946,7 +3132,7 @@ function openSheet(movie){
   }
   document.getElementById('sheetTitle').textContent = movie.title;
   const typeChip = movie.type !== 'film' ? `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</span>` : '';
-  document.getElementById('sheetMeta').innerHTML = `${movie.year} · ${ICON('starFill', 12)} ${movie.rating} <span id="sheetSmotrimetry"></span> ${typeChip}${movie.genres.map(g=>`<span class="genre-tag">${g}</span>`).join('')}`;
+  document.getElementById('sheetMeta').innerHTML = `${esc(movie.year)} · ${ICON('starFill', 12)} ${esc(movie.rating)} <span id="sheetSmotrimetry"></span> ${typeChip}${(movie.genres||[]).map(g=>`<span class="genre-tag">${esc(g)}</span>`).join('')}`;
   document.getElementById('sheetOverview').textContent = movie.overview;
   renderCastChips(movie);
   if (!movie._castFetched) {
@@ -2964,42 +3150,48 @@ function openSheet(movie){
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
 
-/* Свайп вниз по шапке шторки — закрыть и вернуться к ленте */
+/* Шторку фильма можно стянуть вниз в любом месте (не только за шапку):
+   если список ещё не прокручен — жест закрывает карточку. */
 (function initSheetSwipeDown(){
-  const zones = [document.querySelector('#sheet .handle'), document.getElementById('sheetPoster')].filter(Boolean);
-  let startY = 0, dy = 0, dragging = false;
+  let startY = 0, dy = 0, dragging = false, fromTop = false;
+  const INTERACTIVE = 'input, textarea, button, .season-stepper, .cast-row, .handle';
   function onDown(e){
+    if (e.target.closest(INTERACTIVE)) return;
+    fromTop = sheet.scrollTop <= 0;
+    if (!fromTop) return;
     dragging = true; dy = 0; startY = e.clientY; sheet.style.transition = 'none';
-    try{ e.target.setPointerCapture(e.pointerId); }catch(err){}
   }
   function onMove(e){
     if (!dragging) return;
     dy = Math.max(0, e.clientY - startY);
+    if (dy <= 0) return;
     sheet.style.transform = `translateY(${dy}px)`;
+    if (e.cancelable) e.preventDefault();
   }
   function onUp(){
     if (!dragging) return;
     dragging = false;
     sheet.style.transition = '';
     sheet.style.transform = '';
-    if (dy > 110){
+    if (dy > 90){
       haptic('impact','light');
       sheet.classList.remove('open'); backdrop.classList.remove('open');
     }
     dy = 0;
   }
-  zones.forEach(z => {
-    z.style.touchAction = 'none';
-    z.addEventListener('pointerdown', onDown);
-    z.addEventListener('pointermove', onMove);
-    z.addEventListener('pointerup', onUp);
-    z.addEventListener('pointercancel', onUp);
-  });
+  // touchmove с preventDefault гасит прокрутку, пока тянем шторку вниз
+  sheet.addEventListener('touchmove', e => { if (dragging) e.preventDefault(); }, { passive:false });
+  sheet.addEventListener('touchstart', onDown, { passive:true });
+  sheet.addEventListener('touchend', onUp);
+  sheet.addEventListener('touchcancel', onUp);
+  sheet.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
 })();
 
 /* ============ РЕЦЕНЗИИ: показ на карточке фильма ============ */
 async function refreshSheetReviews(movie){
-  const mine = await getMyReview(movie.id);
+  const mine = await getMyReview(mid(movie));
   if (sheetMovie !== movie) return;
   const mineEl = document.getElementById('sheetMyReview');
   if (mine){
@@ -3011,14 +3203,15 @@ async function refreshSheetReviews(movie){
             <div class="review-meta"><div class="review-name">Твоя рецензия</div></div>
             <div class="review-score">${mine.total}/${SCORE_MAX}</div>
           </div>
-          ${mine.text ? `<div class="review-text">${mine.text}</div>` : ''}
+          ${mine.text ? `<div class="review-text">${esc(mine.text)}</div>` : ''}
         </div>
       </div>`;
   } else {
     mineEl.innerHTML = '';
   }
   try{
-    const { data } = await sb.from('reviews').select('*').eq('movie_id', movie.id).order('updated_at', { ascending:false });
+    const { data, error } = await sb.from('reviews').select('*').eq('movie_id', mid(movie)).order('updated_at', { ascending:false });
+    if (error) throw error;
     if (sheetMovie !== movie) return;
     const smEl = document.getElementById('sheetSmotrimetry');
     if (smEl){
@@ -3042,11 +3235,11 @@ async function refreshSheetReviews(movie){
         ${reviewPosterHTML(movie)}
         <div class="review-body">
           <div class="review-head">
-            <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
-            <div class="review-meta"><div class="review-name">${name}</div></div>
+            <div class="review-avatar" style="${photo ? `background-image:url('${esc(photo)}');` : ''}">${photo ? '' : esc((name[0]||'?').toUpperCase())}</div>
+            <div class="review-meta"><div class="review-name">${esc(name)}</div></div>
             <div class="review-score">${r.total}/${SCORE_MAX}</div>
           </div>
-          ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
+          ${r.text ? `<div class="review-text">${esc(r.text)}</div>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -3058,6 +3251,13 @@ let reviewMovie = null, reviewBig = {}, reviewSmall = {};
 function updateReviewTotal(){
   const total = scoreTotal(reviewBig, reviewSmall);
   document.getElementById('reviewTotalBadge').textContent = `${total}/${SCORE_MAX}`;
+  const val = document.getElementById('reviewTotalValue');
+  if (val) val.innerHTML = `${total}<b>/${SCORE_MAX}</b>`;
+}
+/* Заливка шкалы до бегунка — чтобы ползунок «читался» как объёмный */
+function paintSlider(input, max){
+  const v = (+input.value || 0) / max * 100;
+  input.style.setProperty('--pct', v + '%');
 }
 function renderSliders(containerId, cats, store, max){
   const el = document.getElementById(containerId);
@@ -3067,9 +3267,11 @@ function renderSliders(containerId, cats, store, max){
       <input type="range" class="cat-slider" min="1" max="${max}" value="${store[c.key]}" data-key="${c.key}">
     </div>`).join('');
   el.querySelectorAll('.cat-slider').forEach(input => {
+    paintSlider(input, max);
     input.addEventListener('input', () => {
       store[input.dataset.key] = +input.value;
       document.getElementById('val-'+input.dataset.key).textContent = input.value;
+      paintSlider(input, max);
       updateReviewTotal();
     });
     input.addEventListener('change', () => haptic('selection'));
@@ -3079,8 +3281,8 @@ async function openReviewScreen(movie){
   reviewMovie = movie;
   document.getElementById('reviewMovieHeader').innerHTML = `
     <div class="thumb" style="${posterStyle(movie,'w154')}; width:44px; height:62px;">${hasArt(movie) ? '' : ICON(posterIcon(movie), 20)}</div>
-    <div><div style="font-weight:700; font-size:15px;">${movie.title}</div><div class="set-sub">${movie.year}</div></div>`;
-  const existing = await getMyReview(movie.id);
+    <div><div style="font-weight:700; font-size:15px;">${esc(movie.title)}</div><div class="set-sub">${esc(movie.year)}</div></div>`;
+  const existing = await getMyReview(mid(movie));
   reviewBig = existing ? { ...parseJsonField(existing.big) } : {};
   reviewSmall = existing ? { ...parseJsonField(existing.small) } : {};
   BIG_CATS.forEach(c => { if (!reviewBig[c.key]) reviewBig[c.key] = 4; });
@@ -3097,7 +3299,7 @@ document.getElementById('closeReview').onclick = () => document.getElementById('
 document.getElementById('submitReview').onclick = async () => {
   if (!reviewMovie) return;
   const text = document.getElementById('reviewText').value.trim();
-  const ok = await dbSaveReview(reviewMovie.id, reviewBig, reviewSmall, text);
+  const ok = await dbSaveReview(mid(reviewMovie), reviewBig, reviewSmall, text);
   if (ok){
     haptic('notification','success');
     showToast('Рецензия опубликована', 'check');
@@ -3112,11 +3314,12 @@ document.getElementById('deleteReview').onclick = async () => {
   const ok = await confirmAction('Удалить рецензию на этот тайтл?');
   if (!ok) return;
   try{
-    await sb.from('reviews').delete().eq('telegram_id', TG_ID).eq('movie_id', reviewMovie.id);
+    const { error } = await sb.from('reviews').delete().eq('telegram_id', TG_ID).eq('movie_id', mid(reviewMovie));
+    if (error) throw error;
     showToast('Рецензия удалена');
     document.getElementById('reviewScreen').classList.remove('open');
     if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
-  }catch(e){ showToast('Не получилось удалить'); }
+  }catch(e){ showToast('Не получилось удалить — проверь связь'); }
 };
 
 /* ============ ЛЕНТА РЕЦЕНЗИЙ ============ */
@@ -3132,8 +3335,9 @@ async function renderFeed(){
   body.innerHTML = reviews.map(r => {
     const name = r.telegram_id === TG_ID ? 'Ты' : friendDisplayName(profileMap[r.telegram_id]);
     const photo = profileMap[r.telegram_id]?.photo_url;
-    const movie = movieById(r.movie_id);
+    const movie = keyToMovie(r.movie_id);
     const movieName = movie ? movie.title : `Тайтл #${r.movie_id}`;
+    const safeName = esc(name), safePhoto = photo ? esc(photo) : '';
     const big = parseJsonField(r.big), small = parseJsonField(r.small);
     const topCats = [...BIG_CATS.map(c=>({label:c.label, val:big[c.key]})), ...SMALL_CATS.map(c=>({label:c.label, val:small[c.key]}))]
       .filter(c => c.val).sort((a,b)=>b.val-a.val).slice(0,3);
@@ -3141,18 +3345,18 @@ async function renderFeed(){
       ${reviewPosterHTML(movie)}
       <div class="review-body">
         <div class="review-head">
-          <div class="review-avatar" style="${photo ? `background-image:url('${photo}');` : ''}">${photo ? '' : (name[0]||'?').toUpperCase()}</div>
-          <div class="review-meta"><div class="review-name">${name}</div><div class="review-movie">${movieName}</div></div>
+          <div class="review-avatar" style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}">${safePhoto ? '' : esc((name[0]||'?').toUpperCase())}</div>
+          <div class="review-meta"><div class="review-name">${safeName}</div><div class="review-movie">${esc(movieName)}</div></div>
           <div class="review-score">${r.total}/${SCORE_MAX}</div>
         </div>
-        ${r.text ? `<div class="review-text">${r.text}</div>` : ''}
-        ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${c.label}: ${c.val}</span>`).join('')}</div>` : ''}
+        ${r.text ? `<div class="review-text">${esc(r.text)}</div>` : ''}
+        ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${esc(c.label)}: ${c.val}</span>`).join('')}</div>` : ''}
       </div>
     </div>`;
   }).join('');
   [...body.querySelectorAll('.review-card')].forEach(card => {
     card.onclick = () => {
-      const movie = movieById(+card.dataset.movie);
+      const movie = keyToMovie(+card.dataset.movie);
       if (movie){ openSheet(movie); }
       else showToast('Этого тайтла сейчас нет в загруженном каталоге');
     };
@@ -3161,54 +3365,56 @@ async function renderFeed(){
 
 document.getElementById('sheetWish').onclick = function(){
   if (!sheetMovie) return;
-  const already = state.wishlist.includes(sheetMovie.id);
+  const already = state.wishlist.includes(mid(sheetMovie));
   if (already){
-    state.wishlist = state.wishlist.filter(id=>id!==sheetMovie.id);
-    dbWishRemove(sheetMovie.id);
+    state.wishlist = state.wishlist.filter(id=>id!==mid(sheetMovie));
+    dbWishRemove(mid(sheetMovie));
     showToast('Убрано из «Хочу чекнуть»');
   } else {
-    state.wishlist.push(sheetMovie.id);
-    dbWishAdd(sheetMovie.id);
+    state.wishlist.push(mid(sheetMovie));
+    dbWishAdd(mid(sheetMovie));
     showToast('Добавлено в «Хочу чекнуть»');
   }
   haptic('impact','light');
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
   updateStats();
+  syncDeckAfterExternalChange();
 };
 
 document.getElementById('sheetShare').onclick = function(){ pulseBtn(this); sheetMovie && shareMovie(sheetMovie); };
 
 document.getElementById('sheetWatching').onclick = function(){
   if (!sheetMovie) return;
-  const already = state.watching.includes(sheetMovie.id);
+  const already = state.watching.includes(mid(sheetMovie));
   if (already){
-    state.watching = state.watching.filter(id=>id!==sheetMovie.id);
-    dbWatchingRemove(sheetMovie.id);
+    state.watching = state.watching.filter(id=>id!==mid(sheetMovie));
+    dbWatchingRemove(mid(sheetMovie));
     showToast('Убрано из «Смотрю»');
   } else {
-    state.watching.push(sheetMovie.id);
-    dbWatchingAdd(sheetMovie.id);
+    state.watching.push(mid(sheetMovie));
+    dbWatchingAdd(mid(sheetMovie));
     showToast('Перемещено в «Смотрю»');
   }
   haptic('impact','light');
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
   updateStats();
+  syncDeckAfterExternalChange();
 };
 
 document.getElementById('sheetWatched').onclick = function(){
   if (!sheetMovie) return;
-  const already = state.watched.includes(sheetMovie.id);
+  const already = state.watched.includes(mid(sheetMovie));
   if (already){
-    state.watched = state.watched.filter(id=>id!==sheetMovie.id);
-    dbSwipeRemove(sheetMovie.id, 'watched');
+    state.watched = state.watched.filter(id=>id!==mid(sheetMovie));
+    dbSwipeRemove(mid(sheetMovie), 'watched');
     showToast('Отмечено как непросмотренное');
   } else {
-    state.watched.push(sheetMovie.id);
-    state.wishlist = state.wishlist.filter(id=>id!==sheetMovie.id);
-    state.watching = state.watching.filter(id=>id!==sheetMovie.id);
-    dbSwipe(sheetMovie.id,'watched'); dbWishRemove(sheetMovie.id); dbWatchingRemove(sheetMovie.id);
+    state.watched.push(mid(sheetMovie));
+    state.wishlist = state.wishlist.filter(id=>id!==mid(sheetMovie));
+    state.watching = state.watching.filter(id=>id!==mid(sheetMovie));
+    dbSwipe(mid(sheetMovie),'watched'); dbWishRemove(mid(sheetMovie)); dbWatchingRemove(mid(sheetMovie));
     checkBadges();
     showToast('Отмечено как просмотренное');
   }
@@ -3216,6 +3422,7 @@ document.getElementById('sheetWatched').onclick = function(){
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
   updateStats();
+  syncDeckAfterExternalChange();
 };
 
 /* ============ TABS ============ */
@@ -3230,6 +3437,7 @@ async function refillAndRender(){
 }
 let feedEverLoaded = false;
 function switchTab(id){
+  keepDeckFull();
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.tab===id));
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
   if (id === 'home' && deck.length < 3 && !deckRefreshing && !tmdbFailed) refillAndRender();
@@ -3270,7 +3478,7 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
     const realGenres = [...new Set(MOVIES.flatMap(m => m.genres))];
     if (realGenres.length) buildOnboardingChips(realGenres);
   }
-  deck = sortByPopularity(MOVIES.filter(isUnseen));
+  deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   if (deck.length < 3) await refillDeck();
   renderStack(); renderCatalog(); renderWishlist(); renderWatching(); renderBadges(); renderRank(); updateStats();
   renderWeekActivity();
