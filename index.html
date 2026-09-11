@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://image.tmdb.org">
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   /* Основная тема — «неон» (синяя). Янтарь включается классом body.theme-amber.
      Все «светящиеся» цвета (обводки, тени, подложки) идут через переменные,
@@ -198,8 +198,10 @@
   .stamp{ position:absolute; padding:7px 16px; border-radius:9px; border:2.5px solid; font-weight:800; font-size:14px; opacity:0; letter-spacing:0.5px; font-family:'Unbounded',sans-serif; }
   .stamp.watched{ top:26px; left:22px; color:var(--watched); border-color:var(--watched); transform:rotate(-12deg); }
   .stamp.skip{ top:26px; right:22px; color:var(--skip); border-color:var(--skip); transform:rotate(12deg); }
-  .stamp.wish{ top:22px; left:50%; transform:translateX(-50%); color:var(--wish); border-color:var(--wish); }
-  .stamp.watching{ bottom:26px; left:50%; transform:translateX(-50%); color:var(--watching); border-color:var(--watching); }
+  /* Штамп ставим на ту сторону, откуда карточка уходит: вверх — ЧЕКНУТЬ внизу,
+     вниз — СМОТРЮ вверху. Тогда надпись не уезжает за край экрана. */
+  .stamp.wish{ bottom:30px; left:50%; transform:translateX(-50%); color:var(--wish); border-color:var(--wish); }
+  .stamp.watching{ top:26px; left:50%; transform:translateX(-50%); color:var(--watching); border-color:var(--watching); }
 
   @keyframes popPulse{ 0%{transform:scale(1);} 45%{transform:scale(1.22);} 100%{transform:scale(1);} }
   .pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
@@ -448,11 +450,11 @@
   #splash .s-word{ font-family:'Unbounded', sans-serif; font-weight:900; font-size:40px; letter-spacing:-1px; display:flex; }
   #splash .s-word span{ opacity:0; transform:translateY(16px); animation:letterIn .5s cubic-bezier(.2,.8,.2,1) forwards; }
   #splash .s-line{ width:0; height:2px; background:var(--accent); animation:lineGrow 1.4s 1.1s ease forwards; }
-  /* Слоган — строгая антиква с курсивом: серьёзно и по-редакционному, без «детского» почерка */
-  /* Слоган набран антиквой, но специально меньше названия (Unbounded 40px) */
-  #splash .s-sub{ font-family:'Playfair Display', Georgia, 'Times New Roman', serif; font-size:16px; font-weight:500; font-style:italic;
-    color:var(--text-dim); opacity:0; letter-spacing:.06em; line-height:1.3; text-align:center; animation:fadeUp .6s 1.6s ease forwards; }
-  #splash .s-sub em{ font-style:italic; font-weight:600; color:var(--accent); }
+  /* Слоган — моноширинный, «терминальный» JetBrains Mono: техно-настроение приложения.
+     Специально меньше названия (Unbounded 40px), поэтому 15px и разрядка. */
+  #splash .s-sub{ font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size:15px; font-weight:500; font-style:normal;
+    color:var(--text-dim); opacity:0; letter-spacing:.1em; line-height:1.4; text-align:center; animation:fadeUp .6s 1.6s ease forwards; }
+  #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--accent); }
   #splash .s-credit{ position:absolute; bottom:calc(28px + var(--safe-bottom)); font-size:11px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 2.3s ease forwards; }
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes letterIn{ to{ opacity:1; transform:translateY(0);} }
@@ -484,7 +486,7 @@
   #tutorial.show{ display:flex; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
   .tut-back{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
-  .tut-back svg{ width:17px; height:17px; }
+  .tut-back svg{ width:19px; height:19px; }
   .tut-back:active{ transform:scale(.92); }
   .tut-back.hidden{ opacity:0; pointer-events:none; }
   .tut-progress{ display:flex; gap:6px; flex:1; min-width:0; }
@@ -493,8 +495,10 @@
   .tut-progress span.done b{ width:100%; }
   .tut-progress span.active b{ width:100%; }
   .tut-skip-top{ background:none; border:none; color:var(--text-dim); font-size:12.5px; padding:7px 2px; flex:0 0 auto; }
-  .tut-stage{ flex:1 2 auto; min-height:88px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
-  .tut-demo{ position:relative; width:200px; height:284px; max-height:100%; flex:0 0 auto; }
+  .tut-stage{ flex:1 1 auto; min-height:88px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  /* Демо-карточка всегда одного размера: если высоты мало, fitTutorial поджимает её
+     трансформацией, а не размерами — иначе иконки и штампы становятся крошечными. */
+  .tut-demo{ position:relative; width:208px; height:292px; flex:0 0 auto; }
   .tut-demo-card{ position:absolute; inset:0; border-radius:22px; overflow:hidden; background:var(--surface); border:1px solid var(--border); box-shadow:0 24px 50px -22px rgba(0,0,0,0.7); display:flex; flex-direction:column; justify-content:flex-end; }
   .tut-demo-card .tdc-poster{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .tut-demo-card .tdc-dim{ position:absolute; inset:0; z-index:1; background:rgba(6,7,12,0.62); opacity:0; pointer-events:none; }
@@ -505,13 +509,19 @@
   .tut-demo-card .tdc-stamp{ z-index:2; position:absolute; padding:6px 13px; border-radius:9px; border:2.5px solid; font-weight:800; font-size:13px; opacity:0; letter-spacing:.5px; font-family:'Unbounded',sans-serif; transition:opacity .2s ease; }
   .tdc-stamp.s-watched{ top:20px; left:16px; color:var(--watched); border-color:var(--watched); transform:rotate(-12deg); }
   .tdc-stamp.s-skip{ top:20px; right:16px; color:var(--skip); border-color:var(--skip); transform:rotate(12deg); }
-  .tdc-stamp.s-wish{ top:16px; left:50%; transform:translateX(-50%); color:var(--wish); border-color:var(--wish); }
-  .tdc-stamp.s-watching{ bottom:80px; left:50%; transform:translateX(-50%); color:var(--watching); border-color:var(--watching); }
-  .tut-hand{ position:absolute; left:50%; top:58%; width:34px; height:34px; margin:-17px 0 0 -17px; z-index:5; pointer-events:none; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity:0; }
+  .tdc-stamp.s-wish{ bottom:82px; left:50%; transform:translateX(-50%); color:var(--wish); border-color:var(--wish); }
+  .tdc-stamp.s-watching{ top:20px; left:50%; transform:translateX(-50%); color:var(--watching); border-color:var(--watching); }
+  .tut-hand{ position:absolute; left:50%; top:58%; width:40px; height:40px; margin:-20px 0 0 -20px; z-index:5; pointer-events:none; filter:drop-shadow(0 5px 10px rgba(0,0,0,0.55)); opacity:0; }
+  .tut-hand svg{ width:40px; height:40px; }
   .tut-radial-demo{ position:absolute; left:50%; top:50%; width:0; height:0; z-index:6; pointer-events:none; }
-  .tut-radial-demo .trd-item{ position:absolute; left:50%; top:50%; width:44px; height:44px; margin:-22px 0 0 -22px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); opacity:0; transition:transform .3s cubic-bezier(.2,1.4,.4,1), opacity .3s ease, background .2s; }
+  .tut-radial-demo .trd-item{ position:absolute; left:50%; top:50%; width:58px; height:58px; margin:-29px 0 0 -29px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--text-dim); opacity:0; box-shadow:0 8px 22px -8px rgba(0,0,0,0.6); transition:transform .3s cubic-bezier(.2,1.4,.4,1), opacity .3s ease, background .2s; }
+  .tut-radial-demo .trd-item svg{ width:24px; height:24px; }
+  .tut-radial-demo .trd-item .trd-lbl{ font-size:9.5px; font-weight:600; line-height:1; max-width:54px; text-align:center; }
   .tut-radial-demo .trd-item.on{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
-  .tut-demo-radial{ width:262px; height:262px; display:flex; align-items:center; justify-content:center; }
+  .tut-demo-radial{ width:276px; height:276px; display:flex; align-items:center; justify-content:center; }
+  /* Круговое меню в демо крупнее настоящего: на маленьком экране так понятнее */
+  #tutorial .rad-center{ width:86px; height:86px; }
+  #tutorial .rad-center .rad-center-label{ font-size:11px; }
   .tut-demo-panel{ width:min(280px, 100%); height:auto; display:flex; align-items:center; justify-content:center; }
   .tut-panel{ width:100%; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px 18px 14px; }
   .tut-panel-row{ margin-bottom:14px; }
@@ -523,9 +533,10 @@
   .tut-panel-total{ display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-dim); }
   .tut-panel-total span:last-child{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:var(--text); }
   .tut-demo-center{ width:auto; height:auto; display:flex; align-items:center; justify-content:center; }
-  .tut-streak{ width:132px; height:132px; border-radius:50%; background:var(--accent-soft); border:2px solid var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); gap:1px; }
-  .tut-streak-num{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:27px; line-height:1.1; }
-  .tut-streak-lbl{ font-size:10.5px; }
+  .tut-streak{ width:142px; height:142px; border-radius:50%; background:var(--accent-soft); border:2px solid var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); gap:2px; }
+  .tut-streak svg{ width:46px; height:46px; }
+  .tut-streak-num{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:29px; line-height:1.1; }
+  .tut-streak-lbl{ font-size:11px; }
   .tut-demo-card .tdc-poster-icon{ display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.22); }
   /* Карточка уезжает недалеко: она должна оставаться в кадре, а не исчезать за краем */
   @keyframes demoWatched{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(84px,-6px) rotate(8deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
@@ -547,23 +558,24 @@
   @keyframes handWatched{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes handSkip{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(-54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes tutStamp{ 0%,20%{ opacity:0; } 45%,55%{ opacity:1; } 80%,100%{ opacity:0; } }
-  .tut-caption{ text-align:center; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 2px; overflow:hidden; }
+  .tut-caption{ text-align:center; flex:0 0 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 2px; overflow:hidden; }
   .tut-caption .tc-title{ font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; line-height:1.25; }
   .tut-caption .tc-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.55; margin:0; max-width:330px; }
-  .tut-try{ display:inline-flex; align-items:center; gap:6px; margin:0; font-size:12px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:7px 14px; border-radius:20px; line-height:1.2; }
-  .tut-actions{ display:flex; gap:8px; flex:0 0 auto; margin-top:auto; }
-  .tut-next{ flex:1; background:var(--accent); color:var(--on-accent); border:none; padding:15px; border-radius:14px; font-weight:700; font-size:15px; transition:transform .12s ease; }
+  .tut-try{ display:inline-flex; align-items:center; gap:7px; margin:0; font-size:12.5px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:8px 15px; border-radius:20px; line-height:1.2; }
+  .tut-try svg{ width:16px; height:16px; }
+  /* Кнопка «Дальше» живёт под шапкой туториала: снизу её мог срезать системный бар */
+  .tut-actions{ display:flex; gap:8px; flex:0 0 auto; }
+  .tut-next{ flex:1; background:var(--accent); color:var(--on-accent); border:none; padding:14px; border-radius:14px; font-weight:700; font-size:15.5px; transition:transform .12s ease; box-shadow:0 10px 26px -14px var(--accent-glow); }
   .tut-next:active{ transform:scale(.98); }
-  /* Аварийные режимы включаются скриптом (fitTutorial), если кнопка не влезает целиком.
-     Так «Дальше» остаётся на экране даже на самых маленьких телефонах. */
+  /* Компактные режимы включает скрипт (fitTutorial), если не влезает подпись шага.
+     Кнопка «Дальше» теперь сверху — её не может срезать системный бар. */
   #tutorial.tut-compact{ gap:9px; }
-  #tutorial.tut-compact .tut-demo{ width:158px; height:224px; }
   #tutorial.tut-compact .tut-caption{ gap:6px; }
   #tutorial.tut-compact .tut-caption .tc-title{ font-size:17px; }
   #tutorial.tut-compact .tut-caption .tc-desc{ font-size:12.5px; line-height:1.45; }
-  #tutorial.tut-compact .tut-next{ padding:13px; }
-  #tutorial.tut-tiny .tut-demo{ width:126px; height:180px; }
+  #tutorial.tut-compact .tut-next{ padding:12px; }
   #tutorial.tut-tiny .tut-caption .tc-title{ font-size:16px; }
+  #tutorial.tut-tiny .tut-caption .tc-desc{ font-size:12px; line-height:1.4; }
   #tutorial.tut-tiny .tut-try{ display:none !important; }
 
   /* На низких экранах сцена чуть меньше — подписи и кнопки всегда на месте */
@@ -653,14 +665,14 @@
     <div class="tut-progress" id="tutProgress"></div>
     <button class="tut-skip-top" id="tutSkipTop">Пропустить</button>
   </div>
+  <div class="tut-actions">
+    <button class="tut-next" id="tutNext">Дальше</button>
+  </div>
   <div class="tut-stage" id="tutStage"></div>
   <div class="tut-caption">
     <div class="tc-title" id="tutTitle"></div>
     <div class="tc-desc" id="tutDesc"></div>
     <div class="tut-try" id="tutTry" style="display:none;"></div>
-  </div>
-  <div class="tut-actions">
-    <button class="tut-next" id="tutNext">Дальше</button>
   </div>
 </div>
 
@@ -992,8 +1004,13 @@
   0.10 — слоган на заставке меньше названия, туториал: один шаг про вертикаль,
          карточка улетает недалеко и затемняется, чтобы штамп читался (то же
          затемнение при перетаскивании карточки в колоде), починена обложка
-         в каталоге: не было background-size, из-за чего был виден уголок картинки. */
-const APP_VERSION = '0.10';
+         в каталоге: не было background-size, из-за чего был виден уголок картинки.
+  0.11 — кнопка «Дальше» в туториале перенесена наверх (внизу её срезал системный
+         бар), иконки и кружки в туториале крупнее, круговое меню в демо — с
+         подписями; слоган набрали моноширинным JetBrains Mono вместо антиквы;
+         штампы направления переехали на ту сторону, куда карточка уходит:
+         «ЧЕКНУТЬ» (свайп вверх) — вниз карточки, «СМОТРЮ» (свайп вниз) — вверх. */
+const APP_VERSION = '0.11';
 const APP_BUILD_DATE = '2026-09-11';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1541,7 +1558,7 @@ function demoCard(posterIdx, stampClass, stampText, anim, handAnim){
         <div class="tdc-stamp ${stampClass}" style="animation:tutStamp 2.6s ease-in-out infinite;">${stampText}</div>
         <div class="tdc-info"><div class="tdc-title">${esc(tutTitle(posterIdx))}</div><div class="tdc-meta">${esc(tutMeta(posterIdx))}</div></div>
       </div>
-      <div class="tut-hand" style="animation:${handAnim || 'handMove'} 2.6s ease-in-out infinite;">${ICON('target',34)}</div>
+      <div class="tut-hand" style="animation:${handAnim || 'handMove'} 2.6s ease-in-out infinite;">${ICON('target',40)}</div>
     </div>`;
 }
 /* Карточка для шага «вверх и вниз»: сначала уезжает вверх (чекнуть), потом вниз (смотрю) */
@@ -1558,7 +1575,7 @@ function demoCardBoth(){
         <div class="tdc-stamp s-watching" style="animation:tutStampDown 3.4s ease-in-out infinite;">СМОТРЮ</div>
         <div class="tdc-info"><div class="tdc-title">${esc(tutTitle(2))}</div><div class="tdc-meta">${esc(tutMeta(2))}</div></div>
       </div>
-      <div class="tut-hand" style="animation:handMoveBoth 3.4s ease-in-out infinite;">${ICON('target',34)}</div>
+      <div class="tut-hand" style="animation:handMoveBoth 3.4s ease-in-out infinite;">${ICON('target',40)}</div>
     </div>`;
 }
 
@@ -1589,11 +1606,11 @@ const TUTORIAL_STEPS = [
             <div class="rad-center-veil"></div>
             <div class="rad-center-label">${esc(tutTitle(0))}</div>
           </div>
-          <div class="trd-item" data-i="0">${ICON('check',18)}</div>
-          <div class="trd-item" data-i="1">${ICON('star',18)}</div>
-          <div class="trd-item" data-i="2">${ICON('clapper',18)}</div>
-          <div class="trd-item" data-i="3">${ICON('share',18)}</div>
-          <div class="trd-item" data-i="4">${ICON('play',18)}</div>
+          <div class="trd-item" data-i="0">${ICON('check',24)}<span class="trd-lbl">Смотрел</span></div>
+          <div class="trd-item" data-i="1">${ICON('star',24)}<span class="trd-lbl">Чекнуть</span></div>
+          <div class="trd-item" data-i="2">${ICON('clapper',24)}<span class="trd-lbl">Оценка</span></div>
+          <div class="trd-item" data-i="3">${ICON('share',24)}<span class="trd-lbl">Поделиться</span></div>
+          <div class="trd-item" data-i="4">${ICON('play',24)}<span class="trd-lbl">Смотрю</span></div>
         </div>
       </div>`,
     onEnter: animateRadialDemo,
@@ -1616,7 +1633,7 @@ const TUTORIAL_STEPS = [
     try:'Стрик и ачивки за активность',
     stage:()=> `<div class="tut-demo tut-demo-center">
       <div class="tut-streak">
-        ${ICON('fire',40)}
+        ${ICON('fire',46)}
         <div class="tut-streak-num">7</div>
         <div class="tut-streak-lbl">дней подряд</div>
       </div></div>`,
@@ -1627,8 +1644,8 @@ function animateRadialDemo(){
   if (!demo) return;
   const items = [...demo.querySelectorAll('.trd-item')];
   // радиус подстраиваем под размер сцены, чтобы кружки не упирались в края
-  const box = demo.parentElement ? demo.parentElement.clientWidth : 262;
-  const R = Math.max(58, Math.min(84, Math.round(box/2 - 30)));
+  const box = demo.parentElement ? demo.parentElement.clientWidth : 276;
+  const R = Math.max(62, Math.min(94, Math.round(box/2 - 34)));
   items.forEach((it,i)=>{
     const ang = (-90 + i*(360/items.length)) * Math.PI/180;
     const dx = Math.cos(ang)*R, dy = Math.sin(ang)*R;
@@ -1644,26 +1661,46 @@ function animateRadialDemo(){
 /* Кнопка «Дальше» должна быть видна целиком на любом телефоне. После отрисовки
    шага сверяем фактическую геометрию и, если низ уехал (маленький экран, большие
    системные отступы), включаем компактный режим — сцена и подписи сжимаются. */
+/* Подгонка туториала под экран. Кнопка «Дальше» теперь сверху, её срезать не может,
+   поэтому следим за сценой и подписью. Ничего не «мельчим»: если высоты мало,
+   демо-карточка поджимается трансформацией (иконки и штампы остаются крупными),
+   и только если и это не помогло — включаем компактный текстовый режим. */
+function tutCaptionOverflow(){
+  const t = document.getElementById('tutorial');
+  const cap = t && t.querySelector('.tut-caption');
+  if (!t || !cap) return false;
+  const box = t.getBoundingClientRect();
+  if (!box.height) return false;                        // раскладка ещё не посчитана
+  // Сверяемся и с реально видимой областью: если Telegram отдал высоту больше
+  // видимой (бывает с нижним баром), подпись всё равно не должна уезжать.
+  const vvH = (window.visualViewport && window.visualViewport.height) || window.innerHeight || box.bottom;
+  const limit = Math.min(box.bottom, vvH);
+  return cap.getBoundingClientRect().bottom > limit - 2;
+}
 function fitTutorial(){
   const t = document.getElementById('tutorial');
-  const actions = t && t.querySelector('.tut-actions');
-  if (!t || !actions || !t.classList.contains('show')) return;
+  if (!t || !t.classList.contains('show')) return;
+  const stage = t.querySelector('.tut-stage');
+  const demo = stage && stage.firstElementChild;
   t.classList.remove('tut-compact', 'tut-tiny');
-  const fits = () => {
-    const box = t.getBoundingClientRect();
-    const btn = actions.getBoundingClientRect();
-    if (!box.height) return true;                       // раскладка ещё не посчитана
-    // Сверяемся и с реально видимой областью: если Telegram отдал высоту больше
-    // видимой (бывает с нижним баром), кнопка всё равно не должна уезжать.
-    const vvH = (window.visualViewport && window.visualViewport.height) || window.innerHeight || box.bottom;
-    const limit = Math.min(box.bottom, vvH);
-    return btn.bottom <= limit - 2;
-  };
-  if (fits()) return;
-  t.classList.add('tut-compact');
-  if (fits()) return;
+  if (demo) demo.style.transform = '';
+  fitTutorialDemo();
+  if (!tutCaptionOverflow()) return;
+  t.classList.add('tut-compact');   // мельче только текст, карточка остаётся крупной
+  fitTutorialDemo();
+  if (!tutCaptionOverflow()) return;
   t.classList.add('tut-tiny');
-  fits(); // последняя перерисовка уже с классом tut-tiny
+  fitTutorialDemo();
+}
+/* Пересчёт масштаба демо (после смены класса текст стал ниже — можно вернуть размер) */
+function fitTutorialDemo(){
+  const t = document.getElementById('tutorial');
+  const stage = t && t.querySelector('.tut-stage');
+  const demo = stage && stage.firstElementChild;
+  if (!demo || !stage || stage.clientHeight <= 0 || demo.offsetHeight <= 0) return;
+  const fly = demo.querySelector('.tut-demo-card') ? 26 : 10;
+  const k = Math.min(1, stage.clientHeight / (demo.offsetHeight + fly), stage.clientWidth / demo.offsetWidth);
+  demo.style.transform = k < 0.995 ? `scale(${Math.max(0.72, Math.round(k * 100) / 100)})` : '';
 }
 let tutStep = 0;
 function renderTutStep(){
@@ -1675,7 +1712,7 @@ function renderTutStep(){
   document.getElementById('tutTitle').textContent = s.title;
   document.getElementById('tutDesc').textContent = s.desc;
   const tryEl = document.getElementById('tutTry');
-  if (s.try){ tryEl.style.display='inline-flex'; tryEl.innerHTML = `${ICON('sparkles',13)} ${s.try}`; } else tryEl.style.display='none';
+  if (s.try){ tryEl.style.display='inline-flex'; tryEl.innerHTML = `${ICON('sparkles',16)} ${s.try}`; } else tryEl.style.display='none';
   document.getElementById('tutNext').textContent = tutStep === steps.length-1 ? 'Погнали' : 'Дальше';
   document.getElementById('tutBack').classList.toggle('hidden', tutStep === 0);
   requestAnimationFrame(fitTutorial);
