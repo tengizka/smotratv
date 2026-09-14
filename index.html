@@ -159,6 +159,34 @@
   .rl-item span{ position:absolute; left:0; right:0; bottom:0; padding:14px 5px 5px; font-size:9px; font-weight:600;
     background:linear-gradient(180deg, transparent, rgba(6,7,12,.92)); }
   .rl-item.win{ opacity:1; transform:scale(1.06); border-color:var(--accent); box-shadow:0 0 0 2px var(--accent), 0 10px 26px -10px var(--accent-glow); }
+  /* Режимы рандомайзера: рулетка, колесо, покер, автомат */
+  .rl-modes{ display:flex; gap:6px; justify-content:center; margin:0 0 12px; flex-wrap:wrap; }
+  .rl-modes button{ padding:7px 13px; border-radius:999px; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text-dim); font-size:11.5px; font-weight:600; font-family:'Inter'; }
+  .rl-modes button.on{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .rl-stage{ margin-bottom:12px; }
+  .rl-wheel-wrap{ position:relative; height:186px; display:flex; align-items:center; justify-content:center;
+    background:var(--bg-2); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
+  .rl-wheel{ width:168px; height:168px; transform-origin:50% 50%; will-change:transform; }
+  .rl-pin{ position:absolute; top:5px; left:50%; width:0; height:0; margin-left:-7px;
+    border-left:7px solid transparent; border-right:7px solid transparent; border-top:13px solid var(--accent); }
+  .rl-poker{ display:flex; gap:6px; justify-content:center; align-items:center; height:186px;
+    background:var(--bg-2); border-radius:16px; border:1px solid var(--border); padding:10px 8px; }
+  .rl-pcard{ flex:1 1 0; max-width:76px; height:150px; border-radius:10px; overflow:hidden; background:var(--surface);
+    border:1px solid var(--border); display:flex; flex-direction:column; opacity:0; animation:rlDeal .4s ease forwards; }
+  .rl-pcard img{ width:100%; height:104px; object-fit:cover; display:block; }
+  .rl-pcard b{ font-size:9px; line-height:1.2; padding:4px 3px; color:var(--text-dim); font-weight:600; }
+  .rl-pcard .rl-pfallback{ height:104px; display:flex; align-items:center; justify-content:center;
+    font-family:'Unbounded',sans-serif; font-size:14px; color:var(--accent); background:var(--surface-2); }
+  .rl-pcard.win{ border-color:var(--accent); box-shadow:0 0 18px var(--accent-glow); transform:translateY(-9px) scale(1.05) !important; }
+  .rl-pcard.lose{ opacity:.35 !important; }
+  @keyframes rlDeal{ from{ opacity:0; transform:translateY(16px) rotate(-7deg); } to{ opacity:1; transform:translateY(0) rotate(0); } }
+  .rl-slots{ display:flex; gap:8px; justify-content:center; align-items:center; height:186px;
+    background:var(--bg-2); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
+  .rl-reel{ position:relative; width:88px; height:132px; overflow:hidden; border-radius:12px; background:var(--surface); border:1px solid var(--border); }
+  .rl-reel-track{ display:flex; flex-direction:column; will-change:transform; }
+  .rl-reel-track span{ flex:0 0 auto; height:44px; line-height:44px; padding:0 6px; text-align:center;
+    font-size:10.5px; font-weight:600; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .rl-result{ text-align:center; min-height:52px; margin-bottom:12px; }
   .rl-result .rl-name{ font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; line-height:1.25; }
   .rl-result .rl-meta{ font-size:12px; color:var(--text-dim); margin-top:4px; }
@@ -179,9 +207,121 @@
   .chips:last-of-type{ margin-bottom:14px; }
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
   .chip.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  .search-input{ width:100%; margin:0 0 12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
+  /* Компактный поиск с иконкой: высокое поле на весь экран выглядело громоздко */
+  .search-wrap{ position:relative; margin:0 0 12px; flex-shrink:0; }
+  .search-wrap .search-ico{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); pointer-events:none; display:flex; }
+  .search-wrap .search-ico svg{ width:15px; height:15px; }
+  .search-wrap .search-clear{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:28px; height:28px; display:none;
+    align-items:center; justify-content:center; border:none; background:none; color:var(--text-dim); }
+  .search-wrap.has-text .search-clear{ display:flex; }
+  .search-input{ width:100%; margin:0; padding:9px 38px 9px 34px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
+    color:var(--text); font-size:13.5px; font-family:'Inter'; flex-shrink:0; }
+  .search-input:focus{ border-color:var(--accent-border); }
   .search-input::placeholder{ color:var(--text-dim); }
   .home-bottom{ display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 0 0; flex:0 0 auto; }
+  /* Живая SVG-игрушка вверху главной: чистая векторная графика, цвет — из
+     переменных темы, поэтому при смене темы она перекрашивается сама. */
+  .home-toy-row{ display:flex; justify-content:center; padding:0 0 6px; flex:0 0 auto; }
+  .home-toy{ width:34px; height:34px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
+  .home-toy svg{ width:22px; height:22px; display:block; }
+  .home-toy.swapping{ animation:toySwap .42s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes toySwap{ 0%{ transform:scale(.6) rotate(-14deg); } 60%{ transform:scale(1.14) rotate(7deg); } 100%{ transform:scale(1); } }
+  .toy-fire{ transform-origin:50% 88%; animation:toyFlicker 1.7s ease-in-out infinite; }
+  @keyframes toyFlicker{ 0%,100%{ transform:scale(1); opacity:1; } 35%{ transform:scale(1.07,.93); opacity:.9; } 70%{ transform:scale(.96,1.06); opacity:1; } }
+  .toy-moon{ transform-origin:50% 50%; animation:toyRock 4.6s ease-in-out infinite; }
+  @keyframes toyRock{ 0%,100%{ transform:rotate(-11deg); } 50%{ transform:rotate(11deg); } }
+  .toy-sun{ transform-origin:50% 50%; animation:toySpin 15s linear infinite; }
+  @keyframes toySpin{ to{ transform:rotate(360deg); } }
+  .toy-heart{ transform-origin:50% 55%; animation:toyBeat 1.7s ease-in-out infinite; }
+  @keyframes toyBeat{ 0%,100%{ transform:scale(1); } 18%{ transform:scale(1.15); } 36%{ transform:scale(.97); } 54%{ transform:scale(1.08); } }
+  .toy-bolt{ animation:toyFlash 2.6s ease-in-out infinite; }
+  @keyframes toyFlash{ 0%,70%,100%{ opacity:1; } 80%{ opacity:.3; } 88%{ opacity:1; } }
+  .toy-ufo{ animation:toyHover 3.2s ease-in-out infinite; }
+  @keyframes toyHover{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-2.5px) rotate(3deg); } }
+  .toy-star{ transform-origin:50% 50%; animation:toyPulse 3s ease-in-out infinite; }
+  @keyframes toyPulse{ 0%,100%{ transform:scale(1) rotate(0); } 50%{ transform:scale(1.12) rotate(7deg); } }
+  /* Строка уровня вверху главной: тонкая, с именем уровня и полосой прогресса */
+  /* Декорации темы: два слоя SVG (дальний со своими звёздами/кадрами и
+     ближний с орбитами и вспышками). Дальний дышит, ближний медленно плывёт. */
+  .theme-art{ position:fixed; inset:0; pointer-events:none; z-index:1; color:var(--accent); overflow:hidden; }
+  body.app-hidden *, body.app-hidden *::before, body.app-hidden *::after{ animation-play-state:paused !important; }
+  .theme-art svg.ta-layer{ position:absolute; inset:0; width:100%; height:100%; }
+  .ta-far{ opacity:.65; animation:artBreathe 9s ease-in-out infinite; }
+  .ta-near{ opacity:.75; animation:artDrift 34s ease-in-out infinite alternate; }
+  @keyframes artBreathe{ 0%,100%{ opacity:.45; } 50%{ opacity:.8; } }
+  @keyframes artDrift{ 0%{ transform:translate3d(0,0,0) scale(1); } 100%{ transform:translate3d(-6px,-10px,0) scale(1.04); } }
+  .ta-twinkle{ animation:artTwinkle 4.5s ease-in-out infinite; }
+  @keyframes artTwinkle{ 0%,100%{ opacity:.18; } 50%{ opacity:.85; } }
+  .ta-frame{ animation:artFrame 6s ease-in-out infinite; }
+  @keyframes artFrame{ 0%,100%{ opacity:.25; } 50%{ opacity:.75; } }
+  .ta-orbit{ animation:artSpin 48s linear infinite; transform-origin:72px 24px; }
+  .ta-rev{ animation-direction:reverse; transform-origin:22px 66px; }
+  @keyframes artSpin{ to{ transform:rotate(360deg); } }
+  .ta-flare{ animation:artFlare 7s ease-in-out infinite; }
+  @keyframes artFlare{ 0%,100%{ opacity:.2; transform:scale(.94); } 50%{ opacity:.65; transform:scale(1.06); } }
+  .ta-comet{ animation:artComet 16s linear infinite; }
+  @keyframes artComet{
+    0%{ transform:translate(-10px,-6px); opacity:0; }
+    8%{ opacity:.75; }
+    45%{ opacity:.75; }
+    60%{ transform:translate(110px,64px); opacity:0; }
+    100%{ transform:translate(110px,64px); opacity:0; } }
+  /* Выбор темы показываем сразу картинкой: у каждого образца своя миниатюра */
+  .theme-swatch{ position:relative; overflow:hidden; }
+  .theme-swatch .sw-art{ position:absolute; inset:0; opacity:.75; }
+  .theme-swatch .sw-art svg{ width:100%; height:100%; }
+  .lvl-strip{ display:flex; align-items:center; gap:10px; padding:2px 2px 6px; flex:0 0 auto; }
+  .lvl-strip-name{ font-family:'Unbounded',sans-serif; font-size:10.5px; font-weight:700; color:var(--text); white-space:nowrap; }
+  .lvl-strip-bar{ flex:1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
+  .lvl-strip-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
+  .lvl-strip-xp{ font-size:10px; color:var(--text-dim); white-space:nowrap; }
+  /* Лестница уровней и правила опыта в карточке СмотраLVL */
+  .lvl-ladder-toggle{ width:100%; margin-top:12px; padding:10px; border-radius:12px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-family:'Unbounded',sans-serif; font-size:11.5px; font-weight:700; }
+  .lvl-ladder-wrap{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .lvl-ladder-wrap.open{ max-height:640px; }
+  .lvl-ladder{ margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+  .lvl-row{ display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:11px;
+    border:1px solid var(--border); background:var(--surface-2); opacity:.55; }
+  .lvl-row.reached{ opacity:1; }
+  .lvl-row.current{ border-color:var(--accent-border); box-shadow:0 0 14px var(--accent-soft); }
+  .lvl-row-ico{ display:flex; color:var(--accent); }
+  .lvl-row-name{ flex:1; font-size:12.5px; }
+  .lvl-row-xp{ font-size:11px; color:var(--text-dim); }
+  .xp-rules{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .xp-rule{ font-size:11px; color:var(--text-dim); padding:5px 9px; border-radius:9px; background:var(--surface-2); }
+  .xp-rule b{ color:var(--accent); }
+  /* Полоса прогресса ачивок в окне достижений */
+  .ach-bar{ height:6px; margin:10px 0 4px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
+  .ach-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
+  /* Вспышка действия: мягкое цветное пятно темы, не мешает читать карточку */
+  .action-flash-layer{ position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
+  .action-flash{ position:absolute; left:50%; top:44%; width:130vw; height:80vh; transform:translate(-50%,-50%);
+    opacity:0; animation:flashPulse .7s ease-out forwards; }
+  @keyframes flashPulse{ 0%{ opacity:0; } 18%{ opacity:.85; } 100%{ opacity:0; } }
+  /* «Перемешать»: пока колода трясётся, по кругу едут картинки кино.
+     SVG-картинки браузеры рисовать отказались (движок мини-аппа без картинок
+     внутри SVG), поэтому это эмодзи: дорожка крутится и сматывается в ленту. */
+  .shuffle-slides{ position:fixed; right:16px; bottom:96px; pointer-events:none; z-index:48; opacity:0; }
+  .shuffle-slides.on{ opacity:1; }
+  .shuffle-reel{ position:relative; }
+  .shuffle-piece{ position:absolute; right:0; bottom:0; font-size:30px; opacity:0;
+    animation:shufflePiece 3.4s cubic-bezier(.5,0,.5,1) forwards; }
+  @keyframes shufflePiece{
+    0%{ opacity:0; transform:translate(70px, 0) rotate(0deg) scale(.7); }
+    14%{ opacity:1; transform:translate(0, 0) rotate(-8deg) scale(1.05); }
+    72%{ opacity:1; transform:translate(-24px, -16px) rotate(6deg) scale(1); }
+    100%{ opacity:0; transform:translate(-46px, -34px) rotate(-4deg) scale(.92); } }
+  /* Всплывающий опыт: появляется над карточкой и аккуратно уплывает вверх */
+  #xpPops{ position:fixed; inset:0; pointer-events:none; z-index:60; }
+  .xp-pop{ position:absolute; transform:translate(-50%, -50%); font-family:'Unbounded',sans-serif; font-size:13px; font-weight:800;
+    color:var(--accent); text-shadow:0 2px 10px rgba(0,0,0,.5); animation:xpFloat 1.2s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes xpFloat{
+    0%{ opacity:0; transform:translate(-50%, -30%) scale(.85); }
+    22%{ opacity:1; transform:translate(-50%, -60%) scale(1); }
+    70%{ opacity:1; }
+    100%{ opacity:0; transform:translate(-50%, -170%) scale(.98); } }
   .surprise-btn{ padding:9px 18px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
   .surprise-btn:active{ transform:scale(.96); }
 
@@ -283,6 +423,11 @@
 
   /* Пока палец держит обложку или открыто круговое меню — фон не прокручивается.
      На телефоне без этого страница «скатывалась» под пальцем (главный баг фазы 3). */
+  /* Когда открыта клавиатура, нижняя панель прячется — иначе она выезжала наверх
+     вместе с клавиатурой и закрывала экран. Работает во всём приложении. */
+  nav{ transition:transform .22s cubic-bezier(.2,.8,.2,1); }
+  body.kb-open nav{ transform:translateY(110%); }
+  body.kb-open #undoBtn{ display:none; }
   body.radial-open{ overflow:hidden; }
   body.radial-open .screen, body.radial-open .ov-body, body.radial-open #home{ touch-action:none; }
 
@@ -721,9 +866,11 @@
   /* height:100dvh — это реально видимая высота экрана (в TG-вебвью тоже), а нижний
      отступ 96px поднимает ряд с кнопкой над зоной, которую перекрывает интерфейс
      Telegram. Раньше кнопка упиралась в самый край и её часть пряталась. */
+  /* Кнопка «Дальше» стоит сразу под прогрессом — в самом верху экрана. Так она
+     физически не может «провалиться» вниз: ниже неё только сцена и подпись. */
   #tutorial{ position:fixed; inset:0; height:100dvh; overflow:hidden; background:var(--bg); z-index:95; display:none;
-    grid-template-rows:auto minmax(0,1fr) auto auto; gap:12px;
-    padding:calc(12px + var(--safe-top)) 20px calc(96px + var(--safe-bottom)); }
+    grid-template-rows:auto auto minmax(0,1fr) auto; gap:12px;
+    padding:calc(12px + var(--safe-top)) 20px calc(18px + var(--safe-bottom)); }
   @supports not (height: 100dvh){ #tutorial{ height:100%; } }
   #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
@@ -844,7 +991,7 @@
   #toast{ position:absolute; top:calc(14px + var(--safe-top)); left:50%; transform:translate(-50%,-140%); background:var(--surface-2); border:1px solid var(--accent-border); color:var(--text); padding:11px 18px; border-radius:14px; font-size:13px; z-index:60; transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px; }
   .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
 
-  .undo-pill{ position:absolute; left:50%; bottom:calc(104px + var(--safe-bottom)); transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
+  .undo-pill{ position:absolute; left:50%; bottom:calc(150px + var(--safe-bottom)); touch-action:none; transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
   .undo-pill.show{ transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
   @keyframes cardUndoIn{ 0%{ transform:scale(.85) translateY(50px) rotate(-4deg); opacity:.3; } 100%{ transform:scale(1) translateY(0) rotate(0); opacity:1; } }
   .card-undo-in{ animation:cardUndoIn .42s cubic-bezier(.2,.8,.2,1); }
@@ -883,6 +1030,11 @@
 </head>
 <body>
 <div class="grain"></div>
+<!-- Фон рисуем сами: у каждой темы свой узор из SVG (звёзды, орбиты, плёнка,
+     вспышки), он подхватывает акцентный цвет темы и оживает на глазах. -->
+<div class="theme-art" id="themeArt" aria-hidden="true"></div>
+<div class="action-flash-layer" id="actionFlash" aria-hidden="true"></div>
+<div id="shuffleSlides" class="shuffle-slides" aria-hidden="true"><div class="shuffle-reel"></div></div>
 
 <!-- Пасхалка: набор анимированных моделек ровно на месте грабера Telegram.
      Тап по ней меняет модельку со сменной анимацией. -->
@@ -922,14 +1074,14 @@
     <div class="tut-progress" id="tutProgress"></div>
     <button class="tut-skip-top" id="tutSkipTop">Пропустить</button>
   </div>
+  <div class="tut-actions">
+    <button class="tut-next" id="tutNext">Дальше</button>
+  </div>
   <div class="tut-stage" id="tutStage"></div>
   <div class="tut-caption">
     <div class="tc-title" id="tutTitle"></div>
     <div class="tc-desc" id="tutDesc"></div>
     <div class="tut-try" id="tutTry" style="display:none;"></div>
-  </div>
-  <div class="tut-actions">
-    <button class="tut-next" id="tutNext">Дальше</button>
   </div>
 </div>
 
@@ -952,6 +1104,12 @@
       <div class="filter-pop-title">Показывать в ленте</div>
       <div class="filter-pop-chips" id="filterPopChips"></div>
     </div>
+    <div class="home-toy-row"><button class="home-toy" id="homeToy" aria-label="Живая игрушка"></button></div>
+    <div class="lvl-strip" id="homeLevelStrip" role="button" aria-label="Уровень">
+      <span class="lvl-strip-name" id="homeLevelName">LVL 1 · Зритель</span>
+      <span class="lvl-strip-bar"><i id="homeLevelBar" style="width:0%"></i></span>
+      <span class="lvl-strip-xp" id="homeLevelXP">0</span>
+    </div>
     <div class="stack" id="stack"></div>
     <button class="stack-filter" id="openFilters" aria-label="Фильтр">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -970,7 +1128,11 @@
   <!-- CATALOG -->
   <section id="catalog" class="screen">
     <div class="eyebrow"><span>Каталог</span><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
-    <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
+    <div class="search-wrap" id="catSearchWrap">
+      <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
+      <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
+      <button class="search-clear" id="catSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
     <div class="chips" id="typeChips"></div>
     <div class="chips" id="catChips"></div>
     <div class="grid2" id="catGrid"></div>
@@ -983,7 +1145,11 @@
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
     <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
-    <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…">
+    <div class="search-wrap" id="wishSearchWrap">
+      <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
+      <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…">
+      <button class="search-clear" id="wishSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
     <div class="chips" id="wishSort"></div>
     <button class="roulette-btn" id="openRoulette"><span class="rl-ico">🎲</span> Рандомайзер</button>
     <div id="wishList"></div>
@@ -1105,6 +1271,7 @@
     <span class="count" id="achievementsCount" style="margin-left:auto;">0 из 0</span>
   </div>
   <div class="ov-body">
+    <div class="ach-bar"><i id="achievementsBar" style="width:0%"></i></div>
     <div class="badges-grid" id="achievementsGrid" style="grid-template-columns:repeat(3,1fr);"></div>
   </div>
 </div>
@@ -1181,7 +1348,6 @@
   <div class="ov-head">
     <button class="icon-btn" id="closeSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="wordmark">Настройки</div>
-    <span class="count" id="settingsVersionChip" style="margin-left:auto;">0.17</span>
   </div>
   <div class="ov-body">
     <!-- Профиль и уровень: сразу видно, кто ты и сколько уже отсмотрено -->
@@ -1201,8 +1367,33 @@
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg></div>
         <div class="set-text"><div class="set-label">Тема</div><div class="set-sub" id="themeNameLabel">Синий</div></div>
         <div class="theme-swatches" id="themePicker">
-          <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема"></button>
-          <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема"></button>
+          <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема">
+            <span class="sw-art"><svg viewBox="0 0 64 40" preserveAspectRatio="none">
+              <rect width="64" height="40" fill="#0c0e16"/>
+              <circle cx="12" cy="9" r="1.6" fill="#8b8fff" opacity=".9"/>
+              <circle cx="26" cy="19" r="1.1" fill="#a9b6ff" opacity=".8"/>
+              <circle cx="18" cy="31" r="1.3" fill="#7c6bff" opacity=".8"/>
+              <circle cx="44" cy="12" r="1.2" fill="#c9d3ff" opacity=".7"/>
+              <circle cx="52" cy="30" r="1.5" fill="#4f8bff" opacity=".85"/>
+              <ellipse cx="46" cy="22" rx="14" ry="5" fill="none" stroke="#7c6bff" stroke-width="1" opacity=".7" transform="rotate(-24 46 22)"/>
+              <circle cx="60" cy="15" r="2" fill="#b9c4ff"/>
+            </svg></span>
+          </button>
+          <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема">
+            <span class="sw-art"><svg viewBox="0 0 64 40" preserveAspectRatio="none">
+              <rect width="64" height="40" fill="#131110"/>
+              <g fill="#e3a63e" opacity=".85">
+                <rect x="3" y="4" width="8" height="6" rx="1.5"/><rect x="15" y="4" width="8" height="6" rx="1.5" opacity=".55"/>
+                <rect x="27" y="4" width="8" height="6" rx="1.5" opacity=".35"/><rect x="39" y="4" width="8" height="6" rx="1.5" opacity=".55"/>
+                <rect x="51" y="4" width="8" height="6" rx="1.5"/>
+                <rect x="3" y="30" width="8" height="6" rx="1.5" opacity=".55"/><rect x="15" y="30" width="8" height="6" rx="1.5"/>
+                <rect x="27" y="30" width="8" height="6" rx="1.5" opacity=".55"/><rect x="39" y="30" width="8" height="6" rx="1.5" opacity=".35"/>
+                <rect x="51" y="30" width="8" height="6" rx="1.5" opacity=".55"/>
+              </g>
+              <circle cx="32" cy="20" r="7" fill="none" stroke="#e3a63e" stroke-width="1.2" opacity=".8"/>
+              <path d="M32 12 L32 28 M24 20 L40 20" stroke="#e3a63e" stroke-width="1" opacity=".7"/>
+            </svg></span>
+          </button>
         </div>
       </div>
     </div>
@@ -1238,6 +1429,20 @@
     <div class="set-group">
       <div class="set-group-title">СмотраLVL</div>
       <div class="set-xp-grid" id="setXpRules"></div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-title">Мои данные</div>
+      <div class="set-row" style="cursor:default;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></svg></div>
+        <div class="set-text"><div class="set-label">Связь с базой</div><div class="set-sub" id="setSyncState">Проверяю…</div></div>
+        <div class="set-chevron" id="setSyncMark">•</div>
+      </div>
+      <div class="set-row" id="setRepair" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></div>
+        <div class="set-text"><div class="set-label">Отправить записи заново</div><div class="set-sub">Пригодится, если интернет пропадал</div></div>
+        <div class="set-chevron">›</div>
+      </div>
     </div>
 
     <div class="set-group">
@@ -1292,10 +1497,13 @@
 <div class="roulette" id="roulette">
   <div class="rl-card">
     <h3>Что посмотреть?</h3>
-    <div class="rl-strip-wrap">
-      <div class="rl-marker"></div>
-      <div class="rl-strip" id="rlStrip"></div>
+    <div class="rl-modes" id="rlModes">
+      <button data-mode="strip" class="on">Рулетка</button>
+      <button data-mode="wheel">Колесо</button>
+      <button data-mode="poker">Покер</button>
+      <button data-mode="slots">Автомат</button>
     </div>
+    <div class="rl-stage" id="rlStage"></div>
     <div class="rl-result" id="rlResult"></div>
     <div class="rl-actions">
       <button id="rlAgain">Ещё раз</button>
@@ -1377,8 +1585,30 @@
          и пилюли статистики открывают отдельное окно вместо перерисовки страницы;
          рулетка в профиле друга крутит «Общее «Хочу чекнуть»»; ачивки в профиле —
          только иконки (8 + «ещё N»); СмотраLVL — уровни и опыт; настройки
-         пересобраны; любой оверлей закрывается свайпом в сторону. */
-const APP_VERSION = '0.17';
+         пересобраны; любой оверлей закрывается свайпом в сторону.
+  0.18 — большой список правок: «Дальше» в туториале переехала в самый верх
+         экрана, поэтому уехать вниз уже не может, а «Вернуться» поднята выше и
+         смахивается пальцем; поиск в каталоге компактный, и клавиатура больше не
+         поднимает нижнюю панель с «Вернуться» (body.kb-open); оверлеи закрываются
+         ТОЛЬКО свайпом от левого края вправо; номер версии из настроек убран.
+         Свайпы и списки больше не теряются: состояние и очередь записей живут в
+         памяти телефона, а тайтл вне загруженного каталога дотягивается по id из
+         TMDB — из-за этого «мимо 675» расходилось с 507, а «смотрю 1» показывал
+         пустой экран. Отметил сериал «смотрел» — сезоны и серии заполняются сами.
+         СмотраLVL стал в 50 раз дороже (в профиле — лестница всех уровней и
+         правила опыта), за каждое действие всплывает «+N XP», а вверху главной
+         появилась полоса уровня. Темы — не только цвет: у синей звёзды, орбиты и
+         комета, у янтарной киноплёнка и вспышки, и у образцов в настройках свои
+         миниатюры. В фоне анимации останавливаются, статистика и уровень
+         пересобираются только когда их видно — это и есть оптимизация под любой
+         телефон. В настройках видно связь с базой и есть «Отправить записи
+         заново»; в нижнем табе появился явный вход в друзей. Лента больше не
+         повторяется: список показанного живёт в памяти телефона и сверяется ещё
+         и по названию (фильм и мультфильм с одним названием — это повтор). Вверху
+         главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
+         текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
+         четыре режима в одном окне. */
+const APP_VERSION = '0.18';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1529,12 +1759,25 @@ function sbFail(res, label){
   return false;
 }
 
-async function dbSwipe(movieId, action){ try{ sbFail(await sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: movieId, action }), 'swipes insert'); }catch(e){ console.error(e); } }
-async function dbSwipeRemove(movieId, action){ try{ sbFail(await sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId).eq('action', action), 'swipes delete'); }catch(e){ console.error(e); } }
-async function dbWishAdd(movieId){ try{ sbFail(await sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: movieId }), 'wishlist upsert'); }catch(e){ console.error(e); } }
-async function dbWishRemove(movieId){ try{ sbFail(await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId), 'wishlist delete'); }catch(e){ console.error(e); } }
-async function dbWatchingAdd(movieId){ try{ sbFail(await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId }), 'watching upsert'); }catch(e){ /* таблицы watching может ещё не быть — не роняем приложение */ } }
-async function dbWatchingRemove(movieId){ try{ sbFail(await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId), 'watching delete'); }catch(e){ /* см. выше */ } }
+/* Каждая запись: сначала в память телефона (её уже никто не потеряет), потом в базу.
+   Если база не ответила — запись встаёт в очередь и уходит при первой связи. */
+async function dbWrite(entry, run){
+  try{
+    const res = await run();
+    if (res && res.error) throw res.error;
+    return true;
+  }catch(e){
+    console.warn('[supabase] запись отложена:', entry.t, e && e.message);
+    queueWrite(entry);
+    return false;
+  }
+}
+function dbSwipe(movieId, action){ return dbWrite({ t:'swipe', movieId, action }, () => sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: movieId, action })); }
+function dbSwipeRemove(movieId, action){ return dbWrite({ t:'swipe-del', movieId, action }, () => sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId).eq('action', action)); }
+function dbWishAdd(movieId){ return dbWrite({ t:'wish-add', movieId }, () => sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: movieId })); }
+function dbWishRemove(movieId){ return dbWrite({ t:'wish-del', movieId }, () => sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId)); }
+function dbWatchingAdd(movieId){ return dbWrite({ t:'watch-add', movieId }, () => sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: movieId })); }
+function dbWatchingRemove(movieId){ return dbWrite({ t:'watch-del', movieId }, () => sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', movieId)); }
 async function dbEpisode(movieId, seasons){
   const total = Object.values(seasons).reduce((a,b)=>a+b, 0);
   try{
@@ -2005,7 +2248,28 @@ async function loadState(){
     const { data: wa, error } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
     if (error) throw error;
     state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
-  }catch(e){ state.watching = []; }
+  }catch(e){ /* таблицы watching может ещё не быть */ }
+  mergeLocalAndRemote();
+}
+/* База и телефон могли разойтись: пока связи не было, свайпы легли только в
+   память телефона. Объединяем списки (ничего не теряем) и досылаем в базу то,
+   чего в ней нет. */
+function mergeLocalAndRemote(){
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(STATE_KEY) || 'null'); }catch(e){}
+  if (!cached) return;
+  const put = (field, entry) => {
+    const local = (cached[field] || []).filter(Boolean);
+    const remote = new Set(state[field]);
+    local.forEach(k => { if (!remote.has(k)){ state[field].push(k); if (entry) queueWrite(entry(k)); } });
+    state[field] = [...new Set(state[field])];
+  };
+  put('watched',  k => ({ t:'swipe', movieId: k, action: 'watched' }));
+  put('skipped',  k => ({ t:'swipe', movieId: k, action: 'skipped' }));
+  put('wishlist', k => ({ t:'wish-add', movieId: k }));
+  put('watching', k => ({ t:'watch-add', movieId: k }));
+  if (pendingWrites.length) setTimeout(flushPendingWrites, 1500);
+  persistState();
 }
 
 /* ============ SPLASH ============ */
@@ -2490,6 +2754,51 @@ function syncTelegramColors(){
   try{ tg.setBackgroundColor && tg.setBackgroundColor(bg); }catch(e){}
   try{ tg.setBottomBarColor && tg.setBottomBarColor(bg); }catch(e){}
 }
+/* ============ ОФОРМЛЕНИЕ ТЕМЫ: живые SVG-декорации ============
+   У каждой темы свой набор: у синей — звёзды, орбиты и летящая комета, у
+   янтарной — киноплёнка, кадры и вспышки. Всё нарисовано линиями и заливками,
+   подхватывает акцентный цвет темы и тихонько живёт на фоне. */
+const THEME_ART = {
+  neon: `
+    <svg class="ta-layer ta-far" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      ${[[8,12],[22,7],[37,17],[54,9],[69,15],[83,6],[92,20],[15,33],[63,29],[88,38],[30,44],[74,52],[9,58],[46,64],[95,71],[20,79],[58,86],[79,90]]
+        .map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i % 4 === 0 ? 0.5 : 0.3}" fill="currentColor" opacity="${i % 3 === 0 ? .5 : .28}" class="ta-twinkle" style="animation-delay:${(i*0.27).toFixed(2)}s"/>`).join('')}
+    </svg>
+    <svg class="ta-layer ta-near" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g class="ta-orbit" style="animation-duration:44s"><ellipse cx="72" cy="24" rx="17" ry="6.5" fill="none" stroke="currentColor" stroke-width="0.35" opacity=".45" transform="rotate(-22 72 24)"/><circle cx="89" cy="21" r="1.1" fill="currentColor"/></g>
+      <g class="ta-orbit ta-rev" style="animation-duration:62s"><ellipse cx="22" cy="66" rx="14" ry="5" fill="none" stroke="currentColor" stroke-width="0.3" opacity=".38" transform="rotate(18 22 66)"/><circle cx="8" cy="63" r="0.9" fill="currentColor"/></g>
+      <path class="ta-comet" d="M0,0 l-6,2.2 l6,2.2 l-6,2.2 l6,2.2 z" fill="currentColor" opacity=".55"/>
+      <path d="M50 4 L51.4 9 L56 10.4 L51.4 11.8 L50 17 L48.6 11.8 L44 10.4 L48.6 9 Z" fill="currentColor" opacity=".3" class="ta-twinkle"/>
+      <path d="M88 78 L89.2 82 L93 83.2 L89.2 84.4 L88 88.5 L86.8 84.4 L83 83.2 L86.8 82 Z" fill="currentColor" opacity=".24" class="ta-twinkle" style="animation-delay:.9s"/>
+    </svg>`,
+  amber: `
+    <svg class="ta-layer ta-far" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <g opacity=".3" fill="currentColor">
+        ${Array.from({length: 9}, (_, i) => `<rect x="${4 + i*11}" y="4" width="7" height="5" rx="1" class="ta-frame" style="animation-delay:${(i*0.42).toFixed(2)}s"/>`).join('')}
+        ${Array.from({length: 9}, (_, i) => `<rect x="${4 + i*11}" y="91" width="7" height="5" rx="1" class="ta-frame" style="animation-delay:${(i*0.42+0.2).toFixed(2)}s"/>`).join('')}
+      </g>
+    </svg>
+    <svg class="ta-layer ta-near" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g class="ta-flare" opacity=".5">
+        <circle cx="24" cy="22" r="5.5" fill="none" stroke="currentColor" stroke-width="0.4"/>
+        <circle cx="24" cy="22" r="9" fill="none" stroke="currentColor" stroke-width="0.25" opacity=".6"/>
+        <path d="M24 12 L24 32 M14 22 L34 22" stroke="currentColor" stroke-width="0.35"/>
+      </g>
+      <g class="ta-flare" opacity=".4" style="animation-delay:1.6s">
+        <circle cx="80" cy="72" r="7" fill="none" stroke="currentColor" stroke-width="0.35"/>
+        <path d="M80 61 L80 83 M69 72 L91 72" stroke="currentColor" stroke-width="0.3"/>
+      </g>
+      <path d="M50 78 q10 -9 20 0 q-10 9 -20 0 z" fill="currentColor" opacity=".22" class="ta-twinkle"/>
+    </svg>`
+};
+function applyThemeArt(){
+  const host = document.getElementById('themeArt');
+  if (!host) return;
+  const name = document.body.classList.contains('theme-amber') ? 'amber' : 'neon';
+  if (host.dataset.theme === name) return;
+  host.dataset.theme = name;
+  host.innerHTML = THEME_ART[name];
+}
 const THEME_NAMES = { neon:'Синий', amber:'Янтарь' };
 function applyTheme(name){
   document.body.classList.toggle('theme-amber', name === 'amber');
@@ -2500,8 +2809,14 @@ function applyTheme(name){
   });
   const label = document.getElementById('themeNameLabel');
   if (label) label.textContent = THEME_NAMES[name] || THEME_NAMES.neon;
+  applyThemeArt();
   syncTelegramColors();
 }
+/* Слабый телефон: когда приложение ушло в фон, останавливаем все анимации —
+   лишние кадры никому не нужны, а батарея дороже. */
+document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('app-hidden', document.hidden);
+});
 (function initTheme(){
   const saved = localStorage.getItem('smotra_theme') || 'neon';
   applyTheme(saved);
@@ -2640,6 +2955,37 @@ async function fetchList(url, type, genreMap){
   }));
 }
 
+/* Тайтла нет в загруженном каталоге (человек листал давно, каталог сменился) —
+   дотягиваем его по id из TMDB. Без этого «Смотрю: 1» показывал пустой экран. */
+const stubFailed = new Set();
+async function fillMissingTitles(keys){
+  const missing = [...new Set(keys)].filter(k => k && !keyToMovie(k) && !stubFailed.has(k));
+  if (!missing.length) return false;
+  let changed = false;
+  for (const k of missing.slice(0, 12)){
+    const kind = k >= SERIES_ID_OFFSET ? 'tv' : 'movie';
+    const id = k >= SERIES_ID_OFFSET ? k - SERIES_ID_OFFSET : k;
+    try{
+      const data = await fetch(`https://api.themoviedb.org/3/${kind}/${id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
+      if (data && (data.title || data.name)){
+        rememberMovie({
+          id: data.id, type: kind === 'tv' ? 'series' : 'movie',
+          title: data.title || data.name, originalTitle: data.original_title || data.original_name || '',
+          year: (data.release_date || data.first_air_date || '').slice(0,4),
+          rating: data.vote_average ? Math.round(data.vote_average*10)/10 : 0,
+          poster: data.poster_path || null, posterPath: data.poster_path || null,
+          genres: (data.genres || []).map(g => g.name),
+          overview: data.overview || '', voteCount: data.vote_count || 0,
+        });
+        changed = true;
+      } else {
+        stubFailed.add(k);
+      }
+    }catch(e){ stubFailed.add(k); }
+  }
+  if (changed){ try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }
+  return changed;
+}
 // Оставляем только карточки с русским названием и постером — чтобы в ленте не было
 // англоязычного мусора без перевода и без обложки. Аниме исключаем из строгой проверки
 // названия (у многих русское имя = транслит латиницей), но постер обязателен всегда.
@@ -2837,7 +3183,7 @@ function rebuildMovieIndex(){
   MOVIE_INDEX = new Map();
   MOVIES.forEach(m => { const k = mid(m); if (!MOVIE_INDEX.has(k)) MOVIE_INDEX.set(k, m); });
 }
-function keyToMovie(key){ return MOVIE_INDEX.get(key) || null; }
+function keyToMovie(key){ return MOVIE_INDEX.get(key) || movieStubs[key] || null; }
 function normalizeStoredKey(v){
   v = +v || 0;
   if (!v || v >= SERIES_ID_OFFSET) return v;
@@ -2881,18 +3227,23 @@ function sortByPopularity(arr){
   return arr.slice().sort((a,b) => personalScore(b) - personalScore(a));
 }
 async function refillDeck(){
-  let fresh = MOVIES.filter(m => isUnseen(m) && !servedKeys.has(mid(m)) && !deck.some(x => sameMovie(x, m)));
+  let fresh = MOVIES.filter(deckFresh);
   let attempts = 0;
   // Тянем новые страницы, пока не наберём приличный запас (или пока TMDB не иссякнет).
   while (fresh.length < 12 && attempts < 6){
     const added = await fetchMorePages();
     attempts++;
-    if (added) fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
+    if (added) fresh = MOVIES.filter(deckFresh);
     else break;
   }
   if (fresh.length) deckRefillTries = 0;
   // Пока мы ждали TMDB, часть карточек могла уехать свайпом — не возвращаем их в ленту.
-  const stillFresh = dedupeByKey(fresh.filter(m => isUnseen(m) && !servedKeys.has(mid(m)) && !deck.some(x => sameMovie(x, m))));
+  let stillFresh = dedupeByTitle(dedupeByKey(fresh.filter(deckFresh)));
+  if (!stillFresh.length){
+    /* Всё, что нашлось, уже показывалось. Лучше показать знакомое, чем оставить
+       человека со спиннером: правило «без повторов» не должно останавливать ленту. */
+    stillFresh = dedupeByTitle(dedupeByKey(MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)))));
+  }
   deck = deck.concat(sortByPopularity(stillFresh));
   // За сессию колода не должна разрастаться бесконечно: дальние карточки не нужны,
   // их всегда можно догрузить заново.
@@ -2917,12 +3268,31 @@ function shakeDeck(){
     card.classList.add('shuffling');
   });
   setTimeout(()=>{
+    ensureShuffleSlides();
+    playShuffleSlides();
     deck = shuffle(deck);
     renderStack();
     showToast('Колода перетасована', 'shuffle');
   }, 430);
 }
 
+/* Отметил сериал просмотренным — считаем, что посмотрел его целиком: сезоны и
+   серии заполняются автоматически, ничего не нужно тыкать руками. */
+async function fillAllEpisodes(movie){
+  if (!movie || !(movie.type === 'series' || movie.type === 'anime')) return;
+  try{
+    await ensureEpisodeTotal(movie);
+    const seasons = movie.seasons || [];
+    const ep = getEpisodeState(mid(movie));
+    if (seasons.length){
+      seasons.forEach(s => { ep.seasons[s.number] = s.total; });
+    } else if (movie.episodesTotal){
+      ep.seasons[1] = movie.episodesTotal;
+    } else return;
+    dbEpisode(mid(movie), ep.seasons);
+    showToast(`Сезоны заполнены · ${totalWatchedEpisodes(mid(movie))} серий`, 'check');
+  }catch(e){ console.warn('не удалось заполнить серии', e); }
+}
 async function ensureEpisodeTotal(movie){
   if (!(movie.type === 'series' || movie.type === 'anime') || movie._epFetched) return false;
   try{
@@ -3003,6 +3373,78 @@ const state = {
   episodes: {},
   reviews: 0,          // сколько раз ставил оценку по Смотриметрам
 };
+/* Состояние дублируем в память телефона: если сеть пропала и запись в базу не
+   прошла, списки всё равно останутся целыми после перезапуска, а очередь
+   отправит их позже. Именно из-за отсутствия этого и «пропадали» свайпы. */
+const STATE_KEY = 'smotra_state_v1';
+const PENDING_KEY = 'smotra_pending_writes';
+const STUBS_KEY = 'smotra_movie_stubs';
+/* Лёгкие копии тайтлов: каталог подгружается частями, и без них «мимо 675»
+   в профиле превращалось в 507 в истории — часть ключей не находила фильм. */
+let movieStubs = {};
+try{ movieStubs = JSON.parse(localStorage.getItem(STUBS_KEY) || '{}') || {}; }catch(e){ movieStubs = {}; }
+function rememberMovie(m){
+  if (!m || !m.id) return;
+  const k = mid(m);
+  if (movieStubs[k]) return;
+  movieStubs[k] = { id: m.id, type: m.type, title: m.title, originalTitle: m.originalTitle, year: m.year,
+    rating: m.rating, poster: m.poster, genres: (m.genres || []).slice(0, 3),
+    isCartoon: m.isCartoon, isAnime: m.isAnime, stub: true };
+  const keys = Object.keys(movieStubs);
+  if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(x => delete movieStubs[x]);
+  clearTimeout(rememberMovie._t);
+  rememberMovie._t = setTimeout(() => { try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }, 400);
+}
+let persistTimer = null;
+function schedulePersist(){
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(persistState, 900);
+}
+function persistState(){
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      watched: state.watched, skipped: state.skipped, wishlist: state.wishlist, watching: state.watching,
+      unlocked: state.unlocked, badgeDates: state.badgeDates, episodes: state.episodes, reviews: state.reviews || 0,
+    }));
+  }catch(e){}
+}
+try{
+  const cached = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
+  if (cached && typeof cached === 'object'){
+    state.watched = cached.watched || []; state.skipped = cached.skipped || [];
+    state.wishlist = cached.wishlist || []; state.watching = cached.watching || [];
+  }
+}catch(e){}
+/* Очередь записей, которые не дошли до базы: повторяем при первой возможности */
+let pendingWrites = [];
+try{ pendingWrites = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]') || []; }catch(e){ pendingWrites = []; }
+function savePending(){ try{ localStorage.setItem(PENDING_KEY, JSON.stringify(pendingWrites.slice(-300))); }catch(e){} }
+function queueWrite(entry){ pendingWrites.push(entry); savePending(); }
+let flushingWrites = false;
+async function flushPendingWrites(){
+  if (flushingWrites || !pendingWrites.length) return;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  flushingWrites = true;
+  const list = pendingWrites.slice();
+  pendingWrites = [];
+  for (const e of list){
+    try{
+      let res;
+      if (e.t === 'swipe') res = await sb.from('swipes').insert({ telegram_id: TG_ID, movie_id: e.movieId, action: e.action });
+      else if (e.t === 'swipe-del') res = await sb.from('swipes').delete().eq('telegram_id', TG_ID).eq('movie_id', e.movieId).eq('action', e.action);
+      else if (e.t === 'wish-add') res = await sb.from('wishlist').upsert({ telegram_id: TG_ID, movie_id: e.movieId });
+      else if (e.t === 'wish-del') res = await sb.from('wishlist').delete().eq('telegram_id', TG_ID).eq('movie_id', e.movieId);
+      else if (e.t === 'watch-add') res = await sb.from('watching').upsert({ telegram_id: TG_ID, movie_id: e.movieId });
+      else if (e.t === 'watch-del') res = await sb.from('watching').delete().eq('telegram_id', TG_ID).eq('movie_id', e.movieId);
+      if (res && res.error) throw res.error;
+    }catch(err){ pendingWrites.push(e); }
+  }
+  savePending();
+  flushingWrites = false;
+}
+window.addEventListener('online', () => setTimeout(flushPendingWrites, 800));
+setTimeout(flushPendingWrites, 4000);
+
 /* Оценки считаем локально: сервер тут не нужен, а ачивки за рецензии — нужны. */
 const REVIEWS_COUNT_KEY = 'smotra_reviews_count';
 try{ state.reviews = Number(localStorage.getItem(REVIEWS_COUNT_KEY) || 0) || 0; }catch(e){}
@@ -3037,11 +3479,16 @@ document.getElementById('shakeBtn').onclick = shakeDeck;
 /* ============ РАНДОМАЙЗЕР ============ */
 const Roulette = (function(){
   const overlay = document.getElementById('roulette');
-  const strip = document.getElementById('rlStrip');
+  const stage = document.getElementById('rlStage');
+  const modesEl = document.getElementById('rlModes');
   const resultEl = document.getElementById('rlResult');
-  const TILE = 86, GAP = 10;
+  const TILE = 86, GAP = 10, SLOT_LINE = 44;
+  const MODES = { strip:'Рулетка', wheel:'Колесо', poker:'Покер', slots:'Автомат' };
   let spinning = false, winner = null, spinTimer = null;
   let customPool = null;          // список для прокрутки: по умолчанию — свой «Хочу чекнуть»
+  let mode = 'strip';
+  /* Множитель длительности: в тестах и при «уменьшить движение» всё происходит почти сразу */
+  let speed = (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) ? 0.2 : 1;
 
   function pool(){
     if (customPool) return customPool.slice();
@@ -3053,24 +3500,61 @@ const Roulette = (function(){
     customPool = null;
     clearTimeout(spinTimer);
   }
-  /* list — необязательный массив тайтлов (например, список друга), title — заголовок окна */
-  function open(list, title){
+  function stageHTML(){
+    if (mode === 'wheel') return `<div class="rl-wheel-wrap"><svg class="rl-wheel" id="rlWheel" viewBox="0 0 200 200" aria-hidden="true"></svg><div class="rl-pin"></div></div>`;
+    if (mode === 'poker') return `<div class="rl-poker" id="rlPoker"></div>`;
+    if (mode === 'slots') return `<div class="rl-slots" id="rlSlots"></div>`;
+    return `<div class="rl-strip-wrap"><div class="rl-marker"></div><div class="rl-strip" id="rlStrip"></div></div>`;
+  }
+  function renderStage(){ stage.innerHTML = stageHTML(); }
+  function renderModes(){
+    [...modesEl.querySelectorAll('button')].forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  }
+  function setMode(next, spinNow){
+    if (!MODES[next] || next === mode){ if (spinNow) spin(); return; }
+    mode = next;
+    renderModes();
+    renderStage();
+    if (spinNow !== false) spin();
+  }
+  function open(list, title, startMode){
     customPool = (Array.isArray(list) && list.length) ? list.slice() : null;
     const head = overlay.querySelector('.rl-card h3');
     if (head) head.textContent = title || 'Что посмотреть?';
     const items = pool();
     if (!items.length){ showToast('Сначала добавь тайтлы в «Хочу чекнуть»', 'star'); return; }
+    if (startMode && MODES[startMode]) mode = startMode;
     overlay.classList.add('show');
+    renderModes();
+    renderStage();
     haptic('impact','medium');
     spin();
   }
   function spin(){
+    if (spinning) return;
     const items = pool();
     if (!items.length) return;
     resultEl.innerHTML = '<div class="rl-meta">Крутим…</div>';
     spinning = true;
     winner = null;
-    [...document.querySelectorAll('.rl-item.win')].forEach(el => el.classList.remove('win'));
+    [...overlay.querySelectorAll('.win')].forEach(el => el.classList.remove('win'));
+    if (mode === 'wheel') spinWheel(items);
+    else if (mode === 'poker') spinPoker(items);
+    else if (mode === 'slots') spinSlots(items);
+    else spinStrip(items);
+  }
+  function finish(m){
+    spinning = false;
+    winner = m || null;
+    haptic('notification','success');
+    if (!winner) return;
+    resultEl.innerHTML = `<div class="rl-name">${esc(winner.title)}</div>
+      <div class="rl-meta">${esc(winner.year)} · ${esc(TYPE_LABEL[winner.type] || 'Фильм')} · ${esc(winner.rating)}<span class="star"> ★</span></div>`;
+  }
+  /* --- режим 1: лента-рулетка --- */
+  function spinStrip(items){
+    const strip = document.getElementById('rlStrip');
+    if (!strip) return;
     // Лента: тайтлы повторяются, чтобы полотно было длинным и «ехало» долго
     const LOOP = 34;
     const stripItems = [];
@@ -3087,20 +3571,98 @@ const Roulette = (function(){
     const target = -(winIndex * (TILE + GAP) + TILE / 2 - center + 40);
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        strip.style.transition = 'transform 3.4s cubic-bezier(.12,.72,.06,1)';
+        strip.style.transition = `transform ${(3.4 * speed).toFixed(2)}s cubic-bezier(.12,.72,.06,1)`;
         strip.style.transform = `translateX(${target}px)`;
       });
     });
     spinTimer = setTimeout(()=>{
-      spinning = false;
-      winner = items[winIndex % items.length];
       const tile = strip.querySelector(`.rl-item[data-i="${winIndex}"]`);
       if (tile) tile.classList.add('win');
-      haptic('notification','success');
-      resultEl.innerHTML = `<div class="rl-name">${esc(winner.title)}</div>
-        <div class="rl-meta">${esc(winner.year)} · ${esc(TYPE_LABEL[winner.type] || 'Фильм')} · ${esc(winner.rating)}<span class="star"> ★</span></div>`;
-    }, 3550);
+      finish(items[winIndex % items.length]);
+    }, 3550 * speed);
   }
+  /* --- режим 2: колесо --- */
+  function spinWheel(items){
+    const wheel = document.getElementById('rlWheel');
+    if (!wheel) return;
+    const n = Math.min(items.length, 8);
+    const step = 360 / n;
+    const rad = a => a * Math.PI / 180;
+    let parts = `<circle cx="100" cy="100" r="92" style="fill:var(--surface-2)"/>`;
+    for (let i = 0; i < n; i++){
+      const a0 = -90 + i * step, a1 = a0 + step;
+      const x0 = (100 + 92 * Math.cos(rad(a0))).toFixed(2), y0 = (100 + 92 * Math.sin(rad(a0))).toFixed(2);
+      const x1 = (100 + 92 * Math.cos(rad(a1))).toFixed(2), y1 = (100 + 92 * Math.sin(rad(a1))).toFixed(2);
+      const mid = a0 + step / 2;
+      const tx = (100 + 62 * Math.cos(rad(mid))).toFixed(2), ty = (100 + 62 * Math.sin(rad(mid))).toFixed(2);
+      parts += `<path d="M100,100 L${x0},${y0} A92,92 0 0,1 ${x1},${y1} Z" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:${i % 2 ? 0.92 : 0.6}"/>`;
+      parts += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="700" style="fill:var(--on-accent)">${i + 1}</text>`;
+    }
+    parts += `<circle cx="100" cy="100" r="18" style="fill:var(--surface); stroke:var(--border)"/>
+      <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" style="fill:var(--accent)">SMOTRA</text>`;
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+    wheel.innerHTML = parts;
+    const winIndex = Math.floor(Math.random() * n);
+    const target = 360 * 4 - (winIndex * step + step / 2);
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        wheel.style.transition = `transform ${(3.6 * speed).toFixed(2)}s cubic-bezier(.15,.75,.05,1)`;
+        wheel.style.transform = `rotate(${target}deg)`;
+      });
+    });
+    spinTimer = setTimeout(()=>{
+      [...wheel.querySelectorAll('path')].forEach((p,i)=> p.style.opacity = i === winIndex ? 1 : 0.34);
+      finish(items[winIndex]);
+    }, 3700 * speed);
+  }
+  /* --- режим 3: покер — пять карт, одна выигрывает --- */
+  function spinPoker(items){
+    const host = document.getElementById('rlPoker');
+    if (!host) return;
+    const n = Math.min(items.length, 5);
+    host.innerHTML = items.slice(0, n).map((m, i) => `
+      <div class="rl-pcard" data-i="${i}" style="animation-delay:${(i * 0.1 * speed).toFixed(2)}s">
+        ${hasArt(m) ? `<img src="${esc(posterUrl(m,'w154'))}" alt="">` : `<span class="rl-pfallback">${esc(m.title.slice(0, 2))}</span>`}
+        <b>${esc(m.title)}</b>
+      </div>`).join('');
+    const pick = Math.floor(Math.random() * n);
+    spinTimer = setTimeout(()=>{
+      [...host.querySelectorAll('.rl-pcard')].forEach(el => el.classList.add(+el.dataset.i === pick ? 'win' : 'lose'));
+      finish(items[pick]);
+    }, 1300 * speed);
+  }
+  /* --- режим 4: автомат — три барабана останавливаются на одном тайтле --- */
+  function spinSlots(items){
+    const host = document.getElementById('rlSlots');
+    if (!host) return;
+    const pick = Math.floor(Math.random() * items.length);
+    const win = items[pick];
+    const reelHTML = (offset) => {
+      const names = [];
+      for (let k = 0; k < 5; k++) names.push(items[(pick + offset + k) % items.length].title);
+      names.push(win.title);                       // последняя строка — победитель
+      return `<div class="rl-reel"><div class="rl-reel-track">${names.map(t => `<span>${esc(t)}</span>`).join('')}</div></div>`;
+    };
+    host.innerHTML = reelHTML(1) + reelHTML(3) + reelHTML(5);
+    const tracks = [...host.querySelectorAll('.rl-reel-track')];
+    tracks.forEach(t => { t.style.transition = 'none'; t.style.transform = 'translateY(0)'; });
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        tracks.forEach((t, i) => {
+          t.style.transition = `transform ${(1.5 * speed).toFixed(2)}s cubic-bezier(.2,.85,.1,1) ${(i * 0.35 * speed).toFixed(2)}s`;
+          t.style.transform = `translateY(${-5 * SLOT_LINE}px)`;
+        });
+      });
+    });
+    spinTimer = setTimeout(()=>finish(win), 2600 * speed);
+  }
+  modesEl.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-mode]');
+    if (!btn || spinning) return;
+    haptic('selection');
+    setMode(btn.dataset.mode, true);
+  });
   document.getElementById('openRoulette').onclick = open;
   document.getElementById('rlClose').onclick = () => { haptic('selection'); close(); };
   document.getElementById('rlAgain').onclick = () => { if (!spinning){ haptic('selection'); spin(); } };
@@ -3113,7 +3675,12 @@ const Roulette = (function(){
   };
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   window.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  return { open, close };
+  return {
+    open, close, spin, setMode,
+    getMode: () => mode,
+    modes: MODES,
+    setSpeed: (f) => { speed = f > 0 ? f : 1; },
+  };
 })();
 
 /* Поиск в «Хочу чекнуть» */
@@ -3121,6 +3688,49 @@ document.getElementById('wishSearch').addEventListener('input', (e) => {
   wishQuery = e.target.value.trim();
   renderWishlist();
 });
+
+/* ============ КЛАВИАТУРА И КРЕСТИКИ В ПОИСКЕ ============ */
+/* Пока открыта клавиатура (или в фокусе поле ввода), нижняя панель уезжает вниз,
+   чтобы не вылезать наверх вместе с клавиатурой и не закрывать экран. */
+(function initKeyboardWatcher(){
+  let timer = null;
+  function activeField(){
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA') return false;
+    return (el.type || 'text') !== 'range';
+  }
+  function update(){
+    const vv = window.visualViewport;
+    const shrunk = vv ? (window.innerHeight - vv.height) > 120 : false;
+    document.body.classList.toggle('kb-open', shrunk || activeField());
+  }
+  const later = (ms) => { clearTimeout(timer); timer = setTimeout(update, ms); };
+  document.addEventListener('focusin', () => later(60));
+  document.addEventListener('focusout', () => later(140));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', update);
+  window.addEventListener('resize', update);
+})();
+/* Крестик очистки в поиске: пустое поле — крестика нет */
+function initSearchClear(inputId, wrapId){
+  const input = document.getElementById(inputId);
+  const wrap = document.getElementById(wrapId);
+  if (!input || !wrap) return;
+  const clear = wrap.querySelector('.search-clear');
+  const sync = () => wrap.classList.toggle('has-text', !!input.value);
+  input.addEventListener('input', sync);
+  if (clear) clear.onclick = () => {
+    input.value = '';
+    sync();
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+    haptic('selection');
+  };
+  sync();
+}
+initSearchClear('catSearch', 'catSearchWrap');
+initSearchClear('wishSearch', 'wishSearchWrap');
 
 function shareApp(){
   const text = 'Го затрекаем, что смотрели — я в SMOTRA';
@@ -3214,6 +3824,8 @@ function renderAchievementsScreen(){
   const unlockedCount = BADGES.filter(b=>state.unlocked.includes(b.id)).length;
   const countEl = document.getElementById('achievementsCount');
   if (countEl) countEl.textContent = `${unlockedCount} из ${BADGES.length}`;
+  const bar = document.getElementById('achievementsBar');
+  if (bar) bar.style.width = Math.round(unlockedCount / BADGES.length * 100) + '%';
 }
 function openBadgeDetail(badgeId){
   const b = BADGES.find(x=>x.id===badgeId);
@@ -3258,9 +3870,62 @@ function shareMovie(movie){
 /* ============ HOME STACK ============ */
 const stackEl = document.getElementById('stack');
 let deck = [];
-/* Ключи, которые за эту сессию уже показывались. Даже если состояние почему-то
-   не записалось, повторно тайтл в колоду не вернётся — повтор в ленте исключён. */
+/* Показанное запоминаем не только на сессию, но и на телефоне: раньше список
+   жил в памяти, и после каждого перезапуска лента начиналась с тех же тайтлов —
+   из-за этого и казалось, что фильмы «постоянно повторяются».
+   Держим два набора: по ключу тайтла и по названию — один и тот же фильм мог
+   приезжать из TMDB и как фильм, и как мультфильм, то есть двумя разными ключами. */
+const SERVED_KEY = 'smotra_served_v1';
 const servedKeys = new Set();
+const servedTitles = new Set();
+let servedSaveTimer = null;
+function titleKey(m){
+  if (!m) return '';
+  const t = String(m.title || '').toLowerCase().replace(/[^a-zа-яё0-9]+/gi, '');
+  return t ? `${t}|${isTvLike(m) ? 'tv' : 'film'}` : '';
+}
+function markServed(m){
+  if (!m) return;
+  servedKeys.add(mid(m));
+  const tk = titleKey(m);
+  if (tk) servedTitles.add(tk);
+  clearTimeout(servedSaveTimer);
+  servedSaveTimer = setTimeout(saveServed, 600);
+}
+function unmarkServed(m){
+  if (!m) return;
+  servedKeys.delete(mid(m));
+  const tk = titleKey(m);
+  if (tk) servedTitles.delete(tk);
+  clearTimeout(servedSaveTimer);
+  servedSaveTimer = setTimeout(saveServed, 600);
+}
+function saveServed(){
+  try{
+    localStorage.setItem(SERVED_KEY, JSON.stringify({
+      keys: [...servedKeys].slice(-400),
+      titles: [...servedTitles].slice(-400),
+    }));
+  }catch(e){}
+}
+function isServed(m){ return !m || servedKeys.has(mid(m)) || (titleKey(m) && servedTitles.has(titleKey(m))); }
+(function loadServed(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(SERVED_KEY) || 'null');
+    if (!raw) return;
+    (raw.keys || []).forEach(k => servedKeys.add(k));
+    (raw.titles || []).forEach(k => servedTitles.add(k));
+  }catch(e){}
+})();
+/* Свежая порция для колоды: не показанное, не «смотрел/мимо» и без тайтла,
+   который уже лежит в колоде. */
+function deckFresh(m){
+  return !!m && isUnseen(m) && !isServed(m) && !deck.some(x => sameMovie(x, m));
+}
+function dedupeByTitle(list){
+  const seen = new Set();
+  return list.filter(m => { const tk = titleKey(m); if (!tk || seen.has(tk)) return false; seen.add(tk); return true; });
+}
 
 let deckRefreshing = false;
 // Сколько раз подряд мы безуспешно пытались добить колоду. Без этого счётчика
@@ -3319,7 +3984,7 @@ function purgeDeck(){
   return before - deck.length;
 }
 function makeCard(movie, depth){
-  if (depth === 0 && movie) servedKeys.add(mid(movie));
+  if (depth === 0 && movie) markServed(movie);
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.id = movie.id;
@@ -3349,7 +4014,15 @@ function renderStack(){
   }
   try{
     stackEl.innerHTML = '';
-    const visible = deck.slice(0, 3);
+    const visible = [];
+    const seenTitles = new Set();
+    for (const m of deck){                 // в кадре не может быть двух одинаковых названий
+      const tk = titleKey(m);
+      if (tk && seenTitles.has(tk)) continue;
+      if (tk) seenTitles.add(tk);
+      visible.push(m);
+      if (visible.length === 3) break;
+    }
     // Рисуем от дальней карточки к ближней, чтобы верхняя была последней в DOM.
     for (let depth = visible.length - 1; depth >= 0; depth--){
       stackEl.appendChild(makeCard(visible[depth], depth));
@@ -3507,7 +4180,8 @@ function keepDeckFull(){
   if (deck.filter(isUnseen).length >= 12) return;
   refillOnce();
 }
-setInterval(keepDeckFull, 6000);   // тихо дотягиваем запас, пока человек листает
+/* Раньше здесь был setInterval каждые 6 секунд: он дёргал сеть даже когда в этом
+   не было нужды и подтормаживал интерфейс. Теперь запас пополняется по событиям. */
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
@@ -3522,10 +4196,14 @@ function resolveSwipe(card, movie, action){
   if (action === 'skip'){ flyX = -900; rot = -28; pushUnique(state.skipped, mid(movie)); dbSwipe(mid(movie), 'skipped'); }
   if (action === 'wish'){ flyY = -900; pushUnique(state.wishlist, mid(movie)); dbWishAdd(mid(movie)); }
   if (action === 'watching'){ flyY = 900; pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); }
+  rememberMovie(movie);            // копия тайтла для историй, даже если каталог обновится
+  if (action === 'watched' && (movie.type === 'series' || movie.type === 'anime')) fillAllEpisodes(movie);
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
   card.style.pointerEvents = 'none'; // улетающая карточка больше не ловит палец
   haptic('impact', action === 'watched' ? 'medium' : 'light');
+  flashAction(action);            // короткая вспышка цвета темы под карточкой
+  showXPPop(xpForAction(action), card);
   updateStats();
   if (action === 'watched') checkBadges();
   pushSwipeHistory(undoInfo);
@@ -3536,6 +4214,48 @@ function resolveSwipe(card, movie, action){
     if (deck.filter(isUnseen).length < 12) refillOnce();
     ensureDeckHeight();
   }, 300);
+}
+/* Вспышка действия: тот же цвет, что у штампа на карточке, только мягче —
+   «вж-ж-ж» на долю секунды, как отклик на удар в игре. */
+const ACTION_FLASH_COLORS = { watched:'var(--watched)', skip:'var(--skip)', wish:'var(--wish)', watching:'var(--watching)' };
+function flashAction(action){
+  const color = ACTION_FLASH_COLORS[action];
+  if (!color) return;
+  const el = document.createElement('div');
+  el.className = 'action-flash';
+  el.style.background = `radial-gradient(60% 50% at 50% 50%, ${color}33, transparent 70%)`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 700);
+}
+/* «+10 XP» рядом с карточкой: легонечко появляется и уплывает вверх, как в играх.
+   Ничего не блокирует и не требует внимания — просто обратная связь. */
+function xpForAction(action){
+  if (action === 'watched') return XP_RULES.watched;
+  if (action === 'wish') return XP_RULES.wishlist;
+  if (action === 'watching') return XP_RULES.watching;
+  if (action === 'skip') return XP_RULES.skipped;
+  return 0;
+}
+function showXPPop(amount, anchorEl){
+  if (!amount) return;
+  let host = document.getElementById('xpPops');
+  if (!host){
+    host = document.createElement('div');
+    host.id = 'xpPops';
+    document.body.appendChild(host);
+  }
+  const pop = document.createElement('div');
+  pop.className = 'xp-pop';
+  pop.textContent = `+${amount} XP`;
+  if (anchorEl && anchorEl.getBoundingClientRect){
+    const r = anchorEl.getBoundingClientRect();
+    pop.style.left = (r.left + r.width / 2) + 'px';
+    pop.style.top = Math.max(70, Math.min(r.top + r.height * 0.6, window.innerHeight - 140)) + 'px';
+  } else {
+    pop.style.left = '50%'; pop.style.top = '62%';
+  }
+  host.appendChild(pop);
+  setTimeout(() => pop.remove(), 1200);
 }
 /* Если тайтл отметили где-то ещё (шторка, круговое меню, список серий) — он должен
    немедленно уйти из колоды: уже просмотренное/отложенное в ленте не показываем. */
@@ -3585,7 +4305,7 @@ function undoLastSwipe(){
   if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); }
   deck = deck.filter(m => !sameMovie(m, movie));
   deck.unshift(movie);
-  servedKeys.delete(mid(movie));   // отменённый свайп — тайтл снова можно показать
+  unmarkServed(movie);             // отменённый свайп — тайтл снова можно показать
   haptic('impact','medium');
   updateStats();
   renderStack();
@@ -3599,6 +4319,38 @@ function undoLastSwipe(){
   showToast('Карточка возвращена', 'shuffle');
 }
 document.getElementById('undoBtn').onclick = undoLastSwipe;
+/* «Вернуться» можно смахнуть в любую сторону — раньше она висела поверх
+   «Перемешать» и убрать её было нечем, кроме ожидания. */
+(function initUndoDrag(){
+  const btn = document.getElementById('undoBtn');
+  let sx = 0, sy = 0, dragging = false, dx = 0, dy = 0;
+  const reset = () => { btn.style.transition = ''; btn.style.transform = ''; btn.style.opacity = ''; };
+  btn.addEventListener('pointerdown', e => {
+    dragging = true; dx = dy = 0; sx = e.clientX; sy = e.clientY;
+    btn.style.transition = 'none';
+    try{ btn.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  btn.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dx = e.clientX - sx; dy = e.clientY - sy;
+    btn.style.transform = `translate(calc(-50% + ${dx}px), ${dy}px)`;
+    btn.style.opacity = String(Math.max(0.25, 1 - Math.max(Math.abs(dx), Math.abs(dy)) / 120));
+  });
+  function finish(){
+    if (!dragging) return;
+    dragging = false;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 46){
+      btn.style.transition = 'transform .2s ease, opacity .2s ease';
+      btn.style.transform = `translate(calc(-50% + ${dx * 2}px), ${dy * 2}px)`;
+      btn.style.opacity = '0';
+      btn.classList.remove('show');
+      setTimeout(reset, 220);
+    } else reset();
+  }
+  btn.addEventListener('pointerup', finish);
+  btn.addEventListener('pointercancel', finish);
+  btn.addEventListener('pointerleave', finish);
+})();
 
 /* ============ БЫСТРЫЕ ДЕЙСТВИЯ (из кругового меню) ============ */
 function toggleQuick(kind, movie){
@@ -3687,18 +4439,20 @@ const Radial = (function(){
      Меряем по-настоящему (scrollWidth), а не на глаз — поэтому надпись никогда
      не вылезает на обводку. */
   function fitRadLabels(){
-    [...wrap.querySelectorAll('.rad-item .rad-lbl')].forEach(lbl => {
-      const MAX = 46;                 // доступная ширина внутри кружка 64px
-      lbl.style.fontSize = '';
-      lbl.style.whiteSpace = 'nowrap';
-      let fs = 9.5;
-      lbl.style.fontSize = fs + 'px';
-      while (fs > 8 && lbl.scrollWidth > MAX){ fs -= 0.5; lbl.style.fontSize = fs + 'px'; }
-      if (lbl.scrollWidth > MAX){     // в одну строку не влезает — переносим по слогу
-        lbl.style.whiteSpace = '';
-        lbl.style.fontSize = '9px';
-      }
-    });
+    const labels = [...wrap.querySelectorAll('.rad-item .rad-lbl')];
+    if (!labels.length) return;
+    const MAX = 46;                   // доступная ширина внутри кружка 64px
+    labels.forEach(l => { l.style.whiteSpace = 'nowrap'; l.style.fontSize = ''; });
+    let fits = false;
+    /* Кегль общий для всех кружков: иначе «Поделиться» выглядела бы мельче
+       остальных, и меню казалось бы кривым. */
+    for (let fs = 9.5; fs >= 8; fs -= 0.5){
+      labels.forEach(l => { l.style.fontSize = fs + 'px'; });
+      if (labels.every(l => l.scrollWidth <= MAX)){ fits = true; break; }
+    }
+    if (!fits){
+      labels.forEach(l => { l.style.fontSize = '9px'; if (l.scrollWidth > MAX) l.style.whiteSpace = ''; });
+    }
   }
   function update(px, py){
     if (!active) return;
@@ -3802,7 +4556,11 @@ function refreshVisibleScreens(){
   if (screenIsVisible('catalog')){ catalogStale = false; renderCatalog(); } else catalogStale = true;
   if (screenIsVisible('wishlist')){ wishlistStale = false; renderWishlist(); } else wishlistStale = true;
   if (screenIsVisible('watchingScreen')){ watchingStale = false; renderWatching(); } else watchingStale = true;
-  if (screenIsVisible('profile')){ rankStale = false; renderRank(); renderWeekActivity(); } else rankStale = true;
+  if (screenIsVisible('profile')){
+    rankStale = false;
+    if (statsDirty){ statsDirty = false; renderMyStats(); renderLevelCard(); }
+    renderRank(); renderWeekActivity();
+  } else rankStale = true;
 }
 /* Счётчики обновляем сразу, а тяжёлую перерисовку экранов — один раз за кадр:
    за один свайп updateStats() вызывается несколько раз, и каталог (до 60 карточек)
@@ -3811,14 +4569,16 @@ let statsFramePending = false;
 /* ============ СМОТРА LVL: уровни и опыт ============
    Опыт считаем из действий, которые уже есть в состоянии: ничего дополнительно
    хранить не нужно, и после сброса прогресса уровень честно упадёт. */
+/* Пороги подняты в 50 раз: «Легенда» должна быть настоящей целью, а не
+   достижением после пары сотен свайпов. */
 const LEVELS = [
-  { xp: 0,    name: 'Зритель',       icon: 'play' },
-  { xp: 150,  name: 'Киноновичок',   icon: 'clapper' },
-  { xp: 400,  name: 'Кинолюб',       icon: 'star' },
-  { xp: 800,  name: 'Киноман',       icon: 'sparkles' },
-  { xp: 1400, name: 'Синеман',       icon: 'popcorn' },
-  { xp: 2300, name: 'Киногуру',      icon: 'trophy' },
-  { xp: 3500, name: 'Легенда SMOTRA',icon: 'rocket' },
+  { xp: 0,      name: 'Зритель',       icon: 'play' },
+  { xp: 7500,   name: 'Киноновичок',   icon: 'clapper' },
+  { xp: 20000,  name: 'Кинолюб',       icon: 'star' },
+  { xp: 40000,  name: 'Киноман',       icon: 'sparkles' },
+  { xp: 70000,  name: 'Синеман',       icon: 'popcorn' },
+  { xp: 115000, name: 'Киногуру',      icon: 'trophy' },
+  { xp: 175000, name: 'Легенда SMOTRA',icon: 'rocket' },
 ];
 const XP_RULES = { watched: 10, wishlist: 6, watching: 4, skipped: 1, review: 25, badge: 40, streakDay: 5 };
 /* Опыт по любому набору списков (свой профиль или списки друга) */
@@ -3856,10 +4616,106 @@ function levelCardHTML(level, compact){
     <div class="lvl-bar"><i style="width:${level.pct}%"></i></div>
   </div>`;
 }
+/* Живая игрушка вверху главной: чистая SVG, ни одной картинки. Цвета берём из
+   переменных темы, поэтому при смене темы игрушка перекрашивается вместе с ней.
+   Тап — следующая игрушка, выбор запоминается на телефоне. */
+const HOME_TOYS = [
+  { name:'fire', svg:`<g class="toy-fire"><path style="fill:var(--accent)" d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/><path style="fill:var(--accent-2)" d="M12 21a4 4 0 0 0 1.5-7.7c-.2 1.2-1 1.9-2 2.2.3-1.4-.3-2.6-1.2-3.5-.2 1.3-1.3 2-1.3 3.6A3 3 0 0 0 12 21z"/></g>` },
+  { name:'moon', svg:`<g class="toy-moon"><path style="fill:var(--accent-2)" d="M20 14.5A8 8 0 1 1 10.2 4a6.5 6.5 0 0 0 9.8 10.5z"/><circle cx="8.5" cy="9.5" r="1" style="fill:var(--accent)"/><circle cx="11" cy="14" r="1.4" style="fill:var(--accent)"/><circle cx="7.5" cy="13.5" r=".8" style="fill:var(--accent)"/></g>` },
+  { name:'sun', svg:`<g class="toy-sun"><circle cx="12" cy="12" r="5" style="fill:var(--accent)"/><g style="stroke:var(--accent-2)" stroke-width="2" stroke-linecap="round"><path d="M12 1.5v2.5M12 20v2.5M1.5 12h2.5M20 12h2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M19.8 4.2 18 6M6 18l-1.8 1.8"/></g></g>` },
+  { name:'heart', svg:`<g class="toy-heart"><path style="fill:var(--wish)" d="M12 21s-7.3-4.6-9.6-9.2C.9 8 2.4 4 6.3 4c2.1 0 4 1.6 5.7 4 1.7-2.4 3.6-4 5.7-4 3.9 0 5.4 4 3.9 7.8C19.3 16.4 12 21 12 21z"/></g>` },
+  { name:'bolt', svg:`<g class="toy-bolt"><path style="fill:var(--accent)" stroke="var(--accent-2)" stroke-width="1" stroke-linejoin="round" d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></g>` },
+  { name:'ufo', svg:`<g class="toy-ufo"><ellipse cx="12" cy="14.5" rx="9" ry="3.2" style="fill:var(--accent-2)"/><path style="fill:var(--accent)" d="M7 12.5a5 5 0 0 1 10 0"/><path style="fill:var(--accent-2); opacity:.55" d="M8.5 9.5a3.5 3.5 0 0 1 7 0"/><circle cx="6.5" cy="14.6" r="1" style="fill:var(--watching)"/><circle cx="12" cy="15.4" r="1" style="fill:var(--wish)"/><circle cx="17.5" cy="14.6" r="1" style="fill:var(--watched)"/></g>` },
+  { name:'star', svg:`<g class="toy-star"><path style="fill:var(--accent)" stroke="var(--accent-2)" stroke-width="1" stroke-linejoin="round" d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.1 6.1 20.3l1.3-6.5-4.9-4.5 6.6-.8z"/></g>` },
+];
+(function initHomeToy(){
+  const btn = document.getElementById('homeToy');
+  if (!btn) return;
+  let idx = HOME_TOYS.findIndex(t => t.name === localStorage.getItem('smotra_toy'));
+  if (idx < 0) idx = 0;
+  function render(){ btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${HOME_TOYS[idx].svg}</svg>`; }
+  render();
+  btn.onclick = () => {
+    idx = (idx + 1) % HOME_TOYS.length;
+    try{ localStorage.setItem('smotra_toy', HOME_TOYS[idx].name); }catch(e){}
+    haptic('impact','light');
+    render();
+    btn.classList.remove('swapping');
+    void btn.offsetWidth;              // рестарт анимации смены
+    btn.classList.add('swapping');
+  };
+})();
+/* Колода «перемешивается» картинками: ролик крутится по кругу и сматывается в
+   киноленту. Сначала попробовал SVG — браузеры её не показывали, поэтому это
+   обычные эмодзи: работают везде и не тянут за собой ассеты. */
+const SHUFFLE_SLIDES = ['🎞️', '🎬', '🍿', '🎥', '📽️', '📼', '🎞️', '🎬'];
+function playShuffleSlides(){
+  const host = document.getElementById('shuffleSlides');
+  if (!host) return;
+  const box = host.querySelector('.shuffle-reel');
+  if (!box) return;
+  const start = Math.floor(Math.random() * SHUFFLE_SLIDES.length);
+  for (let i = 0; i < 8; i++){
+    const piece = document.createElement('span');
+    piece.className = 'shuffle-piece';
+    piece.textContent = SHUFFLE_SLIDES[(start + i) % SHUFFLE_SLIDES.length];
+    piece.style.animationDelay = (i * 0.42) + 's';
+    box.appendChild(piece);
+  }
+  setTimeout(() => { box.innerHTML = ''; }, 3800);
+}
+function ensureShuffleSlides(){
+  if (document.getElementById('shuffleSlides')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'shuffleSlides';
+  wrap.className = 'shuffle-slides';
+  wrap.setAttribute('aria-hidden', 'true');
+  wrap.innerHTML = '<div class="shuffle-reel"></div>';
+  document.body.appendChild(wrap);
+}
+/* Компактная строка уровня вверху главной: видно, куда двигает прогресс */
+function renderHomeLevel(){
+  const level = levelFor(myXP());
+  const name = document.getElementById('homeLevelName');
+  const bar = document.getElementById('homeLevelBar');
+  const xp = document.getElementById('homeLevelXP');
+  if (name) name.textContent = `LVL ${level.level} · ${level.name}`;
+  if (bar) bar.style.width = level.pct + '%';
+  if (xp) xp.textContent = level.next ? `${level.xp}/${level.next.xp}` : 'MAX';
+}
+/* Коллекция уровней: 7 ступеней, лестница опыта и примеры правил.
+   Пороги в 50 раз выше прежних — «Легенда SMOTRA» это цель на годы. */
+function levelLadderHTML(){
+  const xp = myXP();
+  const rowHTML = (lv, i) => {
+    const next = LEVELS[i + 1];
+    const inLevel = xp >= lv.xp && (!next || xp < next.xp);
+    return `<div class="lvl-row${xp >= lv.xp ? ' reached' : ''}${inLevel ? ' current' : ''}">
+      <span class="lvl-row-ico">${ICON(lv.icon, 15)}</span>
+      <span class="lvl-row-name">${esc(lv.name)}</span>
+      <span class="lvl-row-xp">${lv.xp ? lv.xp.toLocaleString('ru-RU') + ' XP' : 'с нуля'}</span>
+    </div>`;
+  };
+  return `<div class="lvl-ladder">${LEVELS.map(rowHTML).join('')}</div>
+    <div class="xp-rules">${[['смотрел','10 XP'],['хочу','6 XP'],['смотрю','4 XP'],['пропуск','1 XP'],['рецензия','25 XP'],['ачивка','40 XP']]
+      .map(([k, v]) => `<span class="xp-rule"><b>${v}</b> ${k}</span>`).join('')}</div>`;
+}
+let levelLadderOpen = false;
 function renderLevelCard(){
   const el = document.getElementById('levelCard');
   if (!el) return;
-  el.innerHTML = levelCardHTML(levelFor(myXP()));
+  const level = levelFor(myXP());
+  el.innerHTML = levelCardHTML(level)
+    + `<button class="lvl-ladder-toggle" id="lvlLadderToggle">${levelLadderOpen ? 'Свернуть уровни' : 'Все уровни и опыт'}</button>
+       <div class="lvl-ladder-wrap${levelLadderOpen ? ' open' : ''}" id="lvlLadderWrap">${levelLadderHTML()}</div>`;
+  const toggle = document.getElementById('lvlLadderToggle');
+  if (toggle) toggle.onclick = () => {
+    levelLadderOpen = !levelLadderOpen;
+    haptic('selection');
+    const wrap = document.getElementById('lvlLadderWrap');
+    if (wrap) wrap.classList.toggle('open', levelLadderOpen);
+    toggle.textContent = levelLadderOpen ? 'Свернуть уровни' : 'Все уровни и опыт';
+  };
 }
 
 /* Статистика в моём профиле: герой-число, плитки и полосы любимых жанров.
@@ -3921,12 +4777,18 @@ function daysWord(n){
   if (t >= 11 && t <= 14) return 'дней';
   switch (n % 10){ case 1: return 'день'; case 2: case 3: case 4: return 'дня'; default: return 'дней'; }
 }
+let statsDirty = false;
 function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
-  renderMyStats();
-  renderLevelCard();
+  schedulePersist();
+  // Статистику и уровень пересобираем только когда их видно: на каждый свайп
+  // это была лишняя работа с innerHTML, из-за которой главная подлагивала.
+  const profileVisible = document.getElementById('profile')?.classList.contains('active');
+  if (profileVisible){ renderMyStats(); renderLevelCard(); }
+  else { statsDirty = true; }
+  renderHomeLevel();
   if (statsFramePending) return;
   statsFramePending = true;
   requestAnimationFrame(() => { statsFramePending = false; refreshVisibleScreens(); });
@@ -3935,10 +4797,15 @@ function updateStats(){
 /* ============ WATCHING («смотрю сейчас») ============ */
 function renderWatching(){
   const view = syncViewToggle('watching', 'list');
-  const items = state.watching.slice().reverse().map(keyToMovie).filter(Boolean);
+  const keys = state.watching.slice().reverse();
+  if (keys.some(k => !keyToMovie(k)) && !renderWatching._busy){
+    renderWatching._busy = true;
+    fillMissingTitles(keys).then(changed => { renderWatching._busy = false; if (changed) renderWatching(); });
+  }
+  const items = keys.map(keyToMovie).filter(Boolean);
   document.getElementById('watchingCount').textContent = items.length;
   const rowCount = document.getElementById('watchingCountRow');
-  if (rowCount) rowCount.textContent = items.length;
+  if (rowCount) rowCount.textContent = items.length;   // счётчик = числу карточек на экране
   const el = document.getElementById('watchingList');
   if (!items.length){ el.className = ''; el.innerHTML = `<div class="empty-note">Свайпни карточку вниз — она попадёт сюда</div>`; return; }
   if (view === 'grid'){
@@ -4140,6 +5007,10 @@ document.getElementById('wishSort').addEventListener('click', e=>{
 let wishQuery = '';
 function renderWishlist(){
   const view = syncViewToggle('wishlist', 'list');
+  if (state.wishlist.some(k => !keyToMovie(k)) && !renderWishlist._busy){
+    renderWishlist._busy = true;
+    fillMissingTitles(state.wishlist).then(changed => { renderWishlist._busy = false; if (changed) renderWishlist(); });
+  }
   let items = state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
   if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
   else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
@@ -4189,6 +5060,10 @@ document.getElementById('histTypeChips').addEventListener('click', e=>{
 });
 function renderHistory(){
   const ids = histMode === 'watched' ? state.watched : state.skipped;
+  if (ids.some(k => !keyToMovie(k)) && !renderHistory._busy){
+    renderHistory._busy = true;
+    fillMissingTitles(ids).then(changed => { renderHistory._busy = false; if (changed) renderHistory(); });
+  }
   const items = ids.slice().reverse().map(keyToMovie).filter(Boolean).filter(m => typeMatches(m, histType));
   const el = document.getElementById('histList');
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
@@ -4225,13 +5100,18 @@ function renderSettingsScreen(){
   if (xpEl) xpEl.innerHTML = `${level.xp}<small>XP</small>`;
   const bar = document.getElementById('setLevelBar');
   if (bar) bar.style.width = level.pct + '%';
-  const chip = document.getElementById('settingsVersionChip');
-  if (chip) chip.textContent = APP_VERSION;
   const nameEl = document.getElementById('setName');
   if (nameEl) nameEl.textContent = document.getElementById('userName').textContent;
   const av = document.getElementById('setAvatar');
   const src = document.getElementById('avatarInit');
   if (av && src){ av.textContent = src.textContent; av.style.backgroundImage = src.style.backgroundImage; }
+  const syncState = document.getElementById('setSyncState');
+  if (syncState){
+    const queued = pendingWrites.length;
+    syncState.textContent = queued
+      ? `Есть записи в очереди: ${queued} — отправлю, как появится связь`
+      : `Всё отправлено · тайтлов в памяти телефона: ${Object.keys(movieStubs).length}`;
+  }
   const rules = document.getElementById('setXpRules');
   if (rules) rules.innerHTML = [
     ['Смотрел', XP_RULES.watched], ['Хочу чекнуть', XP_RULES.wishlist], ['Смотрю', XP_RULES.watching],
@@ -4240,6 +5120,21 @@ function renderSettingsScreen(){
 }
 document.getElementById('openSettings').onclick = () => { keepDeckFull(); renderSettingsScreen(); document.getElementById('settingsScreen').classList.add('open'); };
 document.getElementById('setShare').onclick = () => { haptic('selection'); shareApp(); };
+/* «Отправить записи заново»: сначала сливаем телефон с базой, потом досылаем очередь */
+document.getElementById('setRepair').onclick = async () => {
+  haptic('impact','light');
+  const btn = document.getElementById('setRepair');
+  const sub = btn.querySelector('.set-sub');
+  const was = sub.textContent;
+  sub.textContent = 'Отправляю…';
+  try{ await flushPendingWrites(); }catch(e){}
+  mergeLocalAndRemote();
+  await flushPendingWrites();
+  renderSettingsScreen();
+  sub.textContent = pendingWrites.length ? `Осталось в очереди: ${pendingWrites.length}` : 'Все записи на месте';
+  showToast(pendingWrites.length ? 'Часть записей уйдёт позже' : 'Записи отправлены', pendingWrites.length ? 'cross' : 'check');
+  setTimeout(() => { sub.textContent = was; }, 2600);
+};
 document.getElementById('closeSettings').onclick = () => document.getElementById('settingsScreen').classList.remove('open');
 
 /* ============ RANK ============ */
@@ -4948,7 +5843,9 @@ switchTab = function(id){
     const t0 = e.touches[0];
     if (t0){
       const top = topOverlay();
-      if (top && !e.target.closest('.sheet, input, textarea, .cat-slider, [data-no-swipe]')){
+      // Только «от края экрана и вправо» — как системный жест «назад» на iOS.
+      // Раньше закрывалось свайпом в любую сторону из любого места — это мешало.
+      if (top && t0.clientX <= 38 && !e.target.closest('.sheet, input, textarea, .cat-slider, [data-no-swipe]')){
         ovEl = top; ovTrack = true; ovShown = false; ovDx = 0;
         ovX = t0.clientX; ovY = t0.clientY;
         return;                       // свайпаем именно оверлей, а не разделы под ним
@@ -4965,7 +5862,8 @@ switchTab = function(id){
     const tm = e.touches[0];
     if (ovTrack && ovEl && tm){
       const dx = tm.clientX - ovX, dy = tm.clientY - ovY;
-      if (!ovShown && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) + 4){
+      if (dx < 0){ return; }                       // влево тянем — ничего не делаем
+      if (!ovShown && dx > 10 && dx > Math.abs(dy) + 4){
         ovShown = true;
         ovEl.style.transition = 'none';     // экран едет за пальцем без задержки
       }
@@ -4984,9 +5882,9 @@ switchTab = function(id){
   }, { passive: true });
   document.addEventListener('touchend', (e) => {
     if (ovTrack){
-      const closedBySwipe = ovShown && Math.abs(ovDx) > 70;   // в любую сторону — назад
+      const closedBySwipe = ovShown && ovDx > 60;   // смахнули от края вправо — закрываем
       if (closedBySwipe){
-        const el = ovEl, dir = ovDx < 0 ? -1 : 1;
+        const el = ovEl, dir = 1;
         el.style.transition = 'transform .24s cubic-bezier(.3,.8,.3,1)';
         el.style.transform = `translateX(${dir * 100}%)`;
         setTimeout(() => dismissOverlay(el), 180);
