@@ -10,7 +10,9 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="preconnect" href="https://image.tmdb.org" crossorigin>
+<link rel="preconnect" href="https://api.themoviedb.org" crossorigin>
+<link rel="dns-prefetch" href="https://image.tmdb.org">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Основная тема — «неон» (синяя). Янтарь включается классом body.theme-amber.
@@ -111,7 +113,9 @@
     -webkit-user-select:none;
     -webkit-touch-callout:none;
   }
-  .grain{ position:absolute; inset:0; pointer-events:none; z-index:5; opacity:.05; mix-blend-mode:overlay;
+  /* Зерно без mix-blend-mode: полноэкранное смешивание заставляло телефон
+     перерисовывать весь экран на каждом кадре — это и была основная просадка. */
+  .grain{ position:absolute; inset:0; pointer-events:none; z-index:5; opacity:.035;
     background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2"/></filter><rect width="100%" height="100%" filter="url(%23n)"/></svg>');
   }
   h1,h2,h3{margin:0;}
@@ -121,8 +125,11 @@
   .topbar{ position:relative; z-index:4; display:flex; align-items:center; justify-content:space-between; padding:8px 20px 8px; }
   .topbar .wordmark{ font-size:19px; }
   .topbar .wordmark b{ color:var(--accent); font-weight:800; }
-  .topbar-icons{ display:flex; align-items:center; gap:14px; }
-  .icon-btn{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); position:relative; }
+  .topbar-icons{ display:flex; align-items:center; gap:12px; }
+  /* Иконки на телефоне были мелкими — теперь кнопки и значки крупнее */
+  .topbar .icon-btn svg{ width:21px; height:21px; }
+  .ov-head .icon-btn svg{ width:22px; height:22px; }
+  .icon-btn{ width:42px; height:42px; border-radius:13px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); position:relative; }
   .icon-btn svg{ width:17px; height:17px; }
   .streak{ display:flex; align-items:center; gap:5px; font-size:13px; color:var(--accent); font-weight:600; background:var(--accent-soft); padding:6px 10px; border-radius:10px; }
 
@@ -198,9 +205,9 @@
   .rl-pin{ position:absolute; top:5px; left:50%; width:0; height:0; margin-left:-7px;
     border-left:7px solid transparent; border-right:7px solid transparent; border-top:13px solid var(--accent); }
   /* Кубок ачивок в шапках разделов */
-  .ach-chip{ width:30px; height:30px; border-radius:10px; margin-left:auto; display:flex; align-items:center; justify-content:center;
+  .ach-chip{ width:38px; height:38px; border-radius:12px; margin-left:auto; display:flex; align-items:center; justify-content:center;
     background:var(--surface); border:1px solid var(--border); color:var(--accent); flex:0 0 auto; }
-  .ach-chip svg{ width:15px; height:15px; }
+  .ach-chip svg{ width:20px; height:20px; }
   .badge-where{ display:none; margin-top:16px; width:100%; padding:12px; border-radius:14px;
     border:1px solid var(--accent-border); background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px; }
   .badge-where.show{ display:block; }
@@ -234,7 +241,9 @@
     background:var(--surface-2); color:var(--accent); }
   .theme-card-art svg{ position:absolute; inset:0; width:100%; height:100%; }
   .theme-card-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-  .theme-card-text b{ font-family:'Unbounded',sans-serif; font-size:13.5px; font-weight:700; }
+  /* Имя темы — обычным цветом текста: раньше оно наследовало акцент и в синей теме
+     выглядело синим на любом фоне. */
+  .theme-card-text b{ font-family:'Unbounded',sans-serif; font-size:13.5px; font-weight:700; color:var(--text); }
   .theme-card-text i{ font-style:normal; font-size:11.5px; color:var(--text-dim); }
   .theme-card-check{ width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     background:var(--accent); color:var(--on-accent); flex:0 0 auto; }
@@ -285,20 +294,20 @@
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
   .chip.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
   /* Компактный поиск с иконкой: высокое поле на весь экран выглядело громоздко */
-  .search-wrap{ position:relative; margin:0 0 12px; flex-shrink:0; }
-  .search-wrap .search-ico{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-dim); pointer-events:none; display:flex; }
-  .search-wrap .search-ico svg{ width:15px; height:15px; }
-  .search-wrap .search-clear{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:28px; height:28px; display:none;
+  .search-wrap{ position:relative; margin:0 0 10px; flex-shrink:0; max-width:290px; }
+  .search-wrap .search-ico{ position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-dim); pointer-events:none; display:flex; }
+  .search-wrap .search-ico svg{ width:13px; height:13px; }
+  .search-wrap .search-clear{ position:absolute; right:4px; top:50%; transform:translateY(-50%); width:26px; height:26px; display:none;
     align-items:center; justify-content:center; border:none; background:none; color:var(--text-dim); }
   .search-wrap.has-text .search-clear{ display:flex; }
-  .search-input{ width:100%; margin:0; padding:9px 38px 9px 34px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
-    color:var(--text); font-size:13.5px; font-family:'Inter'; flex-shrink:0; }
+  .search-input{ width:100%; height:34px; margin:0; padding:6px 30px 6px 30px; border-radius:10px; background:var(--surface); border:1px solid var(--border);
+    color:var(--text); font-size:12.5px; font-family:'Inter'; flex-shrink:0; }
   .search-input:focus{ border-color:var(--accent-border); }
   .search-input::placeholder{ color:var(--text-dim); }
-  .home-bottom{ display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 0 0; flex:0 0 auto; }
+  .home-bottom{ display:flex; justify-content:center; align-items:center; gap:8px; padding:4px 0 0; flex:0 0 auto; }
   /* Живая SVG-игрушка вверху главной: чистая векторная графика, цвет — из
      переменных темы, поэтому при смене темы она перекрашивается сама. */
-  .home-toy-row{ display:flex; justify-content:center; padding:0 0 6px; flex:0 0 auto; }
+  .home-toy-row{ display:flex; justify-content:center; padding:0; flex:0 0 auto; }
   .home-toy{ width:34px; height:34px; border-radius:12px; background:var(--surface); border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer; }
   .home-toy svg{ width:22px; height:22px; display:block; }
@@ -326,6 +335,10 @@
   .theme-art{ position:fixed; inset:0; pointer-events:none; z-index:0; color:var(--accent); overflow:hidden; }
   body.app-hidden *, body.app-hidden *::before, body.app-hidden *::after{ animation-play-state:paused !important; }
   .theme-art svg.ta-layer{ position:absolute; inset:0; width:100%; height:100%; }
+  /* Двигаем только половину звёзд: остальные стоят и не жгут кадры */
+  .theme-art .ta-twinkle:nth-child(even), .theme-art .ta-flare{ animation:none; }
+  .theme-art .ta-orbit{ animation-duration:64s; }
+  @media (prefers-reduced-motion: reduce){ .theme-art *{ animation:none !important; } }
   .ta-far{ opacity:.65; animation:artBreathe 9s ease-in-out infinite; }
   .ta-near{ opacity:.75; animation:artDrift 34s ease-in-out infinite alternate; }
   @keyframes artBreathe{ 0%,100%{ opacity:.45; } 50%{ opacity:.8; } }
@@ -466,13 +479,13 @@
   .pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
 
   /* Четыре действия вместо трёх: кнопки чуть компактнее, чтобы ряд не расползался */
-  .actions{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 6px 6px; flex:0 0 auto; }
+  .actions{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 6px 4px; flex:0 0 auto; }
   .act-item{ display:flex; flex-direction:column; align-items:center; gap:7px; }
   .act-lbl{ font-size:11.5px; color:var(--text-dim); font-weight:600; letter-spacing:.01em; }
   .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
   .actions button:active{ transform:scale(.92); }
   /* Свайп по нижнему табу: соседняя вкладка слегка подсвечивается, полоса едет за пальцем */
-  .actions .no,.actions .yes{ width:66px; height:66px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
+  .actions .no,.actions .yes{ width:62px; height:62px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
   .actions .no{ color:var(--skip); background:rgba(225,91,111,0.10); border-color:rgba(225,91,111,0.35); }
   .actions .yes{ color:var(--watched); background:rgba(67,184,138,0.10); border-color:rgba(67,184,138,0.35); }
   .actions .no svg,.actions .yes svg{ width:26px; height:26px; }
@@ -526,7 +539,19 @@
   .poster-card:active{ transform:scale(.96); }
   .poster-card img{ width:100%; height:100%; object-fit:cover; display:block; }
   .pc-art{ width:100%; height:100%; position:relative; background-size:cover; background-position:center; background-repeat:no-repeat; }
+  /* Пока обложка едет — на карточке идёт бегущий блик: видно, что идёт загрузка,
+     а не «сломалось». Раньше пустое место просто висело без признаков жизни. */
+  .pc-art.art-loading::after, .card .poster.art-loading::after,
+  .fw-poster.art-loading::after, .fpr-poster.art-loading::after, .review-poster.art-loading::after{
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:linear-gradient(100deg, transparent 22%, rgba(255,255,255,0.10) 46%, transparent 72%);
+    background-size:220% 100%; animation:artSweep 1.05s linear infinite; }
+  .fw-poster.art-loading, .fpr-poster.art-loading, .review-poster.art-loading{ position:relative; }
+  @keyframes artSweep{ from{ background-position:130% 0; } to{ background-position:-130% 0; } }
+  @media (prefers-reduced-motion: reduce){ .pc-art.art-loading::after, .card .poster.art-loading::after,
+    .fw-poster.art-loading::after, .fpr-poster.art-loading::after, .review-poster.art-loading::after{ animation:none; } }
   .pc-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.4; color:var(--text); }
+  .poster-card, .fw-row, .review-card, .badge, .fpr-row, .theme-card, .rate-row{ contain:layout paint style; }
   .poster-card .pc-shade{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 55%, rgba(9,10,16,0.92) 100%); }
   .poster-card .pc-title{ position:absolute; left:10px; right:10px; bottom:10px; font-size:13px; font-weight:600; line-height:1.25; }
   .pc-flag{ position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:8px; background:rgba(9,10,16,0.82); display:flex; align-items:center; justify-content:center; }
@@ -828,7 +853,9 @@
   /* ===== Overlay screens (History / Settings) ===== */
   .overlay-screen{ position:absolute; inset:0; background:var(--bg); z-index:25; transform:translateX(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column; }
   .overlay-screen.open{ transform:translateX(0); }
-  /* Окно списка открывается поверх профиля: и по слою, и по порядку в разметке */
+  /* Окно списка открывается поверх профиля: и по слою, и по порядку в разметке.
+     Вложенные окна (темы и FAQ из настроек) получают z-index от openOverlay() —
+     раньше они открывались ПОД настройками, и казалось, что тап не работает. */
   #titleListScreen{ z-index:27; }
   /* Экран «Смотриметры» открывается прямо поверх карточки фильма (шторка z-index:31),
      поэтому поднимаем его выше — иначе окно оценки уезжает за шторку. */
@@ -855,7 +882,8 @@
   nav button.nav-home.active{ color:var(--accent); }
 
   /* ===== Splash ===== */
-  #splash{ position:absolute; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .55s ease; }
+  #splash{ position:absolute; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition:opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1), visibility .5s; opacity:1; }
   /* Объёмная надпись SMOTRA — живой текст. Что делает её объёмной:
      — градиент по буквам (background-clip:text) даёт глянцевый «пластик»;
      — пять слоёв drop-shadow с нулевым смещением по X и растущим по Y дают
@@ -885,18 +913,23 @@
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
     /* Торец — текстовыми тенями (в разы дешевле фильтра), объём и свечение — двумя слоями */
+    /* Надпись SMOTRA всегда белая: торец — нейтральные серые оттенки, свечение белое.
+       Тематический цвет остаётся только у буквы O. */
     text-shadow:
-      0 1px 0 var(--wm-1), 0 2px 0 var(--wm-2), 0 3px 0 var(--wm-3), 0 4px 0 var(--wm-4),
-      0 5px 0 var(--wm-5), 0 6px 0 var(--wm-6), 0 7px 0 var(--wm-7), 0 8px 0 var(--wm-8);
+      0 1px 0 #d9dbe4, 0 2px 0 #c6c9d4, 0 3px 0 #b2b6c3, 0 4px 0 #9ea2b1,
+      0 5px 0 #8b8f9e, 0 6px 0 #787c8b, 0 7px 0 #666a78, 0 8px 0 #555965;
     filter:
       drop-shadow(0 10px 16px rgba(8,6,30,.7))
-      drop-shadow(0 0 20px var(--accent-glow));
+      drop-shadow(0 0 18px rgba(255,255,255,0.22));
     opacity:0; transform-origin:50% 100%;
     animation:wordIn .7s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 3.4s ease-in-out 1.2s infinite; }
   /* Буква O — акцентная. Цвет берётся из текущей темы (переменные считает скрипт),
      поэтому в янтаре она янтарная, в изумруде — зелёная, и так далее. */
   #splash .s-title span.o{
-    background-image:linear-gradient(180deg, #ffffff 0%, var(--accent-2) 34%, var(--accent) 58%, var(--accent-2) 100%);
+    background-image:linear-gradient(180deg, #ffffff 0%, var(--accent-2) 30%, var(--accent) 56%, var(--accent-2) 82%, #ffffff 100%);
+    filter:
+      drop-shadow(0 10px 16px rgba(8,6,30,.7))
+      drop-shadow(0 0 22px var(--accent-glow));
     text-shadow:
       0 1px 0 var(--wmo-1), 0 2px 0 var(--wmo-2), 0 3px 0 var(--wmo-3), 0 4px 0 var(--wmo-4),
       0 5px 0 var(--wmo-5), 0 6px 0 var(--wmo-6), 0 7px 0 var(--wmo-7), 0 8px 0 var(--wmo-8);
@@ -922,7 +955,13 @@
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes fadeUp{ to{ opacity:1; } }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
-  #splash.hide{ opacity:0; pointer-events:none; visibility:hidden; }
+  #splash.hide{ opacity:0; transform:scale(1.035); pointer-events:none; visibility:hidden; }
+  /* Мягкая смена: заставка тает вместе с лёгким «наездом», а приложение в это же
+     время проявляется снизу — переход без рывка. */
+  body.app-in .topbar, body.app-in .lvl-strip, body.app-in nav{ animation:appIn .55s cubic-bezier(.2,.8,.2,1) both; }
+  body.app-in .screens{ animation:appFade .6s ease both; }
+  @keyframes appIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  @keyframes appFade{ from{ opacity:0; } to{ opacity:1; } }
 
   /* ===== Onboarding ===== */
   #onboarding{ position:absolute; inset:0; background:var(--bg); z-index:90; display:none; flex-direction:column; }
@@ -955,14 +994,16 @@
      Telegram. Раньше кнопка упиралась в самый край и её часть пряталась. */
   /* Кнопка «Дальше» стоит сразу под прогрессом — в самом верху экрана. Так она
      физически не может «провалиться» вниз: ниже неё только сцена и подпись. */
+  /* Сетка туториала: сверху шапка с «Дальше», ниже сцена, в самом низу подпись.
+     Кнопка физически не может уехать вниз, а подпись не выходит за экран. */
   #tutorial{ position:fixed; inset:0; height:100dvh; overflow:hidden; background:var(--bg); z-index:95; display:none;
-    grid-template-rows:minmax(0,1fr) auto auto; gap:12px;
+    grid-template-rows:auto auto minmax(0,1fr) auto; gap:10px;
     padding:calc(12px + var(--safe-top)) 20px calc(16px + var(--safe-bottom)); }
   @supports not (height: 100dvh){ #tutorial{ height:100%; } }
   #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
-  .tut-back{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
-  .tut-back svg{ width:19px; height:19px; }
+  .tut-back{ width:40px; height:40px; border-radius:13px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
+  .tut-back svg{ width:22px; height:22px; }
   .tut-back:active{ transform:scale(.92); }
   .tut-back.hidden{ opacity:0; pointer-events:none; }
   .tut-progress{ display:flex; gap:6px; flex:1; min-width:0; }
@@ -971,7 +1012,7 @@
   .tut-progress span.done b{ width:100%; }
   .tut-progress span.active b{ width:100%; }
   .tut-skip-top{ background:none; border:none; color:var(--text-dim); font-size:12.5px; padding:7px 2px; flex:0 0 auto; }
-  .tut-stage{ min-height:0; padding-bottom:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .tut-stage{ min-height:0; padding-bottom:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
   /* Демо-карточка всегда одного размера: если высоты мало, fitTutorial поджимает её
      трансформацией, а не размерами — иначе иконки и штампы становятся крошечными. */
   .tut-demo{ position:relative; width:208px; height:292px; flex:0 0 auto; }
@@ -1038,15 +1079,16 @@
   @keyframes handWatched{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes handSkip{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(-54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes tutStamp{ 0%,20%{ opacity:0; } 45%,55%{ opacity:1; } 80%,100%{ opacity:0; } }
-  .tut-caption{ text-align:center; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 2px; overflow:hidden; }
+  .tut-caption{ text-align:center; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 2px; overflow:hidden; }
   .tut-caption .tc-title{ font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; line-height:1.25; }
-  .tut-caption .tc-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.55; margin:0; max-width:330px; }
+  .tut-caption .tc-desc{ font-size:13.5px; color:var(--text-dim); line-height:1.5; margin:0; max-width:340px;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .tut-try{ display:inline-flex; align-items:center; gap:7px; margin:0; font-size:12.5px; font-weight:600; color:var(--accent); background:var(--accent-soft); padding:8px 15px; border-radius:20px; line-height:1.2; }
   .tut-try svg{ width:16px; height:16px; }
   /* Кнопка «Дальше» — в нижней части экрана. Сцену выше делает «резиновой»
      (flex:1 1 auto + min-height), поэтому кнопку никогда не выдавливает за экран,
      а fitTutorial дополнительно подрезает слой по реально видимой высоте. */
-  .tut-actions{ z-index:2; display:flex; gap:8px; flex:0 0 auto; margin-top:auto; }
+  .tut-actions{ z-index:2; display:flex; gap:8px; flex:0 0 auto; }
   .tut-next{ flex:1; background:var(--accent); color:var(--on-accent); border:none; padding:14px; border-radius:14px; font-weight:700; font-size:15.5px; transition:transform .12s ease; box-shadow:0 10px 26px -14px var(--accent-glow); }
   .tut-next:active{ transform:scale(.98); }
   /* Компактные режимы включает скрипт (fitTutorial), если не влезает подпись шага.
@@ -1080,7 +1122,9 @@
   #toast{ position:absolute; top:calc(14px + var(--safe-top)); left:50%; transform:translate(-50%,-140%); background:var(--surface-2); border:1px solid var(--accent-border); color:var(--text); padding:11px 18px; border-radius:14px; font-size:13px; z-index:60; transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px; }
   .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
 
-  .undo-pill{ position:absolute; left:50%; bottom:calc(150px + var(--safe-bottom)); touch-action:none; transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
+  /* «Вернуться» стоит прямо над «Перемешать» и слегка перекрывает её — так нижний
+     блок выглядит собранным, а не разъехавшимся по углам. */
+  .undo-pill{ z-index:22; position:absolute; left:50%; bottom:calc(14px + var(--safe-bottom)); touch-action:none; transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
   .undo-pill.show{ transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
   @keyframes cardUndoIn{ 0%{ transform:scale(.85) translateY(50px) rotate(-4deg); opacity:.3; } 100%{ transform:scale(1) translateY(0) rotate(0); opacity:1; } }
   .card-undo-in{ animation:cardUndoIn .42s cubic-bezier(.2,.8,.2,1); }
@@ -1177,14 +1221,14 @@
     <div class="tut-progress" id="tutProgress"></div>
     <button class="tut-skip-top" id="tutSkipTop">Пропустить</button>
   </div>
+  <div class="tut-actions">
+    <button class="tut-next" id="tutNext">Дальше</button>
+  </div>
   <div class="tut-stage" id="tutStage"></div>
   <div class="tut-caption">
     <div class="tc-title" id="tutTitle"></div>
     <div class="tc-desc" id="tutDesc"></div>
     <div class="tut-try" id="tutTry" style="display:none;"></div>
-  </div>
-  <div class="tut-actions">
-    <button class="tut-next" id="tutNext">Дальше</button>
   </div>
 </div>
 
@@ -1232,7 +1276,7 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <div class="eyebrow"><span>Каталог</span><button class="ach-chip" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></button><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
+    <div class="eyebrow"><span>Каталог</span><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
     <div class="search-wrap" id="catSearchWrap">
       <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
       <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
@@ -1374,7 +1418,6 @@
   <div class="ov-head">
     <button class="icon-btn" id="closeThemes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="wordmark">Темы</div>
-    <span class="count" style="margin-left:auto;">5 тем</span>
   </div>
   <div class="ov-body">
     <div class="set-sub" style="margin:0 0 14px;">Каждая тема — свой цвет, свои декорации на фоне и своя подсветка интерфейса.</div>
@@ -1645,6 +1688,21 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.20 — туториал переставлен: «Дальше» вверху, подпись внизу, сцена между ними —
+         за экран ничего не вылезает; иконки настроек и ачивок крупнее; окно поиска
+         мелкое во всех разделах; надпись SMOTRA на заставке всегда белая, а буква O
+         в цвете темы, и вместе заставки — мягкий переход в приложение. Окна больше
+         не путаются: темы и «Частые вопросы» открываются ПОВЕРХ настроек (раньше
+         открывались под ними, и казалось, что тап не работает), имена тем читаемы,
+         счётчика тем нет. СмотраLVL со всей лестницей уровней переехал в FAQ.
+         Ачивок стало 32 — у каждой своё имя и свой значок, кубок в шапке каждого
+         раздела, а в карточке ачивки кнопка «куда смотреть». Обложки грузятся общей
+         очередью: блик загрузки, повтор и таймаут; чего нет в каталоге — сразу
+         дотягивается из TMDB. Карточка фильма на главной стала выше, «Вернуться»
+         перекрывает «Перемешать». Скорость: зерно без полноэкранного смешивания,
+         вдвое меньше анимированных звёзд в декорациях, запросы каталога и таблиц
+         состояния уходят параллельно, обложки в сетках мельче, у карточек списков
+         свои слои отрисовки.
    0.19 — три новые темы (изумруд, роза, графит) и отдельное окно тем с живыми
          карточками; заставка короче, буква O всегда в цвете текущей темы (раньше
          была синей в любой теме), а при перезагрузке в той же сессии заставка
@@ -1746,7 +1804,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.19';
+const APP_VERSION = '0.20';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1766,6 +1824,11 @@ const ICONS = {
   clapper: '<path d="M4 8.5l1.3-3.8 3 1-1 3M9 8.5l1.3-3.8 3 1-1 3M14 8.5l1.3-3.8 3 1-1 3"/><rect x="4" y="8.5" width="16" height="11.5" rx="1.5"/>',
   popcorn: '<path d="M6.5 9h11l-1.2 11a1.5 1.5 0 0 1-1.5 1.3H9.2a1.5 1.5 0 0 1-1.5-1.3L6.5 9z"/><path d="M7.5 9a2 2 0 1 1 3-2.2A2 2 0 1 1 14 6.8a2 2 0 1 1 2.5 2.2"/>',
   reel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="6.3" r="1.5"/><circle cx="12" cy="17.7" r="1.5"/><circle cx="6.3" cy="12" r="1.5"/><circle cx="17.7" cy="12" r="1.5"/>',
+  pen: '<path d="M4 20l4-1 9.5-9.5a2.1 2.1 0 0 0-3-3L5 16l-1 4z"/><path d="M14.5 5.5l4 4"/>',
+  crown: '<path d="M4 17l-1-9 5 4 4-6 4 6 5-4-1 9z"/><path d="M4 20h16"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3 2"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 10.2 4a6.5 6.5 0 0 0 9.8 10.5z"/>',
+  bolt: '<path d="M13 2L4.5 13.5H11l-1 8.5L19.5 10H13z"/>',
   trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/>',
   play: '<path d="M7 4.5l14 7.5-14 7.5v-15z" fill="currentColor" stroke="none"/>',
   pause: '<rect x="6" y="4" width="4.5" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="4" width="4.5" height="16" rx="1" fill="currentColor" stroke="none"/>',
@@ -2201,7 +2264,7 @@ function openTitleList(title, movies, opts){
     const scoreOf = o.scoreOf, extraOf = o.extraOf;
     body.innerHTML = `<div class="friend-watched">${movies.map(m => `
       <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
-        <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
+        <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}" style="background:${posterBG(m)};"></div>
         <div class="fw-mid">
           <div class="fw-title">${esc(m.title)}</div>
           <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')}</div>
@@ -2210,10 +2273,12 @@ function openTitleList(title, movies, opts){
         ${scoreOf ? `<div class="fw-score">${scoreOf(m)}<small>/${SCORE_MAX}</small></div>` : ''}
       </div>`).join('')}</div>`;
   }
+  paintArtIn(body);
+  requestPosters(movies.slice(0, 12));
   bindMovieTaps(body);
-  document.getElementById('titleListScreen').classList.add('open');
+  openOverlay('titleListScreen');
 }
-document.getElementById('closeTitleList').onclick = () => document.getElementById('titleListScreen').classList.remove('open');
+document.getElementById('closeTitleList').onclick = () => closeOverlay('titleListScreen');
 
 /* Плитка-постер: обложка, а поверх — название. Используется во всех сетках профиля. */
 function friendTile(m){
@@ -2226,7 +2291,7 @@ function moviesFromKeys(keys){ return keys.map(keyToMovie).filter(Boolean); }
 function friendRows(list){
   return list.map(m => `
     <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
-      <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
+      <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}" style="background:${posterBG(m)};"></div>
       <div class="fw-mid">
         <div class="fw-title">${esc(m.title)}</div>
         <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')} · ${esc(m.rating)}<span class="star">★</span></div>
@@ -2252,7 +2317,7 @@ function friendSection(title, hint, list, opts){
   </div>`;
 }
 async function openFriendProfile(id){
-  document.getElementById('friendProfileScreen').classList.add('open');
+  openOverlay('friendProfileScreen');
   const body = document.getElementById('friendProfileBody');
   body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Собираю статистику…</div>`;
   let profile = null, lists = null, mine = null, myRatings = null;
@@ -2369,7 +2434,7 @@ async function openFriendProfile(id){
       <div class="fp-hint">Сверху — где вы расходитесь сильнее всего: там интереснее сравнивать</div>
       ${ratedBoth.slice(0, 6).map(r => `
         <div class="fpr-row" data-movie="${r.movie.id}" data-type="${r.movie.type}" role="button">
-          <div class="fpr-poster" style="${hasArt(r.movie) ? `background-image:url('${esc(posterUrl(r.movie,'w154'))}')` : `background:${posterBG(r.movie)}`}"></div>
+          <div class="fpr-poster ${hasArt(r.movie) ? 'art-loading' : ''}" data-art="${hasArt(r.movie) ? esc(posterUrl(r.movie,'w154')) : ''}" style="background:${posterBG(r.movie)};"></div>
           <div class="fpr-mid">
             <div class="fpr-title">${esc(r.movie.title)}</div>
             <div class="fpr-sub">ты ${r.mine} · ${esc(name)} ${r.theirs}</div>
@@ -2407,6 +2472,8 @@ async function openFriendProfile(id){
       openTitleList(`${name} · ${title}`, listsByTitle[title] || [], o);
     };
   });
+  paintArtIn(body);
+  requestPosters([...theirRatings.keys()].map(keyToMovie).filter(Boolean).slice(0, 12));
   bindMovieTaps(body);
   // Пилюли друга: тап открывает окно с его тайтлами
   const hisTiles = {
@@ -2441,7 +2508,7 @@ async function openFriendProfile(id){
     Roulette.open(wishCommon.length ? wishCommon : wishTheir, 'Что посмотреть · ' + name);
   };
 }
-document.getElementById('closeFriendProfile').onclick = () => document.getElementById('friendProfileScreen').classList.remove('open');
+document.getElementById('closeFriendProfile').onclick = () => closeOverlay('friendProfileScreen');
 
 
 function getEpisodeState(movieId){
@@ -2455,15 +2522,20 @@ function totalWatchedEpisodes(movieId){
 async function loadState(){
   // Никогда не бросаем наружу: если Supabase недоступен, приложение всё равно
   // должно открыться (каталог из TMDB работает и без аккаунта).
+  /* Все таблицы тянем одновременно: раньше четыре запроса ждали друг друга по
+     очереди, и открытие приложения растягивалось на лишние секунды. */
   let sw = [], wl = [];
-  try{
-    const [a, b] = await Promise.all([
-      sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
-      sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
-    ]);
-    if (a.error) console.error('[supabase] swipes', a.error); else sw = a.data || [];
-    if (b.error) console.error('[supabase] wishlist', b.error); else wl = b.data || [];
-  }catch(e){ console.error('[supabase] state load failed', e); }
+  const stateJobs = [];
+  stateJobs.push((async () => {
+    try{
+      const [a, b] = await Promise.all([
+        sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
+        sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
+      ]);
+      if (a.error) console.error('[supabase] swipes', a.error); else sw = a.data || [];
+      if (b.error) console.error('[supabase] wishlist', b.error); else wl = b.data || [];
+    }catch(e){ console.error('[supabase] state load failed', e); }
+  })());
   // Set — потому что до 0.7 один и тот же фильм мог лежать в базе и как «фильм»,
   // и как «мультфильм»: нормализация сводит их в один ключ, а дубль ключа ломает счётчики.
   const uniq = arr => [...new Set(arr)];
@@ -2472,6 +2544,7 @@ async function loadState(){
   state.wishlist = uniq((wl||[]).map(r=>normalizeStoredKey(r.movie_id)));
   state.unlocked = [];
   state.badgeDates = {};
+  stateJobs.push((async () => {
   try{
     let res = await sb.from('badges').select('badge_id,created_at').eq('telegram_id', TG_ID);
     if (res.error){
@@ -2483,7 +2556,9 @@ async function loadState(){
       (res.data||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
     }
   }catch(e){ console.error(e); }
+  })());
   state.episodes = {};
+  stateJobs.push((async () => {
   try{
     let res = await sb.from('episodes_progress').select('movie_id,watched_count,seasons').eq('telegram_id', TG_ID);
     if (res.error){
@@ -2500,11 +2575,15 @@ async function loadState(){
       });
     }
   }catch(e){ console.error(e); }
-  try{
-    const { data: wa, error } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
-    if (error) throw error;
-    state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
-  }catch(e){ /* таблицы watching может ещё не быть */ }
+  })());
+  stateJobs.push((async () => {
+    try{
+      const { data: wa, error } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
+      if (error) throw error;
+      state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
+    }catch(e){ /* таблицы watching может ещё не быть */ }
+  })());
+  await Promise.all(stateJobs);
   mergeLocalAndRemote();
 }
 /* База и телефон могли разойтись: пока связи не было, свайпы легли только в
@@ -2554,9 +2633,11 @@ try{ splashShownAt = Number(sessionStorage.getItem('smotra_splash_at') || 0) || 
 const splashRecent = Date.now() - splashShownAt < SPLASH_AGAIN_AFTER;
 const splashEl = document.getElementById('splash');
 function finishSplash(){
+  // Приложение мягко проявляется, пока заставка тает — без рывка на стыке.
+  document.body.classList.add('app-in');
   // Совсем выключаем слой: пока он в дереве, его анимации продолжают считаться
   // (а на слабом телефоне это лишние кадры на каждом экране).
-  setTimeout(() => { splashEl.style.display = 'none'; }, 500);
+  setTimeout(() => { splashEl.style.display = 'none'; }, 600);
   if (!localStorage.getItem('smotra_onboarded')) {
     document.getElementById('onboarding').classList.add('show');
   } else {
@@ -2568,6 +2649,7 @@ if (SPLASH_PREVIEW){
 } else if (splashRecent){
   splashEl.classList.add('hide');
   splashEl.style.display = 'none';
+  document.body.classList.add('app-in');
   if (!localStorage.getItem('smotra_onboarded')) document.getElementById('onboarding').classList.add('show');
   else maybeStartTutorial();
 } else {
@@ -2847,7 +2929,9 @@ function tutCaptionOverflow(){
    подписи забирает часть переполнения. */
 function clampTutorial(){
   const t = document.getElementById('tutorial');
-  const actions = t && t.querySelector('.tut-actions');
+  // Кнопка теперь сверху, а внизу — подпись: следим, чтобы за нижний край экрана
+  // не уезжала именно она.
+  const actions = t && (t.querySelector('.tut-caption') || t.querySelector('.tut-actions'));
   if (!t || !actions || !t.classList.contains('show')) return;
   t.style.paddingBottom = '';
   if (!t.getBoundingClientRect().height) return;
@@ -2968,12 +3052,12 @@ document.getElementById('obGo').onclick = finishOnboarding;
 document.getElementById('obSkip').onclick = finishOnboarding;
 document.getElementById('redoOnboarding').onclick = () => {
   localStorage.removeItem('smotra_onboarded');
-  document.getElementById('settingsScreen').classList.remove('open');
+  closeOverlay('settingsScreen');
   document.getElementById('onboarding').classList.add('show');
 };
 document.getElementById('redoTutorial').onclick = () => {
   localStorage.removeItem('smotra_tutorial_done');
-  document.getElementById('settingsScreen').classList.remove('open');
+  closeOverlay('settingsScreen');
   maybeStartTutorial();
 };
 
@@ -3011,7 +3095,7 @@ document.getElementById('resetAll').onclick = async () => {
   renderWeekActivity();
   document.getElementById('streakNum').textContent = 0;
   document.getElementById('statStreak').textContent = 0;
-  document.getElementById('settingsScreen').classList.remove('open');
+  closeOverlay('settingsScreen');
   showToast('Всё сброшено', 'check');
 };
 
@@ -3155,7 +3239,7 @@ function applyTheme(name){
     el.classList.toggle('active', el.dataset.theme === name);
   });
   const label = document.getElementById('themeNameLabel');
-  if (label) label.textContent = (THEME_NAMES[name] || THEME_NAMES.neon) + ' · ' + THEMES.length + ' тем';
+  if (label) label.textContent = THEME_NAMES[name] || THEME_NAMES.neon;
   applyThemeArt();
   applyWordmarkShades();
   syncTelegramColors();
@@ -3182,6 +3266,25 @@ function pickTheme(name){
   renderThemeWindow();
 })();
 /* Отдельное окно с темами: можно спокойно посмотреть все и выбрать */
+/* Окна складываются друг на друга: каждый следующий получает z-index выше
+   предыдущего. Раньше «Темы» и «Частые вопросы» открывались ПОД настройками
+   (одинаковый z-index и порядок в разметке) — выглядело так, будто тап не
+   сработал, а окно всплывало только после закрытия настроек. */
+let overlayZ = 40;                        // с запасом выше шторки фильма (31)
+function openOverlay(elOrId){
+  const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  if (!el) return null;
+  overlayZ += 1;
+  el.style.zIndex = String(overlayZ);
+  el.classList.add('open');
+  return el;
+}
+function closeOverlay(elOrId){
+  const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  if (!el) return;
+  el.classList.remove('open');
+  el.style.zIndex = '';
+}
 function renderThemeWindow(){
   const host = document.getElementById('themeList');
   if (!host) return;
@@ -3199,9 +3302,9 @@ function renderThemeWindow(){
 document.getElementById('openThemes').onclick = () => {
   haptic('selection');
   renderThemeWindow();
-  document.getElementById('themesScreen').classList.add('open');
+  openOverlay('themesScreen');
 };
-document.getElementById('closeThemes').onclick = () => document.getElementById('themesScreen').classList.remove('open');
+document.getElementById('closeThemes').onclick = () => closeOverlay('themesScreen');
 document.getElementById('setThemeRow').onclick = () => document.getElementById('openThemes').click();
 
 function initSwitch(el, def, onChange){
@@ -3507,17 +3610,17 @@ async function loadMovies(){
     // но при следующем запуске окно смещается и подборка выглядит иначе.
     const pages = Array.from({ length: DISCOVER_PAGES }, (_, i) => discoverStart + i);
     const lists = { films: [], series: [], anime: [], cartoons: [] };
+    /* Все запросы уходят разом: раньше страницы шли по очереди, и старт ждал
+       четыре круглых поездки до TMDB вместо одной. */
+    const jobs = [];
     for (const page of pages){
       const u = discoverUrls(page);
-      const [films, series, anime, cartoons] = await Promise.all([
-        fetchList(u.film, 'film', GENRE_MOVIE),
-        fetchList(u.series, 'series', GENRE_TV),
-        fetchList(u.anime, 'anime', GENRE_TV),
-        fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
-      ]);
-      lists.films.push(...films); lists.series.push(...series);
-      lists.anime.push(...anime); lists.cartoons.push(...cartoons);
+      jobs.push(fetchList(u.film, 'film', GENRE_MOVIE).then(r => lists.films.push(...r)));
+      jobs.push(fetchList(u.series, 'series', GENRE_TV).then(r => lists.series.push(...r)));
+      jobs.push(fetchList(u.anime, 'anime', GENRE_TV).then(r => lists.anime.push(...r)));
+      jobs.push(fetchList(u.cartoon, 'cartoon', GENRE_MOVIE).then(r => lists.cartoons.push(...r)));
     }
+    await Promise.all(jobs);
     tmdbPage = discoverStart + DISCOVER_PAGES - 1;
     const combined = combineLists(lists);
     if (combined.length){
@@ -3762,7 +3865,19 @@ const BADGES = [
   { id:'b17', kind:'streak',   min:30,  icon:'heart',   name:'Месяц подряд',   desc:'Заходи 30 дней подряд' },
   { id:'b18', kind:'genres',   min:5,   icon:'sparkles', name:'Жанровый',       desc:'Посмотри тайтлы из 5 разных жанров' },
   { id:'b19', kind:'genres',   min:10,  icon:'folder', name:'Всеядный',       desc:'Посмотри тайтлы из 10 разных жанров' },
-  { id:'b20', kind:'episodes', min:50,  icon:'tv',  name:'Сериальщик',     desc:'Отметь 50 просмотренных серий' },
+  { id:'b20', kind:'episodes', min:50,  icon:'tv',    name:'Сериальщик',     desc:'Отметь 50 просмотренных серий' },
+  { id:'b21', kind:'watched',  min:300,  icon:'grid',  name:'Своя кинотека',  desc:'Отметь 300 просмотренных тайтлов' },
+  { id:'b22', kind:'watched',  min:500,  icon:'film',  name:'Хранитель кино', desc:'Отметь 500 просмотренных тайтлов' },
+  { id:'b23', kind:'watched',  min:1000, icon:'check', name:'Тысяча',         desc:'Отметь 1000 просмотренных тайтлов' },
+  { id:'b24', kind:'wishlist', min:50,   icon:'list',  name:'План на год',    desc:'Собери 50 тайтлов в «Хочу чекнуть»' },
+  { id:'b25', kind:'wishlist', min:100,  icon:'dice',  name:'Список мечты',   desc:'Собери 100 тайтлов в «Хочу чекнуть»' },
+  { id:'b26', kind:'watching', min:10,   icon:'masks', name:'Сериальный марафон', desc:'Держи 10 тайтлов в «Смотрю»' },
+  { id:'b27', kind:'reviews',  min:50,   icon:'pen',   name:'Кинокритик',     desc:'Поставь 50 оценок по шкале' },
+  { id:'b28', kind:'reviews',  min:100,  icon:'crown', name:'Профессор кино', desc:'Поставь 100 оценок по шкале' },
+  { id:'b29', kind:'streak',   min:100,  icon:'clock', name:'Сто дней подряд',desc:'Заходи 100 дней подряд' },
+  { id:'b30', kind:'streak',   min:365,  icon:'moon',  name:'Год в кино',     desc:'Заходи 365 дней подряд' },
+  { id:'b31', kind:'genres',   min:15,   icon:'bolt',  name:'Эрудит',         desc:'Посмотри тайтлы из 15 разных жанров' },
+  { id:'b32', kind:'episodes', min:200,  icon:'pause', name:'Долгий сериал',  desc:'Отметь 200 просмотренных серий' },
 ];
 
 let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
@@ -4222,13 +4337,13 @@ function renderBadges(){
   const grid = document.getElementById('badgesGrid');
   const shown = BADGES.slice(0, BADGES_PREVIEW);
   const rest = BADGES.length - shown.length;
-  grid.innerHTML = shown.map(b => badgeTileHTML(b, 20)).join('')
+  grid.innerHTML = shown.map(b => badgeTileHTML(b, 24)).join('')
     + (rest > 0 ? `<div class="badge more" id="badgesMore" role="button" aria-label="Все ачивки"><div class="b-icon">${ICON('sparkles', 20)}</div><span class="b-more">+${rest}</span></div>` : '');
   [...grid.querySelectorAll('.badge[data-badge]')].forEach(el=>{
     el.onclick = () => openBadgeDetail(el.dataset.badge);
   });
   const more = document.getElementById('badgesMore');
-  if (more) more.onclick = () => { haptic('selection'); document.getElementById('achievementsScreen').classList.add('open'); renderAchievementsScreen(); };
+  if (more) more.onclick = () => openAchievementsScreen();
   const allLink = document.getElementById('openAchievements');
   if (allLink) allLink.firstChild.textContent = `Все ${BADGES.length} `;
   renderAchievementsScreen();
@@ -4236,7 +4351,7 @@ function renderBadges(){
 function renderAchievementsScreen(){
   const el = document.getElementById('achievementsGrid');
   if (!el) return;
-  el.innerHTML = BADGES.map(b => badgeTileHTML(b, 22)).join('');
+  el.innerHTML = BADGES.map(b => badgeTileHTML(b, 26)).join('');
   [...el.querySelectorAll('.badge')].forEach(node=>{
     node.onclick = () => openBadgeDetail(node.dataset.badge);
   });
@@ -4259,6 +4374,7 @@ const FAQ_ITEMS = [
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
   ['Как растёт СмотраLVL?', 'Опыт дают действия: просмотр, «Хочу чекнуть», «Смотрю», оценка и ачивки. Прогресс виден полоской вверху экрана и карточкой в профиле.'],
+  ['Какие уровни есть и сколько нужно опыта?', 'Зритель — с нуля, Киноновичок — 7 500 XP, Кинолюб — 20 000 XP, Киноман — 40 000 XP, Синеман — 70 000 XP, Киногуру — 115 000 XP, Легенда SMOTRA — 175 000 XP. Полная лестница с правилами опыта открывается в профиле кнопкой «Все уровни и опыт».'],
   ['Что за игрушка вверху главной?', 'Это просто прикол. Нажми — переключится на другую, цвета всегда из твоей темы.'],
 ];
 function renderFaq(){
@@ -4269,9 +4385,9 @@ function renderFaq(){
 document.getElementById('openFaq').onclick = () => {
   haptic('selection');
   renderFaq();
-  document.getElementById('faqScreen').classList.add('open');
+  openOverlay('faqScreen');
 };
-document.getElementById('closeFaq').onclick = () => document.getElementById('faqScreen').classList.remove('open');
+document.getElementById('closeFaq').onclick = () => closeOverlay('faqScreen');
 function askFriendId(){
   return new Promise(resolve => {
     const sheetEl = document.getElementById('askSheet');
@@ -4353,7 +4469,7 @@ document.getElementById('badgeBackdrop').onclick = () => {
    в «Хочу чекнуть» и в оценках, плюс строка «Ачивки» в профиле. */
 function openAchievementsScreen(){
   haptic('selection');
-  document.getElementById('achievementsScreen').classList.add('open');
+  openOverlay('achievementsScreen');
   renderAchievementsScreen();
 }
 [...document.querySelectorAll('[data-ach-open]')].forEach(btn => { btn.onclick = openAchievementsScreen; });
@@ -4363,7 +4479,7 @@ document.getElementById('homeLevelStrip').onclick = () => {
   switchTab('profile');
   setTimeout(() => document.getElementById('levelCard')?.scrollIntoView({ behavior:'smooth', block:'center' }), 260);
 };
-document.getElementById('closeAchievements').onclick = () => document.getElementById('achievementsScreen').classList.remove('open');
+document.getElementById('closeAchievements').onclick = () => closeOverlay('achievementsScreen');
 
 /* ============ SHARE ============ */
 function shareMovie(movie){
@@ -4451,7 +4567,7 @@ const DECK_REFILL_TRIES_MAX = 2;
 const DECK_DEPTH_Y = 12, DECK_DEPTH_SCALE = 0.05;
 function cardHTML(movie){
   return `
-      <div class="poster" style="${posterStyle(movie, 'w500')}">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
+      <div class="poster ${hasArt(movie) ? 'art-loading' : ''}" data-art="${hasArt(movie) ? esc(posterUrl(movie, 'w342')) : ''}" style="background:${posterBG(movie)};">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
       <div class="shade"></div>
       <div class="veil"></div>
       <div class="stamp watched">СМОТРЕЛ</div>
@@ -4504,6 +4620,8 @@ function makeCard(movie, depth){
   card.style.transform = `translateY(${depth*DECK_DEPTH_Y}px) scale(${1 - depth*DECK_DEPTH_SCALE})`;
   card.style.zIndex = 10 - depth;
   card.innerHTML = cardHTML(movie);
+  const cardArt = card.querySelector('.poster[data-art]');
+  if (cardArt) paintArt(cardArt, cardArt.dataset.art);   // обложка верхней карточки — сразу
   if (depth === 0) makeDraggable(card, movie);
   return card;
 }
@@ -5276,7 +5394,7 @@ async function openMyTile(kind){
   if (kind === 'wishlist') return openTitleList('Хочу чекнуть', moviesOf(state.wishlist), { view: 'grid' });
   if (kind === 'watching') return openTitleList('Смотрю сейчас', moviesOf(state.watching), { view: 'grid' });
   if (kind === 'skipped') return openTitleList('Мимо', moviesOf(state.skipped), { view: 'grid' });
-  if (kind === 'badges'){ document.getElementById('achievementsScreen').classList.add('open'); return renderAchievementsScreen(); }
+  if (kind === 'badges'){ openOverlay('achievementsScreen'); return renderAchievementsScreen(); }
   if (kind === 'reviews'){
     const [ratings, friendRatings] = await Promise.all([myRatingMap(), friendRatingsByMovie()]);
     const movies = moviesOf([...ratings.keys()]);
@@ -5354,6 +5472,8 @@ function renderWatching(){
     el.className = 'grid2';
     el.innerHTML = items.map(posterCardHTML).join('');
     applyLazyArt(el);
+    paintArtIn(el);
+    requestPosters(items.slice(0, 12));
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
       card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
@@ -5426,17 +5546,80 @@ function setupGenreChips(){
 /* ============ Общие шаблоны карточек (грид/список) ============ */
 /* Обложки грузим только когда карточка приближается к экрану: в каталоге
    легко набирается сотня постеров, и все они тянулись разом даже с телефона. */
+/* ===== Загрузка обложек =====
+   Обложка идёт через общую очередь: не больше восьми параллельно, повтор при
+   ошибке, таймаут и кэш уже загруженных адресов. Пока картинка едет, на карточке
+   крутится блик. Раньше браузер тянул картинки как хотел, и пустые обложки просто
+   висели, а часть списков вообще не получала обложку. */
+const artCache = new Set();
+const artPending = new Map();
+const artQueue = [];
+let artActive = 0;
+const ART_PARALLEL = 8;
+function artDone(url, ok){
+  artActive = Math.max(0, artActive - 1);
+  if (ok) artCache.add(url);
+  const cbs = artPending.get(url) || [];
+  artPending.delete(url);
+  cbs.forEach(cb => { try{ cb(ok); }catch(e){} });
+  artPump();
+}
+function artPump(){
+  while (artActive < ART_PARALLEL && artQueue.length){
+    const url = artQueue.shift();
+    if (artCache.has(url)){ artDone(url, true); continue; }
+    artActive++;
+    const img = new Image();
+    let done = false;
+    const finish = ok => { if (done) return; done = true; img.onload = img.onerror = null; artDone(url, ok); };
+    img.onload = () => finish(true);
+    img.onerror = () => finish(false);
+    setTimeout(() => finish(false), 9000);         // вечно ждать не будем
+    img.decoding = 'async';
+    img.src = url;
+  }
+}
+function loadArt(url, cb){
+  if (!url){ cb(false); return; }
+  if (artCache.has(url)){ cb(true); return; }
+  if (artPending.has(url)){ artPending.get(url).push(cb); return; }
+  artPending.set(url, [cb]);
+  artQueue.push(url);
+  artPump();
+}
+/* Ставим обложку элементу: блик → картинка. Ошибка — повтор с меньшим размером. */
+function paintArt(el, url){
+  if (!el) return;
+  if (!url){ el.classList.remove('art-loading'); return; }
+  if (el.dataset.artDone === url) return;
+  el.classList.add('art-loading');
+  loadArt(url, ok => {
+    el.classList.remove('art-loading');
+    if (!ok){
+      const small = String(url).replace('/w342/', '/w185/').replace('/w500/', '/w185/');
+      if (small !== url && !el.dataset.artRetry){
+        el.dataset.artRetry = '1';
+        paintArt(el, small);
+      }
+      return;
+    }
+    el.dataset.artDone = url;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.backgroundImage = `url('${url}')`;
+  });
+}
+function paintArtIn(root){
+  if (!root || !root.querySelectorAll) return;
+  [...root.querySelectorAll('[data-art]')].forEach(el => paintArt(el, el.dataset.art));
+}
 let posterObserver = null;
 if ('IntersectionObserver' in window){
   posterObserver = new IntersectionObserver(entries => {
     entries.forEach(en => {
       if (!en.isIntersecting) return;
       const el = en.target;
-      if (el.dataset.bg){
-        el.style.backgroundSize = 'cover';       // страховка: обложка всегда вписана в карточку
-        el.style.backgroundPosition = 'center';
-        el.style.backgroundImage = `url('${el.dataset.bg}')`;
-      }
+      if (el.dataset.bg) paintArt(el, el.dataset.bg);   // с бликом во время загрузки
       delete el.dataset.bg;
       posterObserver.unobserve(el);
     });
@@ -5445,8 +5628,21 @@ if ('IntersectionObserver' in window){
 function applyLazyArt(root){
   [...root.querySelectorAll('.pc-art[data-bg]')].forEach(el => {
     if (!el.dataset.bg) return;
-    if (!posterObserver){ el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.style.backgroundImage = `url('${el.dataset.bg}')`; delete el.dataset.bg; return; }
+    if (!posterObserver){ paintArt(el, el.dataset.bg); delete el.dataset.bg; return; }
     posterObserver.observe(el);
+  });
+}
+/* Тайтл без обложки: не ждём, а сразу тянем картинку из TMDB и перерисовываем
+   видимый экран. Раньше такие карточки оставались пустыми навсегда. */
+const posterTopUp = new Set();
+function requestPosters(list){
+  const missing = (list || []).filter(m => m && !hasArt(m)).map(mid).filter(k => k && !posterTopUp.has(k) && !stubFailed.has(k));
+  if (!missing.length) return;
+  const batch = missing.slice(0, 8);
+  batch.forEach(k => posterTopUp.add(k));
+  fillMissingTitles(batch).then(changed => {
+    batch.forEach(k => posterTopUp.delete(k));
+    if (changed) refreshVisibleScreens();
   });
 }
 function posterCardHTML(m){
@@ -5454,7 +5650,7 @@ function posterCardHTML(m){
   const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
               : wi ? `<div class="pc-flag wish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>`
               : wa ? `<div class="pc-flag watching">${ICON('play', 10)}</div>` : '';
-  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art" data-bg="${hasArt(m) ? esc(posterUrl(m, 'w342')) : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterStyle(m, 'w342')}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
+  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art ${hasArt(m) ? 'art-loading' : ''}" data-bg="${hasArt(m) ? esc(posterUrl(m, 'w185')) : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterBG(m)}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
 }
 // Маленькая обложка для карточки рецензии. movie может быть undefined (нет в каталоге).
 function reviewPosterHTML(movie){
@@ -5523,6 +5719,8 @@ function renderCatalog(){
     grid.className = 'grid2';
     grid.innerHTML = shown.map(posterCardHTML).join('');
     applyLazyArt(grid);
+    paintArtIn(grid);
+    requestPosters(shown.slice(0, 12));
     [...grid.querySelectorAll('.poster-card')].forEach((el,i) => {
       if (i < 24){ el.classList.add('card-enter'); el.style.animationDelay = (i * 0.025) + 's'; }
       el.onclick = () => openSheet(movieById(+el.dataset.id, el.dataset.type));
@@ -5570,6 +5768,8 @@ function renderWishlist(){
     el.className = 'grid2';
     el.innerHTML = items.map(posterCardHTML).join('');
     applyLazyArt(el);
+    paintArtIn(el);
+    requestPosters(items.slice(0, 12));
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
       card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
@@ -5619,13 +5819,13 @@ function renderHistory(){
 function openHistoryAs(mode){
   histMode = mode;
   document.querySelectorAll('[data-hist]').forEach(b=>b.classList.toggle('active', b.dataset.hist===mode));
-  document.getElementById('historyScreen').classList.add('open');
+  openOverlay('historyScreen');
   renderHistory();
 }
-document.getElementById('openHistory').onclick = () => { keepDeckFull(); document.getElementById('historyScreen').classList.add('open'); renderHistory(); };
-document.getElementById('openWatchingRow').onclick = () => { keepDeckFull(); watchingStale = false; document.getElementById('watchingScreen').classList.add('open'); renderWatching(); };
-document.getElementById('closeWatching').onclick = () => document.getElementById('watchingScreen').classList.remove('open');
-document.getElementById('closeHistory').onclick = () => document.getElementById('historyScreen').classList.remove('open');
+document.getElementById('openHistory').onclick = () => { keepDeckFull(); openOverlay('historyScreen'); renderHistory(); };
+document.getElementById('openWatchingRow').onclick = () => { keepDeckFull(); watchingStale = false; openOverlay('watchingScreen'); renderWatching(); };
+document.getElementById('closeWatching').onclick = () => closeOverlay('watchingScreen');
+document.getElementById('closeHistory').onclick = () => closeOverlay('historyScreen');
 document.getElementById('statCardWatched').onclick = () => { haptic('selection'); openHistoryAs('watched'); };
 document.getElementById('statCardSkipped').onclick = () => { haptic('selection'); openHistoryAs('skipped'); };
 document.getElementById('statCardStreak').onclick = () => {
@@ -5660,7 +5860,7 @@ function renderSettingsScreen(){
     ['Оценка', XP_RULES.review], ['Ачивка', XP_RULES.badge], ['Мимо', XP_RULES.skipped],
   ].map(([lbl, xp]) => `<div class="set-xp-cell"><b>+${xp}</b><span>${lbl}</span></div>`).join('');
 }
-document.getElementById('openSettings').onclick = () => { keepDeckFull(); renderSettingsScreen(); document.getElementById('settingsScreen').classList.add('open'); };
+document.getElementById('openSettings').onclick = () => { keepDeckFull(); renderSettingsScreen(); openOverlay('settingsScreen'); };
 document.getElementById('setShare').onclick = () => { haptic('selection'); shareApp(); };
 /* «Отправить записи заново»: сначала сливаем телефон с базой, потом досылаем очередь */
 document.getElementById('setRepair').onclick = async () => {
@@ -5677,7 +5877,7 @@ document.getElementById('setRepair').onclick = async () => {
   showToast(pendingWrites.length ? 'Часть записей уйдёт позже' : 'Записи отправлены', pendingWrites.length ? 'cross' : 'check');
   setTimeout(() => { sub.textContent = was; }, 2600);
 };
-document.getElementById('closeSettings').onclick = () => document.getElementById('settingsScreen').classList.remove('open');
+document.getElementById('closeSettings').onclick = () => closeOverlay('settingsScreen');
 
 /* ============ RANK ============ */
 // Настоящий рейтинг среди друзей появится, когда будет система друзей
@@ -6051,10 +6251,10 @@ async function openReviewScreen(movie){
   updateReviewTotal();
   document.getElementById('reviewText').value = existing?.text || '';
   document.getElementById('deleteReview').style.display = existing ? 'block' : 'none';
-  document.getElementById('reviewScreen').classList.add('open');
+  openOverlay('reviewScreen');
 }
 document.getElementById('sheetReviewBtn').onclick = () => { if (sheetMovie) openReviewScreen(sheetMovie); };
-document.getElementById('closeReview').onclick = () => document.getElementById('reviewScreen').classList.remove('open');
+document.getElementById('closeReview').onclick = () => closeOverlay('reviewScreen');
 document.getElementById('submitReview').onclick = async () => {
   if (!reviewMovie) return;
   const text = document.getElementById('reviewText').value.trim();
@@ -6062,7 +6262,7 @@ document.getElementById('submitReview').onclick = async () => {
   if (ok){
     haptic('notification','success');
     showToast('Рецензия опубликована', 'check');
-    document.getElementById('reviewScreen').classList.remove('open');
+    closeOverlay('reviewScreen');
     if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
   } else {
     showToast('Не получилось сохранить — проверь связь');
@@ -6076,7 +6276,7 @@ document.getElementById('deleteReview').onclick = async () => {
     const { error } = await sb.from('reviews').delete().eq('telegram_id', TG_ID).eq('movie_id', mid(reviewMovie));
     if (error) throw error;
     showToast('Рецензия удалена');
-    document.getElementById('reviewScreen').classList.remove('open');
+    closeOverlay('reviewScreen');
     if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
   }catch(e){ showToast('Не получилось удалить — проверь связь'); }
 };
@@ -6402,6 +6602,7 @@ switchTab = function(id){
     if (el.classList.contains('overlay-screen')){
       el.style.transition = '';
       el.style.transform = '';
+      el.style.zIndex = '';
       el.classList.remove('open');
     } else if (el.classList.contains('roulette')){
       try{ Roulette.close(); }catch(err){ el.classList.remove('show'); }
