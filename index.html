@@ -1124,7 +1124,9 @@
 (function(){
   try{
     var list = ['neon','amber','emerald','rose','graphite'];
-    var t = localStorage.getItem('smotra_theme') || 'neon';
+    // Проверить любую тему можно ссылкой: ?theme=rose (выбор при этом не сохраняется).
+    var fromUrl = (/[?&]theme=([a-z]+)/.exec(location.search) || [])[1];
+    var t = (fromUrl && list.indexOf(fromUrl) !== -1) ? fromUrl : (localStorage.getItem('smotra_theme') || 'neon');
     if (list.indexOf(t) === -1) t = 'neon';
     if (t !== 'neon') document.body.classList.add('theme-' + t);
   }catch(e){}
@@ -1656,7 +1658,8 @@
          Лента открывается мгновенно (собранные данные отдаются сразу, запрос
          ограничен таймаутом), первый кадр рисуется из памяти телефона и кэша
          каталога, а кэш теперь переиспользует своё окно популярных страниц —
-         вместо долгой крутилки тайтлы видны сразу.
+         вместо долгой крутилки тайтлы видны сразу. Проверить любую тему и
+         заставку можно ссылкой: ?splash&theme=rose (выбор не сохраняется).
    0.5 — стабильная база: онбординг, свайпы, списки, рецензии, ачивки, лента.
    0.6 — главная без пустоты и счётчиков, живой подъём колоды, анимация «Перемешать»,
          круговое меню на всех обложках с заморозкой скролла, туториал без уезжающей
@@ -3169,7 +3172,9 @@ function pickTheme(name){
   renderThemeWindow();
 }
 (function initTheme(){
-  const saved = localStorage.getItem('smotra_theme') || 'neon';
+  // ?theme=... в ссылке показывает тему без сохранения — удобно проверять заставку и оформление
+  const fromUrl = (/[?&]theme=([a-z]+)/.exec(location.search) || [])[1];
+  const saved = THEME_NAMES[fromUrl] ? fromUrl : (localStorage.getItem('smotra_theme') || 'neon');
   applyTheme(saved);
   document.querySelectorAll('.theme-swatch').forEach(el=>{
     el.onclick = (e) => { e.stopPropagation(); haptic('selection'); pickTheme(el.dataset.theme); };
