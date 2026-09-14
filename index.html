@@ -32,6 +32,10 @@
     --accent-soft:rgba(124,107,255,0.16);
     --accent-border:rgba(124,107,255,0.45);
     --accent-glow:rgba(124,107,255,0.65);
+    /* Заставка: ровно один цвет на надпись, букву O, слоган и подпись.
+       В синей теме это чистый синий без фиолетового. */
+    --splash-ink:#4f8bff;
+    --splash-ink-glow:rgba(79,139,255,0.5);
     --bg-glow-1:rgba(124,107,255,0.10);
     --bg-glow-2:rgba(79,139,255,0.08);
     --watched:#43b88a;
@@ -48,6 +52,7 @@
     --border:rgba(190,255,225,0.10); --text:#e8fff6; --text-dim:#87a89a;
     --accent:#2fc08d; --accent-2:#19a7b8; --on-accent:#04170f;
     --accent-soft:rgba(47,192,141,0.16); --accent-border:rgba(47,192,141,0.45); --accent-glow:rgba(47,192,141,0.62);
+    --splash-ink:#2fc08d; --splash-ink-glow:rgba(47,192,141,0.5);
     --bg-glow-1:rgba(47,192,141,0.10); --bg-glow-2:rgba(25,167,184,0.07);
     --watched:#4fd8a4; --skip:#e0655c; --wish:#ffb1e0; --watching:#58c8ff;
   }
@@ -57,6 +62,7 @@
     --border:rgba(255,205,235,0.10); --text:#ffedf7; --text-dim:#b1899f;
     --accent:#ff5fa2; --accent-2:#c05cff; --on-accent:#1b0714;
     --accent-soft:rgba(255,95,162,0.16); --accent-border:rgba(255,95,162,0.45); --accent-glow:rgba(255,95,162,0.62);
+    --splash-ink:#ff5fa2; --splash-ink-glow:rgba(255,95,162,0.5);
     --bg-glow-1:rgba(255,95,162,0.10); --bg-glow-2:rgba(192,92,255,0.08);
     --watched:#57c9a1; --skip:#ff6b6b; --wish:#ffd166; --watching:#6cc7ff;
   }
@@ -66,6 +72,7 @@
     --border:rgba(226,228,235,0.10); --text:#f3f3f7; --text-dim:#97979f;
     --accent:#a3adbd; --accent-2:#6f7b8d; --on-accent:#0f1116;
     --accent-soft:rgba(163,173,189,0.16); --accent-border:rgba(163,173,189,0.42); --accent-glow:rgba(163,173,189,0.55);
+    --splash-ink:#a3adbd; --splash-ink-glow:rgba(163,173,189,0.45);
     --bg-glow-1:rgba(163,173,189,0.08); --bg-glow-2:rgba(111,123,141,0.06);
     --watched:#7fbf9a; --skip:#cf7b7b; --wish:#d3b3d6; --watching:#7fb6d6;
   }
@@ -83,6 +90,7 @@
     --accent-soft:rgba(227,166,62,0.16);
     --accent-border:rgba(227,166,62,0.42);
     --accent-glow:rgba(227,166,62,0.7);
+    --splash-ink:#e3a63e; --splash-ink-glow:rgba(227,166,62,0.55);
     --bg-glow-1:rgba(227,166,62,0.07);
     --bg-glow-2:rgba(76,154,118,0.05);
     --watched:#4c9a76;
@@ -144,6 +152,9 @@
   @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
   .eyebrow{ font-size:13px; color:var(--text-dim); margin:12px 0 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-shrink:0; }
+  /* Раздел и так называется «Каталог» — надписи в шапке не нужно, остаются только
+     переключатели вида, прижатые к правому краю. */
+  .eyebrow.no-label{ justify-content:flex-end; }
   .eyebrow span.count{ color:var(--text); background:var(--surface); padding:2px 9px; border-radius:20px; font-size:12px; }
   /* Кнопка обновления — только иконка, без подписи «Обновить» */
   .icon-refresh{ width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center;
@@ -305,8 +316,6 @@
     background:none; border:none; color:var(--text-dim); padding:0; transition:color .2s ease; }
   .search-wrap.open .search-btn{ color:var(--accent); }
   .search-wrap .search-btn svg{ width:16px; height:16px; }
-  .search-wrap .search-ico{ position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-dim); pointer-events:none; display:none; }
-  .search-wrap .search-ico svg{ width:13px; height:13px; }
   .search-wrap .search-clear{ position:absolute; right:4px; top:50%; transform:translateY(-50%); width:26px; height:26px; display:none;
     align-items:center; justify-content:center; border:none; background:none; color:var(--text-dim); }
   .search-wrap.has-text .search-clear{ display:flex; }
@@ -382,7 +391,7 @@
   .lvl-strip-bar{ flex:1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
   .lvl-strip-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
   .lvl-strip-xp{ font-size:10px; color:var(--text-dim); white-space:nowrap; }
-  /* Лестница уровней и правила опыта в карточке СмотраLVL */
+  /* Лестница уровней и правила опыта в карточке LVL */
   .lvl-legacy-hidden{ display:none; }
   .lvl-ladder-toggle{ width:100%; margin-top:12px; padding:10px; border-radius:12px; border:1px solid var(--border);
     background:var(--surface-2); color:var(--text); font-family:'Unbounded',sans-serif; font-size:11.5px; font-weight:700; }
@@ -750,7 +759,7 @@
   .fw-sub{ font-size:11px; color:var(--text-dim); margin-top:2px; }
   /* Моя статистика: карточка-герой, плитки и полосы любимых жанров */
   .my-stats{ display:flex; flex-direction:column; gap:12px; }
-  /* СмотраLVL: уровень, опыт и полоса до следующего */
+  /* LVL: уровень, опыт и полоса до следующего */
   .lvl-card{ margin-top:16px; padding:15px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface); }
   .lvl-top{ display:flex; align-items:center; gap:12px; }
   .lvl-badge{ width:42px; height:42px; border-radius:13px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
@@ -905,7 +914,7 @@
     transform:translate(-50%,-50%);
     /* Раньше было filter:blur(26px) — на телефоне это одна из самых дорогих
        операций; мягкого радиального градиента для свечения достаточно */
-    background:radial-gradient(closest-side, rgba(124,107,255,.5) 0%, rgba(124,107,255,.18) 44%, transparent 74%);
+    background:radial-gradient(closest-side, var(--splash-ink-glow, rgba(79,139,255,.5)) 0%, transparent 74%);
     opacity:.8; animation:glowPulse 4.2s ease-in-out infinite; }
   @keyframes glowPulse{
     0%,100%{ opacity:.24; transform:translate(-50%,-50%) scale(.94); }
@@ -914,45 +923,28 @@
   #splash .s-title{ display:flex; align-items:flex-end; gap:.014em; perspective:800px;
     font-family:'Unbounded', sans-serif; font-weight:900; font-size:clamp(44px, 16vw, 66px);
     letter-spacing:-.015em; line-height:1; }
-  /* Буквы: белый глянец + выдавленный торец из слоёв тени + неоновое свечение.
-     Градиент обрезан по тексту, поэтому по нему может ехать блик. */
+  /* Буквы: ровно ОДИН цвет темы на всю заставку — и у надписи, и у буквы O,
+     и у слогана, и у подписи. Никаких белых вкраплений и второго оттенка:
+     объём делают слои тени того же цвета (--wmo-*), свечение — тот же цвет.
+     Цвет живёт в --splash-ink: его считает скрипт из таблицы тем. */
   #splash .s-title span{
     display:inline-block;
-    background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 42%, #e4e6ef 56%, #ffffff 70%, #f6f7fb 88%, #d5d8e4 100%);
-    background-size:100% 300%; background-position:0 0;
-    -webkit-background-clip:text; background-clip:text;
-    -webkit-text-fill-color:transparent; color:transparent;
-    /* Торец — текстовыми тенями (в разы дешевле фильтра), объём и свечение — двумя слоями */
-    /* Надпись SMOTRA всегда белая: торец — нейтральные серые оттенки, свечение белое.
-       Тематический цвет остаётся только у буквы O. */
-    text-shadow:
-      0 1px 0 #d9dbe4, 0 2px 0 #c6c9d4, 0 3px 0 #b2b6c3, 0 4px 0 #9ea2b1,
-      0 5px 0 #8b8f9e, 0 6px 0 #787c8b, 0 7px 0 #666a78, 0 8px 0 #555965;
-    filter:
-      drop-shadow(0 10px 16px rgba(8,6,30,.7))
-      drop-shadow(0 0 18px rgba(255,255,255,0.22));
-    opacity:0; transform-origin:50% 100%;
-    animation:wordIn .7s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 3.4s ease-in-out 1.2s infinite; }
-  /* Буква O — акцентная. Цвет берётся из текущей темы (переменные считает скрипт),
-     поэтому в янтаре она янтарная, в изумруде — зелёная, и так далее. */
-  #splash .s-title span.o{
-    /* Буква O — ровно того же цвета, что слоган «и вайбуй» и подпись tengizka:
-       один акцент текущей темы, без белых вкраплений. */
-    background-image:linear-gradient(180deg, var(--accent) 0%, var(--accent) 100%);
-    filter:
-      drop-shadow(0 10px 16px rgba(8,6,30,.7))
-      drop-shadow(0 0 22px var(--accent-glow));
+    color:var(--splash-ink, var(--accent));
+    -webkit-text-fill-color:currentColor; background-image:none;
     text-shadow:
       0 1px 0 var(--wmo-1), 0 2px 0 var(--wmo-2), 0 3px 0 var(--wmo-3), 0 4px 0 var(--wmo-4),
       0 5px 0 var(--wmo-5), 0 6px 0 var(--wmo-6), 0 7px 0 var(--wmo-7), 0 8px 0 var(--wmo-8);
     filter:
-      drop-shadow(0 10px 18px rgba(8,6,30,.75))
-      drop-shadow(0 0 24px var(--accent-glow)); }
+      drop-shadow(0 10px 16px rgba(8,6,30,.7))
+      drop-shadow(0 0 18px var(--splash-ink-glow, var(--accent-glow)));
+    opacity:0; transform-origin:50% 100%;
+    animation:wordIn .7s cubic-bezier(.2,.9,.25,1) forwards; }
+  /* Буква O больше не выделяется: тот же цвет, тот же торец, то же свечение. */
+  #splash .s-title span.o{ color:var(--splash-ink, var(--accent)); }
   @keyframes wordIn{
     0%{ opacity:0; transform:translateY(38px) rotateX(-72deg) scale(.86); }
     55%{ opacity:1; } 78%{ transform:translateY(-4px) rotateX(6deg) scale(1.02); }
     100%{ opacity:1; transform:none; } }
-  @keyframes wordSheen{ 0%{ background-position:0 0; } 50%{ background-position:0 100%; } 100%{ background-position:0 0; } }
   @media (prefers-reduced-motion: reduce){
     #splash .s-glow{ animation:none; }
     #splash .s-title span{ animation:wordIn .5s ease forwards; }
@@ -962,13 +954,14 @@
   #splash .s-sub{ font-family:'Unbounded', sans-serif; font-size:12.5px; font-weight:500;
     color:var(--text-dim); opacity:0; letter-spacing:.14em; line-height:1.45; text-align:center;
     animation:fadeUp .6s 1.15s ease forwards; }
-  #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--accent); }
+  #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--splash-ink, var(--accent)); }
   /* Слоган и подпись — тот же акцент, что и буква O: в теме «Янтарь» всё тёплое,
      в «Изумруде» — зелёное, без разнобоя. */
-  #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 1.7s ease forwards; }
-  #splash .s-credit b{ color:var(--accent); font-weight:700; }
-  #splash .s-sub, #splash .s-credit{ color:var(--accent); }
-  #splash .s-sub em, #splash .s-credit b{ color:var(--accent); }
+  #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; opacity:0; letter-spacing:.03em; animation:fadeUp .6s 1.7s ease forwards; }
+  #splash .s-credit b{ font-weight:700; }
+  /* Слоган и подпись — тот же единственный цвет темы, что и надпись. */
+  #splash .s-sub, #splash .s-credit{ color:var(--splash-ink, var(--accent)); }
+  #splash .s-sub em, #splash .s-credit b{ color:var(--splash-ink, var(--accent)); }
   @keyframes fadeUp{ to{ opacity:1; } }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
   #splash.hide{ opacity:0; transform:scale(1.035); pointer-events:none; visibility:hidden; }
@@ -1173,9 +1166,9 @@
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
      Telegram и выглядели как экраны приложения, а не сайта. */
   #splash, #onboarding, .overlay-screen{ height:var(--app-h, 100%); bottom:auto; }
-  /* Туториал меряем по видимой высоте, а не по innerHeight: в Telegram они разные */
-  #tutorial{ height:100dvh; bottom:auto; }
-  @supports not (height: 100dvh){ #tutorial{ height:var(--app-h, 100%); } }
+  /* Туториал меряем по видимой высоте: скрипт кладёт её в --tut-h. Ниже по файлу
+     не должно быть жёсткого height — иначе переменная не работает и низ уезжает. */
+  #tutorial{ bottom:auto; }
 </style>
 </head>
 <body>
@@ -1293,11 +1286,11 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <div class="eyebrow"><span>Каталог</span><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
+    <div class="eyebrow no-label"><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
     <div class="search-wrap" id="catSearchWrap">
       <button class="search-btn" id="catSearchBtn" aria-label="Поиск по каталогу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
-      <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
-      <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
+      <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…"
+        enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="catSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="chips" id="typeChips"></div>
@@ -1314,8 +1307,8 @@
     <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="search-wrap" id="wishSearchWrap">
       <button class="search-btn" id="wishSearchBtn" aria-label="Поиск в «Хочу чекнуть»"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
-      <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
-      <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…">
+      <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…"
+        enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="wishSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="chips" id="wishSort"></div>
@@ -1562,7 +1555,7 @@
       <div class="avatar" id="setAvatar" style="width:52px; height:52px; border-radius:16px; font-size:19px;">Г</div>
       <div class="set-profile-text">
         <div class="set-profile-name" id="setName">Гость</div>
-        <div class="set-profile-lvl" id="setLevel">СмотраLVL 1 · Зритель</div>
+        <div class="set-profile-lvl" id="setLevel">LVL 1 · Зритель</div>
       </div>
       <div class="set-profile-xp" id="setXP">0<small>XP</small></div>
     </div>
@@ -1606,7 +1599,7 @@
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">СмотраLVL</div>
+      <div class="set-group-title">LVL</div>
       <div class="set-row" id="setXpRow" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></div>
         <div class="set-text"><div class="set-label">За что дают опыт</div><div class="set-sub">Правила и все уровни — в «Частых вопросах»</div></div>
@@ -1712,6 +1705,16 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.22 — правки по замечаниям: настройки снова открываются (ошибка в расчёте
+         уровня убивала кнопку); туториал считает свою высоту от видимой части
+         экрана, поэтому подпись и кнопка «Дальше» больше не проваливаются вниз;
+         на заставке ровно ОДИН цвет темы — надпись, буква O, слоган и подпись
+         одинаковые (в синей теме — чистый синий, без фиолетового); в поиске на
+         клавиатуре клавиша «Готово» и она закрывает клавиатуру; надпись «Каталог»
+         убрана — раздел и так подписан; карточка фильма всегда выезжает ПОВЕРХ
+         открытых окон (раньше пряталась за окном ачивок); СмотраLVL переименован
+         в LVL, а уровни и ачивки избавились от слова «Смотра»; долгое нажатие
+         работает и в окне списков, и в профиле друга.
    0.21 — десятая правка по замечаниям: туториал снова с «Дальше» внизу, но
          раскладка считается заранее (tutPlan), поэтому ни подпись, ни кнопка не
          могут провалиться под нижний край; обложки начинают грузиться, как только
@@ -1840,7 +1843,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.21';
+const APP_VERSION = '0.22';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2457,7 +2460,7 @@ async function openFriendProfile(id){
       <div class="fp-hero-text">
         <div class="fp-name">${esc(name)}</div>
         <div class="fp-sub">${profile?.username ? '@' + esc(profile.username) : 'зритель SMOTRA'}</div>
-        <div class="fp-lvl">${ICON(friendLevel.icon, 13)} СмотраLVL ${friendLevel.level} · ${esc(friendLevel.name)}</div>
+        <div class="fp-lvl">${ICON(friendLevel.icon, 13)} LVL ${friendLevel.level} · ${esc(friendLevel.name)}</div>
       </div>
     </div>
 
@@ -3064,7 +3067,10 @@ function fitTutorial(){
       plan = tutPlan(inner, fixedH, capNatural);
     }
   }
-  if (cap && capNatural > plan.capLimit) cap.style.maxHeight = plan.capLimit + 'px';
+  /* Подпись всегда ограничена планом: раньше при коротком тексте ограничение
+     снималось, срабатывало CSS-ное max-height:100%, и подпись могла занять весь
+     экран — кнопка «Дальше» уезжала за нижний край. */
+  if (cap) cap.style.maxHeight = Math.max(48, Math.round(plan.capH)) + 'px';
 
   // 4. Сцена получает ровно остаток места — ни пикселем больше.
   if (stage && plan.stageH > 0) stage.style.height = plan.stageH + 'px';
@@ -3298,14 +3304,14 @@ function applyWordmarkShades(){
   // успел ли браузер посчитать переменные (важно для мгновенной отрисовки заставки).
   const theme = THEMES.find(t => t.id === themeId()) || THEMES[0];
   const cs = getComputedStyle(document.body);
-  const cssAccent = (cs.getPropertyValue('--accent') || '').trim();
-  const cssAccent2 = (cs.getPropertyValue('--accent-2') || '').trim();
-  const accent = theme.accent || cssAccent || '#7c6bff';
-  const accent2 = theme.accent2 || cssAccent2 || accent;
+  const cssInk = (cs.getPropertyValue('--splash-ink') || '').trim();
+  const ink = theme.ink || cssInk || theme.accent || '#4f8bff';
   const st = document.documentElement.style;
+  st.setProperty('--splash-ink', ink);
+  st.setProperty('--splash-ink-glow', theme.inkGlow || (cs.getPropertyValue('--splash-ink-glow') || '').trim() || 'rgba(79,139,255,0.5)');
   for (let i = 1; i <= 8; i++){
-    st.setProperty('--wm-' + i, shadeColor(accent, 1 - i * 0.075));
-    st.setProperty('--wmo-' + i, shadeColor(accent2, 1 - i * 0.07));
+    // Торец буквы — затемнение того же самого цвета, поэтому «второго» оттенка нет.
+    st.setProperty('--wmo-' + i, shadeColor(ink, 1 - i * 0.07));
   }
 }
 function applyThemeArt(){
@@ -3318,11 +3324,13 @@ function applyThemeArt(){
 }
 /* Полный список тем: имя, подпись и порядок в окне выбора */
 const THEMES = [
-  { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', bg:'#0c0e16' },
-  { id:'amber',    name:'Янтарь',   note:'Тёплое кино',        accent:'#e3a63e', accent2:'#c9832a', bg:'#131110' },
-  { id:'emerald',  name:'Изумруд',  note:'Спокойный зелёный',  accent:'#2fc08d', accent2:'#19a7b8', bg:'#08120f' },
-  { id:'rose',     name:'Роза',     note:'Ягодный вечер',      accent:'#ff5fa2', accent2:'#c05cff', bg:'#150a12' },
-  { id:'graphite', name:'Графит',   note:'Строгий монохром',   accent:'#a3adbd', accent2:'#6f7b8d', bg:'#0d0d10' },
+  /* ink — цвет заставки: им красятся надпись, буква O, слоган и подпись, все ровно
+     одним цветом. В синей теме это чистый синий, а не сине-фиолетовый акцент. */
+  { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', ink:'#4f8bff', inkGlow:'rgba(79,139,255,0.5)',  bg:'#0c0e16' },
+  { id:'amber',    name:'Янтарь',   note:'Тёплое кино',        accent:'#e3a63e', accent2:'#c9832a', ink:'#e3a63e', inkGlow:'rgba(227,166,62,0.55)', bg:'#131110' },
+  { id:'emerald',  name:'Изумруд',  note:'Спокойный зелёный',  accent:'#2fc08d', accent2:'#19a7b8', ink:'#2fc08d', inkGlow:'rgba(47,192,141,0.5)',  bg:'#08120f' },
+  { id:'rose',     name:'Роза',     note:'Ягодный вечер',      accent:'#ff5fa2', accent2:'#c05cff', ink:'#ff5fa2', inkGlow:'rgba(255,95,162,0.5)',  bg:'#150a12' },
+  { id:'graphite', name:'Графит',   note:'Строгий монохром',   accent:'#a3adbd', accent2:'#6f7b8d', ink:'#a3adbd', inkGlow:'rgba(163,173,189,0.45)', bg:'#0d0d10' },
 ];
 const THEME_NAMES = Object.fromEntries(THEMES.map(t => [t.id, t.name]));
 function themeId(){ return (THEMES.find(t => document.body.classList.contains('theme-' + t.id)) || THEMES[0]).id; }
@@ -3369,6 +3377,23 @@ function pickTheme(name){
    (одинаковый z-index и порядок в разметке) — выглядело так, будто тап не
    сработал, а окно всплывало только после закрытия настроек. */
 let overlayZ = 40;                        // с запасом выше шторки фильма (31)
+/* Шторка (карточка фильма, ачивка, диалог ввода) обязана быть выше всего, что уже
+   открыто: раньше она выезжала ПОД окном ачивок или списком тайтлов, и «информацию
+   о фильме» приходилось искать, закрыв окно. Теперь поднимаем её над верхним слоем. */
+function topLayerZ(){
+  let top = Math.max(30, overlayZ);
+  [...document.querySelectorAll('.overlay-screen.open, .sheet.open')].forEach(el => {
+    const z = parseInt(getComputedStyle(el).zIndex, 10);
+    if (!isNaN(z) && z > top) top = z;
+  });
+  return top;
+}
+function raiseSheet(sheetEl, backdropEl){
+  if (!sheetEl) return;
+  const z = topLayerZ() + 1;
+  sheetEl.style.zIndex = String(z + 1);
+  if (backdropEl) backdropEl.style.zIndex = String(z);
+}
 function openOverlay(elOrId){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
   if (!el) return null;
@@ -3987,7 +4012,7 @@ const BADGES = [
   { id:'b4',  kind:'watched',  min:25,  icon:'target',   name:'Марафонец',      desc:'Отметь 25 просмотренных тайтлов' },
   { id:'b5',  kind:'watched',  min:50,  icon:'trophy',     name:'Полтинник',      desc:'Отметь 50 просмотренных тайтлов' },
   { id:'b6',  kind:'watched',  min:100, icon:'starFill', name:'Сотка',          desc:'Отметь 100 просмотренных тайтлов' },
-  { id:'b7',  kind:'watched',  min:200, icon:'rocket',   name:'Легенда SMOTRA', desc:'Отметь 200 просмотренных тайтлов' },
+  { id:'b7',  kind:'watched',  min:200, icon:'rocket',   name:'Кинолегенда', desc:'Отметь 200 просмотренных тайтлов' },
   { id:'b8',  kind:'wishlist', min:5,   icon:'star',     name:'Списком',        desc:'Собери 5 тайтлов в «Хочу чекнуть»' },
   { id:'b9',  kind:'wishlist', min:25,  icon:'newspaper', name:'Киноплан',       desc:'Собери 25 тайтлов в «Хочу чекнуть»' },
   { id:'b10', kind:'watching', min:3,   icon:'play',     name:'Сейчас смотрю',  desc:'Держи 3 тайтла в «Смотрю»' },
@@ -4407,6 +4432,17 @@ function initSearchClear(inputId, wrapId){
   const clear = wrap.querySelector('.search-clear');
   const sync = () => wrap.classList.toggle('has-text', !!input.value);
   input.addEventListener('input', sync);
+  /* На клавиатуре подпись клавиши — «Готово» (enterkeyhint), а по нажатию поиск
+     закрывает клавиатуру сразу: свайпать вниз, чтобы её убрать, больше не нужно. */
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13){
+      e.preventDefault();
+      haptic('selection');
+      input.blur();
+      if (window.visualViewport) window.scrollTo(0, 0);
+    }
+  });
+  input.addEventListener('blur', () => { document.body.classList.remove('kb-open'); });
   if (clear) clear.onclick = () => {
     input.value = '';
     sync();
@@ -4560,8 +4596,8 @@ const FAQ_ITEMS = [
   ['Что такое «Хочу чекнуть»?', 'Список на потом. Когда он подрастёт, запусти рандомайзер — рулетку или колесо — и он выберет один тайтл за тебя.'],
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
-  ['Как растёт СмотраLVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле.'],
-  ['Какие уровни есть и сколько нужно опыта?', 'Пороги мягкие: 1 «Зритель» — с нуля · 2 «Киноновичок» — 50 XP · 3 «Кинолюб» — 250 · 4 «Киноман» — 500 · 5 «Синеман» — 1 000 · 6 «Киногуру» — 2 000 · 7 «Легенда SMOTRA» — 4 000 · 8 «Кинотитан» — 8 000 · 9 «Кинобессмертный» — 16 000 · 10 «Живая легенда» — 32 000 XP (последний уровень). Дальше каждый порог удваивается: уровень — награда за постоянство, а не за один вечер.'],
+  ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле.'],
+  ['Какие уровни есть и сколько нужно опыта?', 'Пороги мягкие: 1 «Зритель» — с нуля · 2 «Киноновичок» — 50 XP · 3 «Кинолюб» — 250 · 4 «Киноман» — 500 · 5 «Синеман» — 1 000 · 6 «Киногуру» — 2 000 · 7 «Легенда» — 4 000 · 8 «Кинотитан» — 8 000 · 9 «Кинобессмертный» — 16 000 · 10 «Живая легенда» — 32 000 XP (последний уровень). Дальше каждый порог удваивается: уровень — награда за постоянство, а не за один вечер.'],
   ['Что за игрушка вверху главной?', 'Это просто прикол. Нажми — переключится на другую, цвета всегда из твоей темы.'],
 ];
 function renderFaq(){
@@ -4581,6 +4617,7 @@ function askFriendId(){
     const backdropEl = document.getElementById('askBackdrop');
     const input = document.getElementById('askInput');
     if (!sheetEl || !input){ resolve(''); return; }
+    raiseSheet(sheetEl, backdropEl);
     input.value = '';
     sheetEl.classList.add('open');
     backdropEl.classList.add('open');
@@ -4600,12 +4637,13 @@ function askFriendId(){
     };
     cancelBtn.onclick = () => close('');
     backdropEl.onclick = () => close('');
-    input.onkeydown = (e) => { if (e.key === 'Enter') okBtn.onclick(); };
+    input.onkeydown = (e) => { if (e.key === 'Enter' || e.keyCode === 13){ e.preventDefault(); okBtn.onclick(); } };
   });
 }
 function openBadgeDetail(badgeId){
   const b = BADGES.find(x=>x.id===badgeId);
   if (!b) return;
+  raiseSheet(document.getElementById('badgeSheet'), document.getElementById('badgeBackdrop'));
   const unlocked = state.unlocked.includes(b.id);
   haptic('selection');
   document.getElementById('badgeDetailIcon').innerHTML = ICON(b.icon, 30);
@@ -4641,6 +4679,11 @@ function openBadgeDetail(badgeId){
       haptic('impact', 'light');
       document.getElementById('badgeSheet').classList.remove('open');
       document.getElementById('badgeBackdrop').classList.remove('open');
+      /* Окно ачивок закрываем: иначе раздел или список открывается ПОД ним и его
+         просто не видно. */
+      closeOverlay('achievementsScreen');
+      document.getElementById('badgeSheet').style.zIndex = '';
+      document.getElementById('badgeBackdrop').style.zIndex = '';
       place.open();
     };
   }
@@ -5397,7 +5440,9 @@ function initLongPress(containerId){
   }, true);
   el.addEventListener('contextmenu', e => { if (e.target.closest(LONGPRESS_CARD_SELECTOR)) e.preventDefault(); });
 }
-['catGrid','wishList','watchingList','histList','feedBody'].forEach(initLongPress);
+/* Долгое нажатие работает на всех обложках приложения: в разделах, в окне полного
+   списка тайтлов и в профиле друга. */
+['catGrid','wishList','watchingList','histList','feedBody','titleListBody','friendProfileBody'].forEach(initLongPress);
 
 document.getElementById('btnWatched').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
 document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
@@ -5436,7 +5481,7 @@ let statsFramePending = false;
 const LEVELS = (() => {
   const NAMES = [
     ['Зритель','play'], ['Киноновичок','clapper'], ['Кинолюб','star'], ['Киноман','sparkles'],
-    ['Синеман','popcorn'], ['Киногуру','trophy'], ['Легенда SMOTRA','rocket'],
+    ['Синеман','popcorn'], ['Киногуру','trophy'], ['Легенда','rocket'],
     ['Кинотитан','crown'], ['Кинобессмертный','bolt'], ['Живая легенда','masks'],
   ];
   const START = [0, 50, 250, 500, 1000, 2000];
@@ -5474,7 +5519,7 @@ function levelCardHTML(level, compact){
     <div class="lvl-top">
       <div class="lvl-badge">${ICON(level.icon, 22)}</div>
       <div class="lvl-text">
-        <div class="lvl-name">СмотраLVL ${level.level} · ${esc(level.name)}</div>
+        <div class="lvl-name">LVL ${level.level} · ${esc(level.name)}</div>
         <div class="lvl-xp">${level.xp} XP${level.next ? ` · до «${esc(level.next.name)}» ${level.toNext} XP` : ' · максимальный уровень'}</div>
       </div>
     </div>
@@ -6074,7 +6119,7 @@ document.getElementById('statCardStreak').onclick = () => {
 function renderSettingsScreen(){
   const level = levelFor(myXP());
   const lvlEl = document.getElementById('setLevel');
-  if (lvlEl) lvlEl.textContent = `СмотраLVL ${level.level} · ${level.name}`;
+  if (lvlEl) lvlEl.textContent = `LVL ${level.level} · ${level.name}`;
   const xpEl = document.getElementById('setXP');
   if (xpEl) xpEl.innerHTML = `${level.xp}<small>XP</small>`;
   const bar = document.getElementById('setLevelBar');
@@ -6094,7 +6139,7 @@ function renderSettingsScreen(){
   /* Таблица «за что сколько» живёт в FAQ: в настройках оставлен только вход. */
   const xpRow = document.getElementById('setXpRow');
   if (xpRow){
-    const lv = levelFor(smotraXP());
+    const lv = levelFor(myXP());
     xpRow.querySelector('.set-sub').textContent = lv.next
       ? `до «${lv.next.name}» — осталось ${lv.toNext} XP`
       : `${lv.name} — максимальный уровень`;
@@ -6264,6 +6309,7 @@ function renderCastChips(movie){
 
 function openSheet(movie){
   sheetMovie = movie;
+  raiseSheet(sheet, document.getElementById('backdrop'));
   // Новая карточка всегда открывается сверху, а не в том месте, где докрутили прошлую.
   sheet.scrollTop = 0;
   sheet.style.transform = '';
