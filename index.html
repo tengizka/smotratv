@@ -40,6 +40,33 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --app-h: 100%;
   }
+  /* Изумруд: спокойный зелёный с бирюзой */
+  body.theme-emerald{
+    --bg:#08120f; --bg-2:#0d1a16; --surface:#132420; --surface-2:#1b302a;
+    --border:rgba(190,255,225,0.10); --text:#e8fff6; --text-dim:#87a89a;
+    --accent:#2fc08d; --accent-2:#19a7b8; --on-accent:#04170f;
+    --accent-soft:rgba(47,192,141,0.16); --accent-border:rgba(47,192,141,0.45); --accent-glow:rgba(47,192,141,0.62);
+    --bg-glow-1:rgba(47,192,141,0.10); --bg-glow-2:rgba(25,167,184,0.07);
+    --watched:#4fd8a4; --skip:#e0655c; --wish:#ffb1e0; --watching:#58c8ff;
+  }
+  /* Роза: тёплая ягодная тема */
+  body.theme-rose{
+    --bg:#150a12; --bg-2:#1d0f19; --surface:#28161f; --surface-2:#341d29;
+    --border:rgba(255,205,235,0.10); --text:#ffedf7; --text-dim:#b1899f;
+    --accent:#ff5fa2; --accent-2:#c05cff; --on-accent:#1b0714;
+    --accent-soft:rgba(255,95,162,0.16); --accent-border:rgba(255,95,162,0.45); --accent-glow:rgba(255,95,162,0.62);
+    --bg-glow-1:rgba(255,95,162,0.10); --bg-glow-2:rgba(192,92,255,0.08);
+    --watched:#57c9a1; --skip:#ff6b6b; --wish:#ffd166; --watching:#6cc7ff;
+  }
+  /* Графит: строгая монохромная тема */
+  body.theme-graphite{
+    --bg:#0d0d10; --bg-2:#131317; --surface:#1a1a1f; --surface-2:#232329;
+    --border:rgba(226,228,235,0.10); --text:#f3f3f7; --text-dim:#97979f;
+    --accent:#a3adbd; --accent-2:#6f7b8d; --on-accent:#0f1116;
+    --accent-soft:rgba(163,173,189,0.16); --accent-border:rgba(163,173,189,0.42); --accent-glow:rgba(163,173,189,0.55);
+    --bg-glow-1:rgba(163,173,189,0.08); --bg-glow-2:rgba(111,123,141,0.06);
+    --watched:#7fbf9a; --skip:#cf7b7b; --wish:#d3b3d6; --watching:#7fb6d6;
+  }
   body.theme-amber{
     --bg:#131110;
     --bg-2:#1a1714;
@@ -91,7 +118,7 @@
   .wordmark{ font-family:'Unbounded', sans-serif; font-weight:800; letter-spacing:-0.5px; }
 
   /* ===== Top bar ===== */
-  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 20px 8px; }
+  .topbar{ position:relative; z-index:4; display:flex; align-items:center; justify-content:space-between; padding:8px 20px 8px; }
   .topbar .wordmark{ font-size:19px; }
   .topbar .wordmark b{ color:var(--accent); font-weight:800; }
   .topbar-icons{ display:flex; align-items:center; gap:14px; }
@@ -100,7 +127,7 @@
   .streak{ display:flex; align-items:center; gap:5px; font-size:13px; color:var(--accent); font-weight:600; background:var(--accent-soft); padding:6px 10px; border-radius:10px; }
 
   /* ===== Screens ===== */
-  .screens{ flex:1; position:relative; min-height:0; }
+  .screens{ flex:1; position:relative; z-index:4; min-height:0; }
   .screen{ position:absolute; inset:0; padding:0 20px 16px; display:none; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; touch-action:pan-y; -webkit-overflow-scrolling:touch; -ms-overflow-style:none; scrollbar-width:none; }
   .screen::-webkit-scrollbar{display:none;}
   .screen.active{ display:flex; flex-direction:column; animation:rise .32s cubic-bezier(.2,.8,.2,1); }
@@ -170,23 +197,68 @@
   .rl-wheel{ width:168px; height:168px; transform-origin:50% 50%; will-change:transform; }
   .rl-pin{ position:absolute; top:5px; left:50%; width:0; height:0; margin-left:-7px;
     border-left:7px solid transparent; border-right:7px solid transparent; border-top:13px solid var(--accent); }
-  .rl-poker{ display:flex; gap:6px; justify-content:center; align-items:center; height:186px;
-    background:var(--bg-2); border-radius:16px; border:1px solid var(--border); padding:10px 8px; }
-  .rl-pcard{ flex:1 1 0; max-width:76px; height:150px; border-radius:10px; overflow:hidden; background:var(--surface);
-    border:1px solid var(--border); display:flex; flex-direction:column; opacity:0; animation:rlDeal .4s ease forwards; }
-  .rl-pcard img{ width:100%; height:104px; object-fit:cover; display:block; }
-  .rl-pcard b{ font-size:9px; line-height:1.2; padding:4px 3px; color:var(--text-dim); font-weight:600; }
-  .rl-pcard .rl-pfallback{ height:104px; display:flex; align-items:center; justify-content:center;
-    font-family:'Unbounded',sans-serif; font-size:14px; color:var(--accent); background:var(--surface-2); }
-  .rl-pcard.win{ border-color:var(--accent); box-shadow:0 0 18px var(--accent-glow); transform:translateY(-9px) scale(1.05) !important; }
-  .rl-pcard.lose{ opacity:.35 !important; }
-  @keyframes rlDeal{ from{ opacity:0; transform:translateY(16px) rotate(-7deg); } to{ opacity:1; transform:translateY(0) rotate(0); } }
-  .rl-slots{ display:flex; gap:8px; justify-content:center; align-items:center; height:186px;
-    background:var(--bg-2); border-radius:16px; border:1px solid var(--border); overflow:hidden; }
-  .rl-reel{ position:relative; width:88px; height:132px; overflow:hidden; border-radius:12px; background:var(--surface); border:1px solid var(--border); }
-  .rl-reel-track{ display:flex; flex-direction:column; will-change:transform; }
-  .rl-reel-track span{ flex:0 0 auto; height:44px; line-height:44px; padding:0 6px; text-align:center;
-    font-size:10.5px; font-weight:600; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  /* Кубок ачивок в шапках разделов */
+  .ach-chip{ width:30px; height:30px; border-radius:10px; margin-left:auto; display:flex; align-items:center; justify-content:center;
+    background:var(--surface); border:1px solid var(--border); color:var(--accent); flex:0 0 auto; }
+  .ach-chip svg{ width:15px; height:15px; }
+  .badge-where{ display:none; margin-top:16px; width:100%; padding:12px; border-radius:14px;
+    border:1px solid var(--accent-border); background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px; }
+  .badge-where.show{ display:block; }
+  /* Сравнение оценок: чипы друзей с аватарками и разница с нашим баллом */
+  .fpr-chips{ display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px; }
+  .fpr-chip{ display:inline-flex; align-items:center; gap:4px; padding:2px 8px 2px 2px; border-radius:999px;
+    background:var(--surface-2); border:1px solid var(--border); font-size:11px; color:var(--text-dim); }
+  .fpr-chip-av{ width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg, var(--accent), var(--accent-2)); background-size:cover; background-position:center;
+    font-size:9px; font-weight:700; color:var(--on-accent); }
+  .fpr-chip b{ font-weight:700; color:var(--text); font-size:11.5px; }
+  .fpr-chip b.up{ color:var(--watched); }
+  .fpr-chip b.down{ color:var(--skip); }
+  .fpr-more{ font-size:11px; color:var(--text-dim); }
+  .fpr-row{ display:flex; align-items:center; gap:11px; padding:9px 4px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .fpr-row:last-of-type{ border-bottom:none; }
+  .fpr-poster{ width:38px; height:54px; border-radius:10px; flex:0 0 auto; background:var(--surface-2) center/cover no-repeat; }
+  .fpr-mid{ flex:1; min-width:0; }
+  .fpr-title{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fpr-sub{ font-size:11.5px; color:var(--text-dim); margin-top:3px; }
+  .fpr-row-extra{ font-size:11.5px; color:var(--text-dim); margin-top:4px; }
+  .fpr-diff{ font-family:'Unbounded',sans-serif; font-size:12px; font-weight:700; padding:4px 9px; border-radius:999px; }
+  .fpr-diff.up{ color:var(--watched); background:var(--surface-2); border:1px solid var(--border); }
+  .fpr-diff.down{ color:var(--skip); background:var(--surface-2); border:1px solid var(--border); }
+  /* Окно тем: большие карточки с живым рисунком темы */
+  .theme-list{ display:flex; flex-direction:column; gap:12px; }
+  .theme-card{ position:relative; display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    padding:12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); overflow:hidden; }
+  .theme-card.active{ border-color:var(--accent-border); box-shadow:0 0 22px -8px var(--accent-glow); }
+  .theme-card-art{ position:relative; width:76px; height:56px; border-radius:14px; overflow:hidden; flex:0 0 auto;
+    background:var(--surface-2); color:var(--accent); }
+  .theme-card-art svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .theme-card-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .theme-card-text b{ font-family:'Unbounded',sans-serif; font-size:13.5px; font-weight:700; }
+  .theme-card-text i{ font-style:normal; font-size:11.5px; color:var(--text-dim); }
+  .theme-card-check{ width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--accent); color:var(--on-accent); flex:0 0 auto; }
+  .theme-card:not(.active) .theme-card-check{ background:transparent; }
+  .set-chip{ padding:8px 12px; border-radius:999px; border:1px solid var(--accent-border); background:var(--accent-soft);
+    color:var(--accent); font-size:11.5px; font-weight:700; font-family:'Inter'; flex:0 0 auto; }
+  /* FAQ */
+  .faq-item{ padding:14px 4px; border-bottom:1px solid var(--border); }
+  .faq-item:last-child{ border-bottom:none; }
+  .faq-foot{ padding:14px 22px calc(20px + var(--safe-bottom)); text-align:center; font-size:11.5px; color:var(--text-dim); }
+  .faq-q{ font-size:14px; font-weight:600; margin-bottom:6px; }
+  .faq-a{ font-size:13px; color:var(--text-dim); line-height:1.5; }
+  .ask-body{ padding:6px 18px 20px; }
+  .ask-title{ font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; text-align:center; }
+  .ask-sub{ font-size:12.5px; color:var(--text-dim); text-align:center; margin:8px 0 16px; line-height:1.45; }
+  .ask-input{ width:100%; box-sizing:border-box; padding:13px 14px; border-radius:14px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-size:16px; font-family:'Inter'; text-align:center; letter-spacing:.04em; }
+  .ask-input:focus{ outline:none; border-color:var(--accent-border); }
+  .ask-input.shake{ animation:askShake .4s ease; }
+  @keyframes askShake{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  .ask-actions{ display:flex; gap:8px; margin-top:14px; }
+  .ask-actions button{ flex:1; padding:13px; border-radius:14px; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text); font-size:14px; font-weight:600; font-family:'Inter'; }
+  .ask-actions button.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
   .rl-result{ text-align:center; min-height:52px; margin-bottom:12px; }
   .rl-result .rl-name{ font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; line-height:1.25; }
   .rl-result .rl-meta{ font-size:12px; color:var(--text-dim); margin-top:4px; }
@@ -194,6 +266,11 @@
   .rl-actions button{ flex:1; padding:12px 8px; border-radius:13px; border:1px solid var(--border); background:var(--surface-2);
     color:var(--text); font-size:13px; font-weight:600; font-family:'Inter'; }
   .rl-actions button.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .rl-actions button:disabled{ opacity:.4; }
+  .rl-hint{ font-size:12.5px; color:var(--text-dim); text-align:center; line-height:1.4; }
+  .rl-sec{ transition:opacity .3s ease; }
+  .rl-sec.dim{ opacity:.3; }
+  .rl-wheel.spinning{ filter:drop-shadow(0 0 12px var(--accent-glow)); }
   .rl-actions button:active{ transform:scale(.97); }
   .view-toggle{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; flex:0 0 auto; }
   .view-toggle button{ appearance:none; -webkit-appearance:none; margin:0; padding:0; line-height:0; width:32px; height:28px; border-radius:9px; background:transparent; border:none; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease; }
@@ -244,7 +321,9 @@
   /* Строка уровня вверху главной: тонкая, с именем уровня и полосой прогресса */
   /* Декорации темы: два слоя SVG (дальний со своими звёздами/кадрами и
      ближний с орбитами и вспышками). Дальний дышит, ближний медленно плывёт. */
-  .theme-art{ position:fixed; inset:0; pointer-events:none; z-index:1; color:var(--accent); overflow:hidden; }
+  /* Фон строго под интерфейсом: нулевой слой, а контент поднят выше (см. .topbar,
+     .screens, nav). Раньше декор был z-index:1 и мог оказаться поверх текста. */
+  .theme-art{ position:fixed; inset:0; pointer-events:none; z-index:0; color:var(--accent); overflow:hidden; }
   body.app-hidden *, body.app-hidden *::before, body.app-hidden *::after{ animation-play-state:paused !important; }
   .theme-art svg.ta-layer{ position:absolute; inset:0; width:100%; height:100%; }
   .ta-far{ opacity:.65; animation:artBreathe 9s ease-in-out infinite; }
@@ -271,7 +350,10 @@
   .theme-swatch{ position:relative; overflow:hidden; }
   .theme-swatch .sw-art{ position:absolute; inset:0; opacity:.75; }
   .theme-swatch .sw-art svg{ width:100%; height:100%; }
-  .lvl-strip{ display:flex; align-items:center; gap:10px; padding:2px 2px 6px; flex:0 0 auto; }
+  /* Полоска уровня живёт в самой верхней строке — над словом SMOTRA и шестерёнкой,
+     поэтому карточка фильма поднимается выше и получает больше места. */
+  .lvl-strip{ position:relative; z-index:4; display:flex; align-items:center; gap:10px;
+    padding:calc(10px + var(--safe-top)) 22px 0; flex:0 0 auto; cursor:pointer; }
   .lvl-strip-name{ font-family:'Unbounded',sans-serif; font-size:10.5px; font-weight:700; color:var(--text); white-space:nowrap; }
   .lvl-strip-bar{ flex:1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
   .lvl-strip-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
@@ -296,14 +378,14 @@
   .ach-bar{ height:6px; margin:10px 0 4px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
   .ach-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
   /* Вспышка действия: мягкое цветное пятно темы, не мешает читать карточку */
-  .action-flash-layer{ position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
+  .action-flash-layer{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
   .action-flash{ position:absolute; left:50%; top:44%; width:130vw; height:80vh; transform:translate(-50%,-50%);
     opacity:0; animation:flashPulse .7s ease-out forwards; }
   @keyframes flashPulse{ 0%{ opacity:0; } 18%{ opacity:.85; } 100%{ opacity:0; } }
   /* «Перемешать»: пока колода трясётся, по кругу едут картинки кино.
      SVG-картинки браузеры рисовать отказались (движок мини-аппа без картинок
      внутри SVG), поэтому это эмодзи: дорожка крутится и сматывается в ленту. */
-  .shuffle-slides{ position:fixed; right:16px; bottom:96px; pointer-events:none; z-index:48; opacity:0; }
+  .shuffle-slides{ position:fixed; right:16px; bottom:96px; pointer-events:none; z-index:6; opacity:0; }
   .shuffle-slides.on{ opacity:1; }
   .shuffle-reel{ position:relative; }
   .shuffle-piece{ position:absolute; right:0; bottom:0; font-size:30px; opacity:0;
@@ -641,7 +723,10 @@
   .badge.more{ opacity:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; position:relative; }
   .badge.more .b-more{ font-family:'Unbounded',sans-serif; font-size:12px; font-weight:700; color:var(--accent); }
   .badge.more .b-icon{ color:var(--text-dim); }
-  .badge .b-name{ display:none; }
+  /* Имя ачивки видно всегда: без подписи значок ничего не объясняет.
+     Длинные названия переносим, но не больше двух строк — плитки остаются ровными. */
+  .badge .b-name{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    overflow:hidden; overflow-wrap:anywhere; }
   /* Кликабельные пилюли статистики */
   .ms-tile, .ms-hero-main, .ms-hero-side > div, .fp-tile{ cursor:pointer; transition:transform .14s ease, border-color .18s ease; }
   .ms-tile:active, .fp-tile:active{ transform:scale(.95); }
@@ -675,13 +760,14 @@
   .week-col i{ width:100%; min-height:4px; background:linear-gradient(180deg, var(--accent), var(--accent-2)); border-radius:4px; display:block; }
   .week-col i.zero{ background:var(--surface-2); }
   .week-col span{ font-size:10px; color:var(--text-dim); }
-  .badges-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .badges-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   .badge{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; opacity:0.35; cursor:pointer; transition:transform .15s ease; }
   .badge:active{ transform:scale(.94); }
   .badge.unlocked{ opacity:1; border-color:var(--accent-border); }
   .badge .b-icon{ display:flex; align-items:center; justify-content:center; color:var(--accent); }
   #badgeDetailIcon.locked{ opacity:.35; }
-  .badge .b-name{ font-size:10px; color:var(--text-dim); margin-top:5px; line-height:1.2; }
+  .badge .b-name{ font-size:11px; color:var(--text-dim); margin-top:6px; line-height:1.25; }
+  .badge.unlocked .b-name{ color:var(--text); }
   .menu-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 2px; border-bottom:1px solid var(--border); }
   .menu-row:last-child{ border-bottom:none; }
   .menu-row .ml{ display:flex; align-items:center; gap:10px; font-size:14.5px; }
@@ -753,7 +839,7 @@
 
   /* ===== Bottom nav ===== */
   /* align-items:center — иконки и подписи стоят посередине полосы, а не липнут к низу */
-  nav{ display:flex; justify-content:space-around; align-items:center; padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); position:relative; z-index:10; }
+  nav{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center; padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); position:relative; z-index:10; }
   nav button{ background:none; border:none; color:var(--text-dim); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10.5px; font-family:'Inter'; position:relative; padding:4px 10px; transition:color .2s ease, transform .15s ease; }
   nav button:active{ transform:scale(.9); }
   nav button.nav-home:active .nav-home-circle{ transform:scale(.92); }
@@ -794,25 +880,26 @@
      Градиент обрезан по тексту, поэтому по нему может ехать блик. */
   #splash .s-title span{
     display:inline-block;
-    background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 42%, #d7d2f4 56%, #ffffff 70%, #f2eeff 88%, #cfc8ee 100%);
+    background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 42%, #e4e6ef 56%, #ffffff 70%, #f6f7fb 88%, #d5d8e4 100%);
     background-size:100% 300%; background-position:0 0;
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
     /* Торец — текстовыми тенями (в разы дешевле фильтра), объём и свечение — двумя слоями */
     text-shadow:
-      0 1px 0 #cfc9ee, 0 2px 0 #b9b2e6, 0 3px 0 #9d94d8, 0 4px 0 #837ac6,
-      0 5px 0 #6a61b4, 0 6px 0 #554da2, 0 7px 0 #453e8c, 0 8px 0 #382f75;
+      0 1px 0 var(--wm-1), 0 2px 0 var(--wm-2), 0 3px 0 var(--wm-3), 0 4px 0 var(--wm-4),
+      0 5px 0 var(--wm-5), 0 6px 0 var(--wm-6), 0 7px 0 var(--wm-7), 0 8px 0 var(--wm-8);
     filter:
       drop-shadow(0 10px 16px rgba(8,6,30,.7))
       drop-shadow(0 0 20px var(--accent-glow));
     opacity:0; transform-origin:50% 100%;
-    animation:wordIn .95s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 4.6s ease-in-out 1.9s infinite; }
-  /* Буква O — акцентная, сине-фиолетовая, как в остальном интерфейсе */
+    animation:wordIn .7s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 3.4s ease-in-out 1.2s infinite; }
+  /* Буква O — акцентная. Цвет берётся из текущей темы (переменные считает скрипт),
+     поэтому в янтаре она янтарная, в изумруде — зелёная, и так далее. */
   #splash .s-title span.o{
-    background-image:linear-gradient(180deg, #ded9ff 0%, #b3a6ff 26%, #7c6bff 52%, #5b46e6 66%, #7d8dff 84%, #cfd6ff 100%);
+    background-image:linear-gradient(180deg, #ffffff 0%, var(--accent-2) 34%, var(--accent) 58%, var(--accent-2) 100%);
     text-shadow:
-      0 1px 0 #6f5cf0, 0 2px 0 #5f4ce0, 0 3px 0 #503fd0, 0 4px 0 #4335bc,
-      0 5px 0 #382ca6, 0 6px 0 #2f248f, 0 7px 0 #272077, 0 8px 0 #201a62;
+      0 1px 0 var(--wmo-1), 0 2px 0 var(--wmo-2), 0 3px 0 var(--wmo-3), 0 4px 0 var(--wmo-4),
+      0 5px 0 var(--wmo-5), 0 6px 0 var(--wmo-6), 0 7px 0 var(--wmo-7), 0 8px 0 var(--wmo-8);
     filter:
       drop-shadow(0 10px 18px rgba(8,6,30,.75))
       drop-shadow(0 0 24px var(--accent-glow)); }
@@ -829,9 +916,9 @@
      чтобы он читался подписью под объёмной надписью, а не вторым заголовком */
   #splash .s-sub{ font-family:'Unbounded', sans-serif; font-size:12.5px; font-weight:500;
     color:var(--text-dim); opacity:0; letter-spacing:.14em; line-height:1.45; text-align:center;
-    animation:fadeUp .8s 2.2s ease forwards; }
+    animation:fadeUp .6s 1.15s ease forwards; }
   #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--accent); }
-  #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .8s 3.1s ease forwards; }
+  #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 1.7s ease forwards; }
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes fadeUp{ to{ opacity:1; } }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
@@ -869,8 +956,8 @@
   /* Кнопка «Дальше» стоит сразу под прогрессом — в самом верху экрана. Так она
      физически не может «провалиться» вниз: ниже неё только сцена и подпись. */
   #tutorial{ position:fixed; inset:0; height:100dvh; overflow:hidden; background:var(--bg); z-index:95; display:none;
-    grid-template-rows:auto auto minmax(0,1fr) auto; gap:12px;
-    padding:calc(12px + var(--safe-top)) 20px calc(18px + var(--safe-bottom)); }
+    grid-template-rows:minmax(0,1fr) auto auto; gap:12px;
+    padding:calc(12px + var(--safe-top)) 20px calc(16px + var(--safe-bottom)); }
   @supports not (height: 100dvh){ #tutorial{ height:100%; } }
   #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
@@ -909,7 +996,9 @@
      оставалось внутри кружка, а не вылезало за его край */
   .tut-radial-demo .trd-item .trd-lbl{ font-size:8.5px; font-weight:600; line-height:1.05; max-width:52px; padding:0 2px; text-align:center; overflow-wrap:anywhere; }
   .tut-radial-demo .trd-item.on{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
-  .tut-demo-radial{ width:276px; height:276px; display:flex; align-items:center; justify-content:center; }
+  /* Демо кругового меню занимает всю ширину сцены: у кружков должен быть воздух
+     вокруг карточки, а не «вплотную к фильму», как было раньше. */
+  .tut-demo-radial{ width:100%; height:100%; max-width:340px; max-height:340px; display:flex; align-items:center; justify-content:center; }
   /* Круговое меню в демо крупнее настоящего: на маленьком экране так понятнее */
   #tutorial .rad-center{ width:86px; height:86px; }
   #tutorial .rad-center .rad-center-label{ font-size:11px; }
@@ -1029,6 +1118,18 @@
 </style>
 </head>
 <body>
+<script>
+/* Тему применяем ДО первой отрисовки: иначе заставка показывается в синем и
+   только потом перекрашивается, а при смене темы это выглядело как перезапуск. */
+(function(){
+  try{
+    var list = ['neon','amber','emerald','rose','graphite'];
+    var t = localStorage.getItem('smotra_theme') || 'neon';
+    if (list.indexOf(t) === -1) t = 'neon';
+    if (t !== 'neon') document.body.classList.add('theme-' + t);
+  }catch(e){}
+})();
+</script>
 <div class="grain"></div>
 <!-- Фон рисуем сами: у каждой темы свой узор из SVG (звёзды, орбиты, плёнка,
      вспышки), он подхватывает акцентный цвет темы и оживает на глазах. -->
@@ -1074,21 +1175,28 @@
     <div class="tut-progress" id="tutProgress"></div>
     <button class="tut-skip-top" id="tutSkipTop">Пропустить</button>
   </div>
-  <div class="tut-actions">
-    <button class="tut-next" id="tutNext">Дальше</button>
-  </div>
   <div class="tut-stage" id="tutStage"></div>
   <div class="tut-caption">
     <div class="tc-title" id="tutTitle"></div>
     <div class="tc-desc" id="tutDesc"></div>
     <div class="tut-try" id="tutTry" style="display:none;"></div>
   </div>
+  <div class="tut-actions">
+    <button class="tut-next" id="tutNext">Дальше</button>
+  </div>
+</div>
+
+<div class="lvl-strip" id="homeLevelStrip" role="button" aria-label="Уровень">
+  <span class="lvl-strip-name" id="homeLevelName">LVL 1 · Зритель</span>
+  <span class="lvl-strip-bar"><i id="homeLevelBar" style="width:0%"></i></span>
+  <span class="lvl-strip-xp" id="homeLevelXP">0</span>
 </div>
 
 <div class="topbar">
   <div class="wordmark">SM<b>O</b>TRA</div>
   <div class="topbar-icons">
     <div class="streak" id="streakBadge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="currentColor" stroke="none"/></svg> <span id="streakNum">0</span></div>
+    <button class="icon-btn ach-chip-top" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></button>
     <button class="icon-btn" id="openSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.6-2.6c.7-.3 1.4-.7 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
     </button>
@@ -1105,11 +1213,6 @@
       <div class="filter-pop-chips" id="filterPopChips"></div>
     </div>
     <div class="home-toy-row"><button class="home-toy" id="homeToy" aria-label="Живая игрушка"></button></div>
-    <div class="lvl-strip" id="homeLevelStrip" role="button" aria-label="Уровень">
-      <span class="lvl-strip-name" id="homeLevelName">LVL 1 · Зритель</span>
-      <span class="lvl-strip-bar"><i id="homeLevelBar" style="width:0%"></i></span>
-      <span class="lvl-strip-xp" id="homeLevelXP">0</span>
-    </div>
     <div class="stack" id="stack"></div>
     <button class="stack-filter" id="openFilters" aria-label="Фильтр">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -1127,7 +1230,7 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <div class="eyebrow"><span>Каталог</span><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
+    <div class="eyebrow"><span>Каталог</span><button class="ach-chip" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></button><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
     <div class="search-wrap" id="catSearchWrap">
       <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
       <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
@@ -1144,7 +1247,7 @@
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
-    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
+    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><button class="ach-chip" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></button><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="search-wrap" id="wishSearchWrap">
       <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></span>
       <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…">
@@ -1159,6 +1262,7 @@
   <section id="feed" class="screen">
     <div class="eyebrow">
       <span>Оценки</span>
+      <button class="ach-chip" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4.2A2.8 2.8 0 0 0 7 8M18 4h1.8A2.8 2.8 0 0 1 17 8"/><path d="M10 16h4v3h-4z"/><path d="M8 21h8"/></svg></button>
       <button id="feedRefresh" class="icon-refresh" aria-label="Обновить" title="Обновить">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
       </button>
@@ -1263,6 +1367,29 @@
   </div>
 </div>
 
+<!-- THEMES OVERLAY -->
+<div class="overlay-screen" id="themesScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeThemes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Темы</div>
+    <span class="count" style="margin-left:auto;">5 тем</span>
+  </div>
+  <div class="ov-body">
+    <div class="set-sub" style="margin:0 0 14px;">Каждая тема — свой цвет, свои декорации на фоне и своя подсветка интерфейса.</div>
+    <div class="theme-list" id="themeList"></div>
+  </div>
+</div>
+
+<!-- FAQ OVERLAY -->
+<div class="overlay-screen" id="faqScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeFaq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Частые вопросы</div>
+  </div>
+  <div class="ov-body" id="faqBody"></div>
+  <div class="faq-foot"><span id="appVersionLabel">SMOTRA</span></div>
+</div>
+
 <!-- ACHIEVEMENTS OVERLAY -->
 <div class="overlay-screen" id="achievementsScreen">
   <div class="ov-head">
@@ -1277,6 +1404,20 @@
 </div>
 
 <!-- BADGE DETAIL -->
+<div class="sheet-backdrop" id="askBackdrop"></div>
+<div class="sheet" id="askSheet" style="max-height:46%;">
+  <div class="sheet-handle"></div>
+  <div class="ask-body">
+    <div class="ask-title" id="askTitle">Добавить друга</div>
+    <div class="ask-sub" id="askSub">Введи Telegram ID друга — он показан у него внизу списка друзей</div>
+    <input class="ask-input" id="askInput" inputmode="numeric" autocomplete="off" placeholder="Например 123456789">
+    <div class="ask-actions">
+      <button id="askCancel">Отмена</button>
+      <button class="primary" id="askOk">Добавить</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet-backdrop" id="badgeBackdrop"></div>
 <div class="sheet" id="badgeSheet" style="max-height:50%;">
   <div class="handle"></div>
@@ -1285,6 +1426,7 @@
     <div id="badgeDetailName" style="font-size:18px; font-weight:700;"></div>
     <div id="badgeDetailDesc" style="font-size:13.5px; color:var(--text-dim); line-height:1.5; margin-top:6px;"></div>
     <div id="badgeDetailDate" style="font-size:12px; color:var(--text-dim); margin-top:16px;"></div>
+    <button id="badgeWhere" class="badge-where"></button>
   </div>
 </div>
 
@@ -1363,38 +1505,10 @@
 
     <div class="set-group">
       <div class="set-group-title">Оформление</div>
-      <div class="set-row" style="cursor:default;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg></div>
-        <div class="set-text"><div class="set-label">Тема</div><div class="set-sub" id="themeNameLabel">Синий</div></div>
-        <div class="theme-swatches" id="themePicker">
-          <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема">
-            <span class="sw-art"><svg viewBox="0 0 64 40" preserveAspectRatio="none">
-              <rect width="64" height="40" fill="#0c0e16"/>
-              <circle cx="12" cy="9" r="1.6" fill="#8b8fff" opacity=".9"/>
-              <circle cx="26" cy="19" r="1.1" fill="#a9b6ff" opacity=".8"/>
-              <circle cx="18" cy="31" r="1.3" fill="#7c6bff" opacity=".8"/>
-              <circle cx="44" cy="12" r="1.2" fill="#c9d3ff" opacity=".7"/>
-              <circle cx="52" cy="30" r="1.5" fill="#4f8bff" opacity=".85"/>
-              <ellipse cx="46" cy="22" rx="14" ry="5" fill="none" stroke="#7c6bff" stroke-width="1" opacity=".7" transform="rotate(-24 46 22)"/>
-              <circle cx="60" cy="15" r="2" fill="#b9c4ff"/>
-            </svg></span>
-          </button>
-          <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема">
-            <span class="sw-art"><svg viewBox="0 0 64 40" preserveAspectRatio="none">
-              <rect width="64" height="40" fill="#131110"/>
-              <g fill="#e3a63e" opacity=".85">
-                <rect x="3" y="4" width="8" height="6" rx="1.5"/><rect x="15" y="4" width="8" height="6" rx="1.5" opacity=".55"/>
-                <rect x="27" y="4" width="8" height="6" rx="1.5" opacity=".35"/><rect x="39" y="4" width="8" height="6" rx="1.5" opacity=".55"/>
-                <rect x="51" y="4" width="8" height="6" rx="1.5"/>
-                <rect x="3" y="30" width="8" height="6" rx="1.5" opacity=".55"/><rect x="15" y="30" width="8" height="6" rx="1.5"/>
-                <rect x="27" y="30" width="8" height="6" rx="1.5" opacity=".55"/><rect x="39" y="30" width="8" height="6" rx="1.5" opacity=".35"/>
-                <rect x="51" y="30" width="8" height="6" rx="1.5" opacity=".55"/>
-              </g>
-              <circle cx="32" cy="20" r="7" fill="none" stroke="#e3a63e" stroke-width="1.2" opacity=".8"/>
-              <path d="M32 12 L32 28 M24 20 L40 20" stroke="#e3a63e" stroke-width="1" opacity=".7"/>
-            </svg></span>
-          </button>
-        </div>
+      <div class="set-row" id="setThemeRow" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H13a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-3.3-4-6-9-6z"/><circle cx="8" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="16" cy="10" r="1.2" fill="currentColor"/></svg></div>
+        <div class="set-text"><div class="set-label">Тема оформления</div><div class="set-sub" id="themeNameLabel">Синий</div></div>
+        <button class="set-chip" id="openThemes">Все темы</button>
       </div>
     </div>
 
@@ -1432,6 +1546,15 @@
     </div>
 
     <div class="set-group">
+      <div class="set-group-title">Помощь</div>
+      <div class="set-row" id="openFaq" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></div>
+        <div class="set-text"><div class="set-label">Как всё работает</div><div class="set-sub">Что значат кнопки, «Вернуться», оценки и синхронизация</div></div>
+        <div class="set-chevron">›</div>
+      </div>
+    </div>
+
+    <div class="set-group">
       <div class="set-group-title">Мои данные</div>
       <div class="set-row" style="cursor:default;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></svg></div>
@@ -1453,7 +1576,6 @@
         <div class="set-chevron">›</div>
       </div>
       <div class="set-row"><div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div><div class="set-text"><div class="set-label">Источник данных</div><div class="set-sub">TMDB · рейтинги зрителей SMOTRA</div></div></div>
-      <div class="set-row"><div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M12 21h.01"/><path d="M7 8l5-5 5 5"/></svg></div><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA</div></div></div>
     </div>
 
     <div class="set-group danger">
@@ -1500,14 +1622,12 @@
     <div class="rl-modes" id="rlModes">
       <button data-mode="strip" class="on">Рулетка</button>
       <button data-mode="wheel">Колесо</button>
-      <button data-mode="poker">Покер</button>
-      <button data-mode="slots">Автомат</button>
     </div>
     <div class="rl-stage" id="rlStage"></div>
     <div class="rl-result" id="rlResult"></div>
     <div class="rl-actions">
-      <button id="rlAgain">Ещё раз</button>
-      <button class="primary" id="rlOpen">Открыть</button>
+      <button class="primary" id="rlAgain">Крутить</button>
+      <button id="rlOpen" disabled>Открыть</button>
       <button id="rlClose">Закрыть</button>
     </div>
   </div>
@@ -1517,11 +1637,26 @@
 <script>
 /* ==========================================================================
    ПРАВИЛО ПРОЕКТА (обязательное):
-   при КАЖДОМ обновлении приложения увеличивай APP_VERSION и не забывай
-   продублировать её в интерфейсе (настройки → Версия). Никогда не оставляй
-   старую версию — иначе невозможно понять, что у пользователя на руках.
+   при КАЖДОМ обновлении приложения увеличивай APP_VERSION и дописывай строку
+   в историю версий ниже. Никогда не оставляй старую версию — иначе невозможно
+   понять, что у пользователя на руках. В настройках номер не показываем (просьба
+   пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.19 — три новые темы (изумруд, роза, графит) и отдельное окно тем с живыми
+         карточками; заставка короче, буква O всегда в цвете текущей темы (раньше
+         была синей в любой теме), а при перезагрузке в той же сессии заставка
+         больше не проигрывается заново, и тема применяется до первой отрисовки.
+         Появился раздел «Частые вопросы» — те же «связь с базой», «мои данные» и
+         «отправить записи заново», только объяснённые по-человечески. Ачивки: у
+         каждой своё имя, свой значок (20 без повторов) и переход в тот раздел,
+         где считается прогресс, а кубок есть в шапке каждого раздела. Профиль
+         друга: сравнение оценок на одни и те же тайтлы и чипы с аватарками
+         друзей; в ленте оценок видны даты по-человечески («3 часа назад»).
+         Лента открывается мгновенно (собранные данные отдаются сразу, запрос
+         ограничен таймаутом), первый кадр рисуется из памяти телефона и кэша
+         каталога, а кэш теперь переиспользует своё окно популярных страниц —
+         вместо долгой крутилки тайтлы видны сразу.
    0.5 — стабильная база: онбординг, свайпы, списки, рецензии, ачивки, лента.
    0.6 — главная без пустоты и счётчиков, живой подъём колоды, анимация «Перемешать»,
          круговое меню на всех обложках с заморозкой скролла, туториал без уезжающей
@@ -1608,7 +1743,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.18';
+const APP_VERSION = '0.19';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1906,6 +2041,53 @@ function avatarBlockHTML(name, photoUrl, size){
   }
   return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:var(--on-accent); margin:0 auto 14px;">${esc((name[0]||'?').toUpperCase())}</div>`;
 }
+/* Оценки друзей по тайтлам: аватарка + балл. Собираем один раз за сессию,
+   чтобы окно «Мои оценки» показывало, кто из друзей оценил тот же фильм. */
+let friendRatingsCache = null;
+async function friendRatingsByMovie(){
+  if (friendRatingsCache) return friendRatingsCache;
+  const map = new Map();
+  try{
+    const friendIds = await getFriendIds();
+    const set = new Set(friendIds);
+    if (set.size){
+      const rows = await getFeedReviews(80);
+      const theirs = rows.filter(r => set.has(r.telegram_id));
+      const profiles = await Promise.all([...new Set(theirs.map(r => r.telegram_id))].map(id => getProfile(id)));
+      const pm = {};
+      profiles.forEach(p => { if (p) pm[p.telegram_id] = p; });
+      theirs.forEach(r => {
+        if (!map.has(r.movie_id)) map.set(r.movie_id, []);
+        map.get(r.movie_id).push({
+          id: r.telegram_id,
+          name: friendDisplayName(pm[r.telegram_id]),
+          photo: pm[r.telegram_id]?.photo_url,
+          score: Number(r.total) || 0,
+        });
+      });
+    }
+  }catch(e){ console.warn('оценки друзей не собрались', e); }
+  friendRatingsCache = map;
+  return map;
+}
+/* Чип друга: аватарка + балл. Зелёный балл — друг оценил выше нас, красный — ниже. */
+function friendScoreChip(f, mineScore){
+  const cls = mineScore == null ? '' : (f.score > mineScore ? ' up' : (f.score < mineScore ? ' down' : ''));
+  const name = esc(f.name || 'Друг');
+  return `<span class="fpr-chip" aria-label="${name}: ${f.score} из ${SCORE_MAX}">
+    <span class="fpr-chip-av" style="${f.photo ? `background-image:url('${esc(f.photo)}')` : ''}">${f.photo ? '' : esc((String(f.name||'?')[0] || '?').toUpperCase())}</span>
+    <b class="${cls.trim()}">${f.score}</b>
+  </span>`;
+}
+function friendRatingChips(friendRatings, movie, mineScore){
+  if (!friendRatings) return '';
+  const list = friendRatings.get(mid(movie)) || friendRatings.get(movie.id) || [];
+  if (!list.length) return '';
+  const shown = list.slice(0, 3).map(f => friendScoreChip(f, mineScore)).join('');
+  const rest = list.length - 3;
+  return `<span class="fpr-chips">${shown}${rest > 0 ? `<span class="fpr-more">+${rest}</span>` : ''}</span>`;
+}
+
 /* ============ ПРОФИЛИ ДРУЗЕЙ: списки, статистика, мэтч ============
    Читаем те же таблицы, что и для себя, но по telegram_id друга. Если доступ
    закрыт — тихо показываем то, что знаем из его оценок. */
@@ -1978,6 +2160,29 @@ async function myRatingMap(){
 /* Универсальное окно со списком тайтлов: используется и в профилях («Показать все»),
    и при нажатии на пилюли статистики. Ничего не перерисовывает на месте — поэтому
    страница под окном не прыгает вверх. */
+/* Любой тайтл в любом списке должен открываться: одна общая привязка плюс
+   страховка на уровне документа. Раньше часть списков оставалась без обработчика —
+   выглядело так, будто «нажимаю, а ничего не происходит». */
+const movieTapBound = new WeakSet();
+function openMovieByEl(el){
+  const movie = movieById(+el.dataset.movie, el.dataset.type);
+  if (movie){ haptic('selection'); openSheet(movie); return true; }
+  showToast('Тайтл ещё подгружается — секунду', 'film');
+  return false;
+}
+function bindMovieTaps(root){
+  if (!root || !root.querySelectorAll) return;
+  [...root.querySelectorAll('[data-movie]')].forEach(el => {
+    el.style.cursor = 'pointer';
+    el.onclick = () => openMovieByEl(el);
+    movieTapBound.add(el);
+  });
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest && e.target.closest('[data-movie]');
+  if (!el || movieTapBound.has(el) || el.closest('.card')) return;   // карточка колоды живёт своей логикой
+  openMovieByEl(el);
+}, true);
 function openTitleList(title, movies, opts){
   const o = opts || {};
   const screen = document.getElementById('titleListScreen');
@@ -1990,23 +2195,19 @@ function openTitleList(title, movies, opts){
   } else if (o.view === 'grid'){
     body.innerHTML = `<div class="common-grid">${movies.map(friendTile).join('')}</div>`;
   } else {
-    const scoreOf = o.scoreOf;
+    const scoreOf = o.scoreOf, extraOf = o.extraOf;
     body.innerHTML = `<div class="friend-watched">${movies.map(m => `
       <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
         <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
         <div class="fw-mid">
           <div class="fw-title">${esc(m.title)}</div>
           <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')}</div>
+          ${extraOf ? extraOf(m) : ''}
         </div>
-        ${scoreOf ? `<div class="fw-score">${scoreOf(m)}<small>/68</small></div>` : ''}
+        ${scoreOf ? `<div class="fw-score">${scoreOf(m)}<small>/${SCORE_MAX}</small></div>` : ''}
       </div>`).join('')}</div>`;
   }
-  [...body.querySelectorAll('[data-movie]')].forEach(el => {
-    el.onclick = () => {
-      const movie = movieById(+el.dataset.movie, el.dataset.type);
-      if (movie) openSheet(movie);
-    };
-  });
+  bindMovieTaps(body);
   document.getElementById('titleListScreen').classList.add('open');
 }
 document.getElementById('closeTitleList').onclick = () => document.getElementById('titleListScreen').classList.remove('open');
@@ -2051,10 +2252,33 @@ async function openFriendProfile(id){
   document.getElementById('friendProfileScreen').classList.add('open');
   const body = document.getElementById('friendProfileBody');
   body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Собираю статистику…</div>`;
-  const [profile, lists, mine, myRatings] = await Promise.all([
-    getProfile(id), getFriendLists(id), getFriendLists(TG_ID), myRatingMap(),
-  ]);
-  const theirRatings = lists.reviews;
+  let profile = null, lists = null, mine = null, myRatings = null;
+  try{
+    [profile, lists, mine, myRatings] = await Promise.all([
+      getProfile(id), getFriendLists(id), getFriendLists(TG_ID), myRatingMap(),
+    ]);
+  }catch(e){ console.warn('профиль друга не собрался', e); }
+  if (!lists){
+    // Пустой экран не показываем никогда: объясняем и даём кнопку «ещё раз»
+    body.innerHTML = `<div class="empty-note" style="padding:34px 6px;">Не получилось загрузить профиль.<br>Проверь связь и попробуй ещё раз.</div>
+      <button class="fp-more" id="fpRetry">Повторить</button>`;
+    const retry = document.getElementById('fpRetry');
+    if (retry) retry.onclick = () => { haptic('selection'); openFriendProfile(id); };
+    return;
+  }
+  if (!mine) mine = { watched: state.watched.slice(), wishlist: state.wishlist.slice(), watching: state.watching.slice(), skipped: state.skipped.slice() };
+  if (!myRatings) myRatings = new Map();
+  /* Тайтлы друга могли не попасть в наш каталог — дотягиваем их по id: иначе в
+     списках оставались одни названия без обложек. */
+  const theirKeys = [...lists.watched, ...lists.wishlist, ...lists.watching, ...(lists.reviews ? [...lists.reviews.keys()] : [])];
+  if (theirKeys.some(k => !keyToMovie(k)) && !openFriendProfile._busy){
+    openFriendProfile._busy = true;
+    fillMissingTitles(theirKeys).then(changed => {
+      openFriendProfile._busy = false;
+      if (changed && document.getElementById('friendProfileScreen').classList.contains('open')) openFriendProfile(id);
+    });
+  }
+  const theirRatings = lists.reviews || new Map();
   // Если свои списки почему-то не прочитались из базы (нет сети или прав) —
   // считаем мэтч по локальному состоянию, чтобы процент не обнулялся.
   const myWatchedKeys = mine.watched.length ? mine.watched : state.watched.slice();
@@ -2080,6 +2304,16 @@ async function openFriendProfile(id){
   const friendLevel = levelFor(smotraXP(
     { watched: lists.watched.length, wishlist: wishTheir.length, watching: watchingTheir.length, skipped: lists.skipped.length },
     theirRatings.size, 0, 0));
+  // Общие оценённые тайтлы: показываем те, где расхождение самое большое
+  const ratedBoth = [...theirRatings.entries()]
+    .filter(([k]) => myRatings && (myRatings.has(k) || myRatings.has(Number(k))))
+    .map(([k, theirs]) => {
+      const mine = Number(myRatings.get(k) ?? myRatings.get(Number(k)) ?? 0);
+      const movie = keyToMovie(k);
+      return movie ? { movie, mine, theirs: Number(theirs) || 0, diff: (Number(theirs) || 0) - mine, key: k } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
   const statTiles = [
     { num: lists.watched.length, lbl: 'смотрел', tile: 'watched' },
     { num: wishTheir.length, lbl: 'хочет', tile: 'wishlist' },
@@ -2127,6 +2361,21 @@ async function openFriendProfile(id){
         <div class="msg-bar"><i style="width:${Math.round(n/genreTotal*100)}%"></i></div></div>`).join('')}
     </div>` : ''}
 
+    ${ratedBoth.length ? `<div class="fp-sec">
+      <div class="fp-head"><span>Оценки на одни и те же тайтлы<b class="fp-count">${ratedBoth.length}</b></span></div>
+      <div class="fp-hint">Сверху — где вы расходитесь сильнее всего: там интереснее сравнивать</div>
+      ${ratedBoth.slice(0, 6).map(r => `
+        <div class="fpr-row" data-movie="${r.movie.id}" data-type="${r.movie.type}" role="button">
+          <div class="fpr-poster" style="${hasArt(r.movie) ? `background-image:url('${esc(posterUrl(r.movie,'w154'))}')` : `background:${posterBG(r.movie)}`}"></div>
+          <div class="fpr-mid">
+            <div class="fpr-title">${esc(r.movie.title)}</div>
+            <div class="fpr-sub">ты ${r.mine} · ${esc(name)} ${r.theirs}</div>
+          </div>
+          <div class="fpr-diff ${r.diff >= 0 ? 'up' : 'down'}">${r.diff >= 0 ? '+' : ''}${r.diff}</div>
+        </div>`).join('')}
+      ${ratedBoth.length > 6 ? `<button class="fp-more" data-cmp-more="1">Показать все ${ratedBoth.length}</button>` : ''}
+    </div>` : ''}
+
     ${friendSection('Общее в «Хочу чекнуть»', 'Эти тайтлы вы оба отложили посмотреть — рулетка выберет один', wishCommon, { roulette: true })}
 
     ${friendSection('Хочет посмотреть', '', wishTheir, { rows: true })}
@@ -2155,18 +2404,22 @@ async function openFriendProfile(id){
       openTitleList(`${name} · ${title}`, listsByTitle[title] || [], o);
     };
   });
-  [...body.querySelectorAll('[data-movie]')].forEach(el => {
-    el.onclick = () => {
-      const movie = movieById(+el.dataset.movie, el.dataset.type);
-      if (movie) openSheet(movie);
-    };
-  });
+  bindMovieTaps(body);
   // Пилюли друга: тап открывает окно с его тайтлами
   const hisTiles = {
     watched: ['Смотрел', watchedTheir, 'grid'],
     wishlist: ['Хочет посмотреть', wishTheir, 'rows'],
     watching: ['Смотрит сейчас', watchingTheir, 'grid'],
     reviews: ['Оценки', moviesFromKeys([...theirRatings.keys()]), 'rows'],
+  };
+  const cmpMore = body.querySelector('[data-cmp-more]');
+  if (cmpMore) cmpMore.onclick = () => {
+    haptic('selection');
+    openTitleList(`${name} · общие оценки`, ratedBoth.map(r => r.movie), {
+      view: 'rows',
+      scoreOf: m => (theirRatings.get(mid(m)) ?? theirRatings.get(m.id) ?? 0),
+      extraOf: m => `<div class="fpr-row-extra">у тебя ${myRatings.get(mid(m)) ?? myRatings.get(m.id) ?? '—'}</div>`,
+    });
   };
   [...body.querySelectorAll('[data-ftile]')].forEach(node => {
     node.onclick = () => {
@@ -2278,29 +2531,46 @@ const word = 'SMOTRA';
    и свой сдвиг блика, поэтому надпись «оживает» слева направо. */
 const sTitle = document.getElementById('sTitle');
 [...'SMOTRA'].forEach((ch, i) => {
-  const delay = (0.15 + i * 0.11).toFixed(3);
+  const delay = (0.1 + i * 0.075).toFixed(3);
   const sp = document.createElement('span');
   sp.textContent = ch;
   if (ch === 'O') sp.classList.add('o');
-  sp.style.animationDelay = `${delay}s, ${(2.1 + i * 0.16).toFixed(2)}s`;
+  sp.style.animationDelay = `${delay}s, ${(1.0 + i * 0.12).toFixed(2)}s`;
   sTitle.appendChild(sp);
 });
-/* Сцена заставки длинная: буквы въезжают до ~1.2с, слоган — к 2.2с,
-   подпись автора — к 3.1с. Держим заставку 4.8с, чтобы всё это успели
-   увидеть (параметр ?splash оставляет её на экране для проверки). */
+/* Сцена заставки короткая: буквы въезжают до ~0.6с, слоган — к 1.2с,
+   подпись автора — к 1.7с, на 2.9с заставка уходит (параметр ?splash
+   оставляет её на экране, если хочется разглядеть). */
 const SPLASH_PREVIEW = /[?&]splash/.test(location.search);   // ?splash — оставить заставку для проверки
-if (!SPLASH_PREVIEW) setTimeout(()=>{
-  const splashEl = document.getElementById('splash');
-  splashEl.classList.add('hide');
+const SPLASH_HOLD = 2900;
+/* Если приложение перезагрузилось только что (например, при смене темы) —
+   заставку второй раз не показываем, иначе это выглядит как «перезапуск». */
+const SPLASH_AGAIN_AFTER = 120000;
+let splashShownAt = 0;
+try{ splashShownAt = Number(sessionStorage.getItem('smotra_splash_at') || 0) || 0; }catch(e){ splashShownAt = 0; }
+const splashRecent = Date.now() - splashShownAt < SPLASH_AGAIN_AFTER;
+const splashEl = document.getElementById('splash');
+function finishSplash(){
   // Совсем выключаем слой: пока он в дереве, его анимации продолжают считаться
   // (а на слабом телефоне это лишние кадры на каждом экране).
-  setTimeout(() => { splashEl.style.display = 'none'; }, 600);
+  setTimeout(() => { splashEl.style.display = 'none'; }, 500);
   if (!localStorage.getItem('smotra_onboarded')) {
     document.getElementById('onboarding').classList.add('show');
   } else {
     maybeStartTutorial();
   }
-}, 4800);
+}
+if (SPLASH_PREVIEW){
+  /* ?splash — оставляем заставку на экране */
+} else if (splashRecent){
+  splashEl.classList.add('hide');
+  splashEl.style.display = 'none';
+  if (!localStorage.getItem('smotra_onboarded')) document.getElementById('onboarding').classList.add('show');
+  else maybeStartTutorial();
+} else {
+  try{ sessionStorage.setItem('smotra_splash_at', String(Date.now())); }catch(e){}
+  setTimeout(() => { splashEl.classList.add('hide'); finishSplash(); }, SPLASH_HOLD);
+}
 
 /* ============ STREAK (реальные дни захода) ============ */
 const STREAK_KEY = 'smotra_visit_days';
@@ -2526,8 +2796,10 @@ function animateRadialDemo(){
   if (!demo) return;
   const items = [...demo.querySelectorAll('.trd-item')];
   // радиус подстраиваем под размер сцены, чтобы кружки не упирались в края
-  const box = demo.parentElement ? demo.parentElement.clientWidth : 276;
-  const R = Math.max(62, Math.min(94, Math.round(box/2 - 34)));
+  const box = Math.min(demo.parentElement ? demo.parentElement.clientWidth : 320, window.innerWidth - 8);
+  // Радиус считаем так, чтобы между карточкой и кружками оставался зазор,
+  // а сами кружки не вылезали за сцену.
+  const R = Math.max(84, Math.min(116, Math.round(box/2 - 34)));
   items.forEach((it,i)=>{
     const ang = (-90 + i*(360/items.length)) * Math.PI/180;
     const dx = Math.cos(ang)*R, dy = Math.sin(ang)*R;
@@ -2791,25 +3063,98 @@ const THEME_ART = {
       <path d="M50 78 q10 -9 20 0 q-10 9 -20 0 z" fill="currentColor" opacity=".22" class="ta-twinkle"/>
     </svg>`
 };
+/* Дополнительные рисунки: у каждой новой темы свой характер */
+THEME_ART.emerald = `
+  <svg class="ta-layer ta-far" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    ${[[10,20],[26,12],[45,24],[63,10],[80,22],[92,34],[16,52],[38,60],[58,48],[76,66],[24,80],[50,88],[86,80]]
+      .map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i%3===0?0.55:0.32}" fill="currentColor" opacity="${i%2?.35:.6}" class="ta-twinkle" style="animation-delay:${(i*0.31).toFixed(2)}s"/>`).join('')}
+  </svg>
+  <svg class="ta-layer ta-near" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M8 92 C 24 74, 26 52, 20 30 C 34 44, 40 66, 34 92 Z" fill="currentColor" opacity=".16"/>
+    <path d="M92 96 C 80 78, 78 58, 86 38 C 70 52, 62 74, 70 96 Z" fill="currentColor" opacity=".12"/>
+    <g class="ta-orbit" style="animation-duration:52s"><circle cx="72" cy="26" r="13" fill="none" stroke="currentColor" stroke-width="0.3" opacity=".35"/><circle cx="85" cy="26" r="0.9" fill="currentColor"/></g>
+  </svg>`;
+THEME_ART.rose = `
+  <svg class="ta-layer ta-far" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    ${[[12,16],[30,9],[52,18],[70,8],[88,20],[20,40],[44,34],[66,44],[84,56],[14,64],[36,72],[58,80],[78,88],[94,72]]
+      .map(([x,y],i)=>`<path transform="translate(${x} ${y}) scale(${i%4===0?0.9:0.6})" d="M0 0 C 2 -3 6 -3 7 0 C 6 3 2 3 0 0 Z" fill="currentColor" opacity="${i%3?.3:.55}" class="ta-twinkle" style="animation-delay:${(i*0.26).toFixed(2)}s"/>`).join('')}
+  </svg>
+  <svg class="ta-layer ta-near" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M18 84 C 10 68, 14 50, 30 40 C 22 58, 24 74, 34 86 Z" fill="currentColor" opacity=".14"/>
+    <path d="M84 20 C 94 30, 94 46, 84 56 C 88 40, 88 28, 78 18 Z" fill="currentColor" opacity=".12"/>
+    <g class="ta-flare" opacity=".45"><circle cx="60" cy="30" r="4.5" fill="none" stroke="currentColor" stroke-width="0.4"/><path d="M60 22 L60 38 M52 30 L68 30" stroke="currentColor" stroke-width="0.3"/></g>
+  </svg>`;
+THEME_ART.graphite = `
+  <svg class="ta-layer ta-far" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    <g stroke="currentColor" stroke-width="0.2" opacity=".3" fill="none">
+      ${Array.from({length: 6}, (_, i) => `<path d="M0 ${12 + i*16} H100"/>`).join('')}
+      ${Array.from({length: 6}, (_, i) => `<path d="M${12 + i*16} 0 V100"/>`).join('')}
+    </g>
+    ${[[22,22],[54,38],[78,66],[38,78]].map(([x,y],i)=>`<rect x="${x-1.6}" y="${y-1.6}" width="3.2" height="3.2" rx="0.6" fill="currentColor" opacity=".5" class="ta-twinkle" style="animation-delay:${(i*0.4).toFixed(2)}s"/>`).join('')}
+  </svg>
+  <svg class="ta-layer ta-near" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect x="6" y="10" width="30" height="1.2" fill="currentColor" opacity=".22"/>
+    <rect x="64" y="82" width="30" height="1.2" fill="currentColor" opacity=".18"/>
+    <circle cx="50" cy="50" r="26" fill="none" stroke="currentColor" stroke-width="0.25" opacity=".22" class="ta-orbit"/>
+    <path class="ta-comet" d="M0,0 l-8,3 l8,3 l-8,3 l8,3 z" fill="currentColor" opacity=".35"/>
+  </svg>`;
+/* Объём надписи SMOTRA собираем из акцентного цвета темы: раньше оттенки торца
+   были прописаны под синюю и в других темах выглядели чужеродно. */
+function shadeColor(hex, factor){
+  const h = String(hex || '').trim().replace('#', '');
+  if (h.length !== 6) return hex;
+  const n = parseInt(h, 16);
+  if (!isFinite(n)) return hex;
+  const clamp = v => Math.max(0, Math.min(255, Math.round(v)));
+  return `rgb(${clamp(((n >> 16) & 255) * factor)}, ${clamp(((n >> 8) & 255) * factor)}, ${clamp((n & 255) * factor)})`;
+}
+function applyWordmarkShades(){
+  // Цвета берём из таблицы тем: она всегда совпадает с CSS и не зависит от того,
+  // успел ли браузер посчитать переменные (важно для мгновенной отрисовки заставки).
+  const theme = THEMES.find(t => t.id === themeId()) || THEMES[0];
+  const cs = getComputedStyle(document.body);
+  const cssAccent = (cs.getPropertyValue('--accent') || '').trim();
+  const cssAccent2 = (cs.getPropertyValue('--accent-2') || '').trim();
+  const accent = theme.accent || cssAccent || '#7c6bff';
+  const accent2 = theme.accent2 || cssAccent2 || accent;
+  const st = document.documentElement.style;
+  for (let i = 1; i <= 8; i++){
+    st.setProperty('--wm-' + i, shadeColor(accent, 1 - i * 0.075));
+    st.setProperty('--wmo-' + i, shadeColor(accent2, 1 - i * 0.07));
+  }
+}
 function applyThemeArt(){
   const host = document.getElementById('themeArt');
   if (!host) return;
-  const name = document.body.classList.contains('theme-amber') ? 'amber' : 'neon';
+  const name = themeId();                       // тем стало пять — у каждой свой рисунок
   if (host.dataset.theme === name) return;
   host.dataset.theme = name;
   host.innerHTML = THEME_ART[name];
 }
-const THEME_NAMES = { neon:'Синий', amber:'Янтарь' };
+/* Полный список тем: имя, подпись и порядок в окне выбора */
+const THEMES = [
+  { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', bg:'#0c0e16' },
+  { id:'amber',    name:'Янтарь',   note:'Тёплое кино',        accent:'#e3a63e', accent2:'#c9832a', bg:'#131110' },
+  { id:'emerald',  name:'Изумруд',  note:'Спокойный зелёный',  accent:'#2fc08d', accent2:'#19a7b8', bg:'#08120f' },
+  { id:'rose',     name:'Роза',     note:'Ягодный вечер',      accent:'#ff5fa2', accent2:'#c05cff', bg:'#150a12' },
+  { id:'graphite', name:'Графит',   note:'Строгий монохром',   accent:'#a3adbd', accent2:'#6f7b8d', bg:'#0d0d10' },
+];
+const THEME_NAMES = Object.fromEntries(THEMES.map(t => [t.id, t.name]));
+function themeId(){ return (THEMES.find(t => document.body.classList.contains('theme-' + t.id)) || THEMES[0]).id; }
 function applyTheme(name){
-  document.body.classList.toggle('theme-amber', name === 'amber');
+  THEMES.forEach(t => document.body.classList.toggle('theme-' + t.id, t.id === name));
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', themeBgColor());
-  document.querySelectorAll('#themePicker .theme-swatch').forEach(el=>{
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    el.classList.toggle('active', el.dataset.theme === name);
+  });
+  document.querySelectorAll('#themeList .theme-card').forEach(el=>{
     el.classList.toggle('active', el.dataset.theme === name);
   });
   const label = document.getElementById('themeNameLabel');
-  if (label) label.textContent = THEME_NAMES[name] || THEME_NAMES.neon;
+  if (label) label.textContent = (THEME_NAMES[name] || THEME_NAMES.neon) + ' · ' + THEMES.length + ' тем';
   applyThemeArt();
+  applyWordmarkShades();
   syncTelegramColors();
 }
 /* Слабый телефон: когда приложение ушло в фон, останавливаем все анимации —
@@ -2817,17 +3162,42 @@ function applyTheme(name){
 document.addEventListener('visibilitychange', () => {
   document.body.classList.toggle('app-hidden', document.hidden);
 });
+function pickTheme(name){
+  if (!THEME_NAMES[name]) return;
+  localStorage.setItem('smotra_theme', name);
+  applyTheme(name);
+  renderThemeWindow();
+}
 (function initTheme(){
   const saved = localStorage.getItem('smotra_theme') || 'neon';
   applyTheme(saved);
-  document.querySelectorAll('#themePicker .theme-swatch').forEach(el=>{
-    el.onclick = () => {
-      haptic('selection');
-      localStorage.setItem('smotra_theme', el.dataset.theme);
-      applyTheme(el.dataset.theme);
-    };
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    el.onclick = (e) => { e.stopPropagation(); haptic('selection'); pickTheme(el.dataset.theme); };
   });
+  renderThemeWindow();
 })();
+/* Отдельное окно с темами: можно спокойно посмотреть все и выбрать */
+function renderThemeWindow(){
+  const host = document.getElementById('themeList');
+  if (!host) return;
+  const current = themeId();
+  host.innerHTML = THEMES.map(t => `
+    <button class="theme-card ${t.id === current ? 'active' : ''}" data-theme="${t.id}">
+      <span class="theme-card-art" style="color:${t.accent}; background:${t.bg};">${THEME_ART[t.id] || ''}</span>
+      <span class="theme-card-text"><b>${esc(t.name)}</b><i>${esc(t.note)}</i></span>
+      <span class="theme-card-check">${t.id === current ? ICON('check', 14) : ''}</span>
+    </button>`).join('');
+  [...host.querySelectorAll('.theme-card')].forEach(card => {
+    card.onclick = () => { haptic('selection'); pickTheme(card.dataset.theme); };
+  });
+}
+document.getElementById('openThemes').onclick = () => {
+  haptic('selection');
+  renderThemeWindow();
+  document.getElementById('themesScreen').classList.add('open');
+};
+document.getElementById('closeThemes').onclick = () => document.getElementById('themesScreen').classList.remove('open');
+document.getElementById('setThemeRow').onclick = () => document.getElementById('openThemes').click();
 
 function initSwitch(el, def, onChange){
   if (!el) return;
@@ -2851,7 +3221,7 @@ function initSwitch(el, def, onChange){
 }
 // Тумблер уведомлений убран: он ничего не делал (пушей нет) — лучше не врать пользователю.
 initSwitch(document.getElementById('switchHaptic'), true);
-initSwitch(document.getElementById('switchAdult'), false, async (val) => {
+initSwitch(document.getElementById('switchAdult'), true, async (val) => {
   showToast('Обновляю каталог…');
   try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
   await loadMovies();
@@ -3031,7 +3401,21 @@ const TMDB_CACHE_TTL = 90 * 60 * 1000; // 1.5 часа: подборка дол�
    поэтому на каждый запуск берём случайное окно страниц (1..5) — набор остаётся
    популярным, но каждый раз новым. Кэш привязан к этому окну. */
 const DISCOVER_WINDOW = 5;
-let discoverStart = 1 + Math.floor(Math.random() * DISCOVER_WINDOW);
+/* Окно популярных страниц: если кэш свежий — остаёмся в том же окне, поэтому лента
+   поднимается мгновенно из памяти. Нет кэша или он устарел — берём новое случайное
+   окно, и подборка снова выглядит иначе. Раньше окно выбиралось заново при каждом
+   запуске, кэш почти никогда не подходил, и лента всякий раз ждала сеть. */
+function pickDiscoverStart(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(TMDB_CACHE_KEY) || 'null');
+    if (raw && raw.pages === DISCOVER_PAGES && raw.start >= 1 && raw.start + DISCOVER_PAGES - 1 <= 499
+        && Date.now() - raw.ts < TMDB_CACHE_TTL && (raw.movies || []).length){
+      return raw.start;
+    }
+  }catch(e){}
+  return 1 + Math.floor(Math.random() * DISCOVER_WINDOW);
+}
+let discoverStart = pickDiscoverStart();
 const DISCOVER_PAGES = 2;   // сколько страниц каждой категории тянем на старте
 function loadTmdbCache(){
   try{
@@ -3070,7 +3454,7 @@ function writeTmdbCache(movies){
 let tmdbPage = 1;
 function discoverUrls(page){
   const K = TMDB_KEY;
-  const adult = getFlag('smotra_adult', false) ? 'true' : 'false';
+  const adult = getFlag('smotra_adult', true) ? 'true' : 'false';   // 18+ включён по умолчанию
   // language=ru-RU — TMDB отдаёт русские названия и описания, где они есть. Мусорные тайтлы
   // без перевода/постера мы потом отфильтруем сами (keepRussian). vote_count.gte отсекает
   // совсем безвестные записи, чтобы в ленте было узнаваемое кино.
@@ -3082,18 +3466,35 @@ function discoverUrls(page){
     cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=20&page=${page}&api_key=${K}`,
   };
 }
+/* Каталог из кэша применяем синхронно: от этого зависит первый кадр приложения. */
+function applyCatalog(cache){
+  if (!cache) return false;
+  // Даже в кэше на всякий случай прогоняем дедупликацию: раньше в нём могли
+  // остаться двойники из разных discover-списков.
+  MOVIES = dedupeMovies(cache.movies || []);
+  rebuildMovieIndex(); tutMoviesCache = null;
+  Object.assign(GENRE_MOVIE, cache.genreMovie || {});
+  Object.assign(GENRE_TV, cache.genreTv || {});
+  tmdbFailed = false;
+  return MOVIES.length > 0;
+}
+/* Списки, сохранённые на телефоне: нужны для первого кадра, чтобы не показать
+   тайтл, который уже свайпнули. Сеть потом лишь уточняет картину. */
+function applyLocalState(){
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(STATE_KEY) || 'null'); }catch(e){}
+  if (!cached) return false;
+  let changed = false;
+  ['watched', 'skipped', 'wishlist', 'watching'].forEach(field => {
+    (cached[field] || []).filter(Boolean).forEach(k => {
+      if (!state[field].includes(k)){ state[field].push(k); changed = true; }
+    });
+  });
+  return changed;
+}
 async function loadMovies(){
   const cached = loadTmdbCache();
-  if (cached){
-    // Даже в кэше на всякий случай прогоняем дедупликацию: раньше в нём могли
-    // остаться двойники из разных discover-списков.
-    MOVIES = dedupeMovies(cached.movies || []);
-    rebuildMovieIndex(); tutMoviesCache = null;
-    Object.assign(GENRE_MOVIE, cached.genreMovie || {});
-    Object.assign(GENRE_TV, cached.genreTv || {});
-    tmdbFailed = false;
-    return;
-  }
+  if (cached){ applyCatalog(cached); return; }
   try{
     await loadGenres();
     tmdbPage = discoverStart;
@@ -3340,23 +3741,23 @@ const BADGES = [
   { id:'b1',  kind:'watched',  min:1,   icon:'clapper',  name:'Дебют',          desc:'Отметь первый просмотренный тайтл' },
   { id:'b2',  kind:'watched',  min:5,   icon:'popcorn',  name:'Втянулся',       desc:'Отметь 5 просмотренных тайтлов' },
   { id:'b3',  kind:'watched',  min:10,  icon:'reel',     name:'Киноман',        desc:'Отметь 10 просмотренных тайтлов' },
-  { id:'b4',  kind:'watched',  min:25,  icon:'trophy',   name:'Марафонец',      desc:'Отметь 25 просмотренных тайтлов' },
-  { id:'b5',  kind:'watched',  min:50,  icon:'fire',     name:'Полтинник',      desc:'Отметь 50 просмотренных тайтлов' },
+  { id:'b4',  kind:'watched',  min:25,  icon:'target',   name:'Марафонец',      desc:'Отметь 25 просмотренных тайтлов' },
+  { id:'b5',  kind:'watched',  min:50,  icon:'trophy',     name:'Полтинник',      desc:'Отметь 50 просмотренных тайтлов' },
   { id:'b6',  kind:'watched',  min:100, icon:'starFill', name:'Сотка',          desc:'Отметь 100 просмотренных тайтлов' },
-  { id:'b7',  kind:'watched',  min:200, icon:'trophy',   name:'Легенда SMOTRA', desc:'Отметь 200 просмотренных тайтлов' },
+  { id:'b7',  kind:'watched',  min:200, icon:'rocket',   name:'Легенда SMOTRA', desc:'Отметь 200 просмотренных тайтлов' },
   { id:'b8',  kind:'wishlist', min:5,   icon:'star',     name:'Списком',        desc:'Собери 5 тайтлов в «Хочу чекнуть»' },
-  { id:'b9',  kind:'wishlist', min:25,  icon:'sparkles', name:'Киноплан',       desc:'Собери 25 тайтлов в «Хочу чекнуть»' },
+  { id:'b9',  kind:'wishlist', min:25,  icon:'newspaper', name:'Киноплан',       desc:'Собери 25 тайтлов в «Хочу чекнуть»' },
   { id:'b10', kind:'watching', min:3,   icon:'play',     name:'Сейчас смотрю',  desc:'Держи 3 тайтла в «Смотрю»' },
   { id:'b11', kind:'skipped',  min:25,  icon:'cross',    name:'Привереда',      desc:'Пропусти 25 тайтлов' },
-  { id:'b12', kind:'skipped',  min:100, icon:'cross',    name:'Ничего не зашло',desc:'Пропусти 100 тайтлов' },
-  { id:'b13', kind:'reviews',  min:1,   icon:'clapper',  name:'Критик',         desc:'Поставь первую оценку по шкале' },
-  { id:'b14', kind:'reviews',  min:10,  icon:'reel',     name:'Рецензент',      desc:'Поставь 10 оценок по шкале' },
+  { id:'b12', kind:'skipped',  min:100, icon:'ghost',    name:'Ничего не зашло',desc:'Пропусти 100 тайтлов' },
+  { id:'b13', kind:'reviews',  min:1,   icon:'smile',  name:'Критик',         desc:'Поставь первую оценку по шкале' },
+  { id:'b14', kind:'reviews',  min:10,  icon:'detective',     name:'Рецензент',      desc:'Поставь 10 оценок по шкале' },
   { id:'b15', kind:'streak',   min:3,   icon:'fire',     name:'Разогрев',       desc:'Заходи 3 дня подряд' },
-  { id:'b16', kind:'streak',   min:7,   icon:'fire',     name:'Неделя в кино',  desc:'Заходи 7 дней подряд' },
-  { id:'b17', kind:'streak',   min:30,  icon:'trophy',   name:'Месяц подряд',   desc:'Заходи 30 дней подряд' },
+  { id:'b16', kind:'streak',   min:7,   icon:'burst',     name:'Неделя в кино',  desc:'Заходи 7 дней подряд' },
+  { id:'b17', kind:'streak',   min:30,  icon:'heart',   name:'Месяц подряд',   desc:'Заходи 30 дней подряд' },
   { id:'b18', kind:'genres',   min:5,   icon:'sparkles', name:'Жанровый',       desc:'Посмотри тайтлы из 5 разных жанров' },
-  { id:'b19', kind:'genres',   min:10,  icon:'starFill', name:'Всеядный',       desc:'Посмотри тайтлы из 10 разных жанров' },
-  { id:'b20', kind:'episodes', min:50,  icon:'popcorn',  name:'Сериальщик',     desc:'Отметь 50 просмотренных серий' },
+  { id:'b19', kind:'genres',   min:10,  icon:'folder', name:'Всеядный',       desc:'Посмотри тайтлы из 10 разных жанров' },
+  { id:'b20', kind:'episodes', min:50,  icon:'tv',  name:'Сериальщик',     desc:'Отметь 50 просмотренных серий' },
 ];
 
 let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
@@ -3388,7 +3789,9 @@ function rememberMovie(m){
   const k = mid(m);
   if (movieStubs[k]) return;
   movieStubs[k] = { id: m.id, type: m.type, title: m.title, originalTitle: m.originalTitle, year: m.year,
-    rating: m.rating, poster: m.poster, genres: (m.genres || []).slice(0, 3),
+    rating: m.rating, poster: m.poster, posterPath: m.posterPath || null,
+    overview: m.overview || '', voteCount: m.voteCount || 0,
+    genres: (m.genres || []).slice(0, 3),
     isCartoon: m.isCartoon, isAnime: m.isAnime, stub: true };
   const keys = Object.keys(movieStubs);
   if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(x => delete movieStubs[x]);
@@ -3463,8 +3866,14 @@ function bumpReviewCount(movieId){
 }
 // ID у фильмов и сериалов живут в разных пространствах, поэтому тип — часть ключа.
 function movieById(id, type){
-  if (type) return MOVIES.find(m => m.id === id && m.type === type) || null;
-  return MOVIES.find(m => m.id === id) || null;
+  const inCatalog = type ? MOVIES.find(m => m.id === id && m.type === type) : MOVIES.find(m => m.id === id);
+  if (inCatalog) return inCatalog;
+  /* Тайтла нет в загруженном каталоге — ищем в копиях из памяти телефона.
+     Без этого в «Хочу чекнуть» и в профилях карточки не нажимались вообще. */
+  for (const m of Object.values(movieStubs)){
+    if (m.id === id && (!type || m.type === type)) return m;
+  }
+  return null;
 }
 /* Один тайтл = один ключ: фильм и мультфильм с одним TMDB-id — это один и тот же фильм,
    а сериал с тем же числом — другой тайтл (см. mid). */
@@ -3482,8 +3891,12 @@ const Roulette = (function(){
   const stage = document.getElementById('rlStage');
   const modesEl = document.getElementById('rlModes');
   const resultEl = document.getElementById('rlResult');
-  const TILE = 86, GAP = 10, SLOT_LINE = 44;
-  const MODES = { strip:'Рулетка', wheel:'Колесо', poker:'Покер', slots:'Автомат' };
+  const spinBtn = document.getElementById('rlAgain');
+  const openBtn = document.getElementById('rlOpen');
+  const TILE = 86, GAP = 10;
+  /* Two режима: привычная лента и колесо. Покер и автомат убраны — слишком много
+     шума, а толку ноль. */
+  const MODES = { strip:'Рулетка', wheel:'Колесо' };
   let spinning = false, winner = null, spinTimer = null;
   let customPool = null;          // список для прокрутки: по умолчанию — свой «Хочу чекнуть»
   let mode = 'strip';
@@ -3494,28 +3907,34 @@ const Roulette = (function(){
     if (customPool) return customPool.slice();
     return state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
   }
-  function close(){
-    overlay.classList.remove('show');
-    spinning = false;
-    customPool = null;
-    clearTimeout(spinTimer);
-  }
+  function close(){ overlay.classList.remove('show'); spinning = false; customPool = null; clearTimeout(spinTimer); }
+  function setOpenEnabled(on){ if (openBtn){ openBtn.disabled = !on; } }
+  function setSpinLabel(text){ if (spinBtn) spinBtn.textContent = text; }
   function stageHTML(){
     if (mode === 'wheel') return `<div class="rl-wheel-wrap"><svg class="rl-wheel" id="rlWheel" viewBox="0 0 200 200" aria-hidden="true"></svg><div class="rl-pin"></div></div>`;
-    if (mode === 'poker') return `<div class="rl-poker" id="rlPoker"></div>`;
-    if (mode === 'slots') return `<div class="rl-slots" id="rlSlots"></div>`;
     return `<div class="rl-strip-wrap"><div class="rl-marker"></div><div class="rl-strip" id="rlStrip"></div></div>`;
   }
   function renderStage(){ stage.innerHTML = stageHTML(); }
-  function renderModes(){
-    [...modesEl.querySelectorAll('button')].forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  function renderModes(){ [...modesEl.querySelectorAll('button')].forEach(b => b.classList.toggle('on', b.dataset.mode === mode)); }
+  /* Пока ничего не крутили — никакой анимации: человек зашёл, выбрал режим и жмёт «Крутить» */
+  function idle(){
+    const items = pool();
+    winner = null; spinning = false;
+    setOpenEnabled(false);
+    setSpinLabel(mode === 'wheel' ? 'Крутить колесо' : 'Крутить');
+    if (mode === 'wheel') drawWheel(items);
+    else drawStripIdle(items);
+    resultEl.innerHTML = `<div class="rl-hint">${items.length > 1
+      ? 'Выбери режим и нажми «Крутить» — покажем, что посмотреть'
+      : 'Добавь побольше тайтлов в «Хочу чекнуть» — будет из чего выбирать'}</div>`;
   }
   function setMode(next, spinNow){
-    if (!MODES[next] || next === mode){ if (spinNow) spin(); return; }
+    if (!MODES[next]) return;
     mode = next;
     renderModes();
     renderStage();
-    if (spinNow !== false) spin();
+    idle();
+    if (spinNow) spin();
   }
   function open(list, title, startMode){
     customPool = (Array.isArray(list) && list.length) ? list.slice() : null;
@@ -3527,43 +3946,53 @@ const Roulette = (function(){
     overlay.classList.add('show');
     renderModes();
     renderStage();
+    idle();
     haptic('impact','medium');
-    spin();
   }
   function spin(){
     if (spinning) return;
     const items = pool();
     if (!items.length) return;
-    resultEl.innerHTML = '<div class="rl-meta">Крутим…</div>';
+    resultEl.innerHTML = `<div class="rl-hint">${mode === 'wheel' ? 'Колесо крутится…' : 'Лента едет…'}</div>`;
     spinning = true;
     winner = null;
-    [...overlay.querySelectorAll('.win')].forEach(el => el.classList.remove('win'));
-    if (mode === 'wheel') spinWheel(items);
-    else if (mode === 'poker') spinPoker(items);
-    else if (mode === 'slots') spinSlots(items);
-    else spinStrip(items);
+    setOpenEnabled(false);
+    setSpinLabel('Ещё раз');
+    if (mode === 'wheel') spinWheel(items); else spinStrip(items);
   }
   function finish(m){
     spinning = false;
     winner = m || null;
     haptic('notification','success');
+    setOpenEnabled(!!winner);
     if (!winner) return;
     resultEl.innerHTML = `<div class="rl-name">${esc(winner.title)}</div>
       <div class="rl-meta">${esc(winner.year)} · ${esc(TYPE_LABEL[winner.type] || 'Фильм')} · ${esc(winner.rating)}<span class="star"> ★</span></div>`;
   }
-  /* --- режим 1: лента-рулетка --- */
-  function spinStrip(items){
+  /* --- режим 1: лента --- */
+  function stripItemsHTML(items){
+    const LOOP = 34;
+    const out = [];
+    for (let i = 0; i < LOOP; i++) out.push(items[i % items.length]);
+    return out;
+  }
+  function drawStripIdle(items){
     const strip = document.getElementById('rlStrip');
     if (!strip) return;
-    // Лента: тайтлы повторяются, чтобы полотно было длинным и «ехало» долго
-    const LOOP = 34;
-    const stripItems = [];
-    for (let i = 0; i < LOOP; i++) stripItems.push(items[i % items.length]);
-    const winIndex = Math.floor(Math.random() * (LOOP - 10)) + 5;
-    strip.innerHTML = stripItems.map((m, i) => `
+    strip.style.transition = 'none';
+    strip.style.transform = 'translateX(0)';
+    strip.innerHTML = stripItemsHTML(items).map((m, i) => `
       <div class="rl-item" data-i="${i}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}">
         <span>${esc(m.title)}</span>
       </div>`).join('');
+  }
+  function spinStrip(items){
+    const strip = document.getElementById('rlStrip');
+    if (!strip) return;
+    if (!strip.children.length) drawStripIdle(items);
+    const LOOP = 34;
+    const winIndex = Math.floor(Math.random() * (LOOP - 10)) + 5;
+    [...strip.querySelectorAll('.rl-item.win')].forEach(el => el.classList.remove('win'));
     strip.style.transition = 'none';
     strip.style.transform = 'translateX(0)';
     const wrap = strip.parentElement;
@@ -3581,92 +4010,76 @@ const Roulette = (function(){
       finish(items[winIndex % items.length]);
     }, 3550 * speed);
   }
-  /* --- режим 2: колесо --- */
-  function spinWheel(items){
+  /* --- режим 2: колесо из обложек --- */
+  function drawWheel(items, opts){
     const wheel = document.getElementById('rlWheel');
     if (!wheel) return;
-    const n = Math.min(items.length, 8);
+    const n = Math.min(Math.max(items.length, 2), 8);
     const step = 360 / n;
     const rad = a => a * Math.PI / 180;
-    let parts = `<circle cx="100" cy="100" r="92" style="fill:var(--surface-2)"/>`;
+    let defs = '', sectors = '';
     for (let i = 0; i < n; i++){
       const a0 = -90 + i * step, a1 = a0 + step;
       const x0 = (100 + 92 * Math.cos(rad(a0))).toFixed(2), y0 = (100 + 92 * Math.sin(rad(a0))).toFixed(2);
       const x1 = (100 + 92 * Math.cos(rad(a1))).toFixed(2), y1 = (100 + 92 * Math.sin(rad(a1))).toFixed(2);
-      const mid = a0 + step / 2;
-      const tx = (100 + 62 * Math.cos(rad(mid))).toFixed(2), ty = (100 + 62 * Math.sin(rad(mid))).toFixed(2);
-      parts += `<path d="M100,100 L${x0},${y0} A92,92 0 0,1 ${x1},${y1} Z" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:${i % 2 ? 0.92 : 0.6}"/>`;
-      parts += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="700" style="fill:var(--on-accent)">${i + 1}</text>`;
+      const d = `M100,100 L${x0},${y0} A92,92 0 0,1 ${x1},${y1} Z`;
+      const m = items[i % items.length];
+      defs += `<clipPath id="rlSector${i}"><path d="${d}"/></clipPath>`;
+      sectors += `<g class="rl-sec" data-i="${i}">`;
+      sectors += hasArt(m)
+        ? `<image href="${esc(posterUrl(m, 'w185'))}" x="8" y="8" width="184" height="184" preserveAspectRatio="xMidYMid slice" clip-path="url(#rlSector${i})" opacity="0.96"/>`
+        : `<path d="${d}" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:.75"/>`;
+      sectors += `<path d="${d}" fill="none" style="stroke:var(--bg)" stroke-width="1.6"/>`;
+      sectors += `</g>`;
     }
-    parts += `<circle cx="100" cy="100" r="18" style="fill:var(--surface); stroke:var(--border)"/>
-      <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" style="fill:var(--accent)">SMOTRA</text>`;
+    let rim = '';
+    for (let i = 0; i < 24; i++){
+      const a = i * 15;
+      rim += `<circle cx="${(100 + 96 * Math.cos(rad(a))).toFixed(1)}" cy="${(100 + 96 * Math.sin(rad(a))).toFixed(1)}" r="1.8" style="fill:var(--accent)"/>`;
+    }
+    wheel.innerHTML = `<defs>${defs}</defs><circle cx="100" cy="100" r="93" style="fill:var(--surface-2)"/>${sectors}${rim}
+      <circle cx="100" cy="100" r="93" fill="none" style="stroke:var(--accent); opacity:.55" stroke-width="2.5"/>
+      <circle cx="100" cy="100" r="17" style="fill:var(--surface); stroke:var(--accent-border)"/>
+      <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="700" style="fill:var(--accent)">SMOTRA</text>`;
+    wheel.classList.remove('spinning');
     wheel.style.transition = 'none';
     wheel.style.transform = 'rotate(0deg)';
-    wheel.innerHTML = parts;
+    if (opts && opts.dimIndex != null){
+      [...wheel.querySelectorAll('.rl-sec')].forEach(g => g.classList.toggle('dim', +g.dataset.i !== opts.dimIndex));
+    }
+  }
+  function spinWheel(items){
+    const wheel = document.getElementById('rlWheel');
+    if (!wheel) return;
+    const n = Math.min(Math.max(items.length, 2), 8);
+    const step = 360 / n;
     const winIndex = Math.floor(Math.random() * n);
+    if (!wheel.querySelector('.rl-sec')) drawWheel(items);
+    drawWheel(items);
     const target = 360 * 4 - (winIndex * step + step / 2);
+    wheel.classList.add('spinning');
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        wheel.style.transition = `transform ${(3.6 * speed).toFixed(2)}s cubic-bezier(.15,.75,.05,1)`;
+        wheel.style.transition = `transform ${(3.8 * speed).toFixed(2)}s cubic-bezier(.15,.75,.05,1)`;
         wheel.style.transform = `rotate(${target}deg)`;
       });
     });
     spinTimer = setTimeout(()=>{
-      [...wheel.querySelectorAll('path')].forEach((p,i)=> p.style.opacity = i === winIndex ? 1 : 0.34);
-      finish(items[winIndex]);
-    }, 3700 * speed);
-  }
-  /* --- режим 3: покер — пять карт, одна выигрывает --- */
-  function spinPoker(items){
-    const host = document.getElementById('rlPoker');
-    if (!host) return;
-    const n = Math.min(items.length, 5);
-    host.innerHTML = items.slice(0, n).map((m, i) => `
-      <div class="rl-pcard" data-i="${i}" style="animation-delay:${(i * 0.1 * speed).toFixed(2)}s">
-        ${hasArt(m) ? `<img src="${esc(posterUrl(m,'w154'))}" alt="">` : `<span class="rl-pfallback">${esc(m.title.slice(0, 2))}</span>`}
-        <b>${esc(m.title)}</b>
-      </div>`).join('');
-    const pick = Math.floor(Math.random() * n);
-    spinTimer = setTimeout(()=>{
-      [...host.querySelectorAll('.rl-pcard')].forEach(el => el.classList.add(+el.dataset.i === pick ? 'win' : 'lose'));
-      finish(items[pick]);
-    }, 1300 * speed);
-  }
-  /* --- режим 4: автомат — три барабана останавливаются на одном тайтле --- */
-  function spinSlots(items){
-    const host = document.getElementById('rlSlots');
-    if (!host) return;
-    const pick = Math.floor(Math.random() * items.length);
-    const win = items[pick];
-    const reelHTML = (offset) => {
-      const names = [];
-      for (let k = 0; k < 5; k++) names.push(items[(pick + offset + k) % items.length].title);
-      names.push(win.title);                       // последняя строка — победитель
-      return `<div class="rl-reel"><div class="rl-reel-track">${names.map(t => `<span>${esc(t)}</span>`).join('')}</div></div>`;
-    };
-    host.innerHTML = reelHTML(1) + reelHTML(3) + reelHTML(5);
-    const tracks = [...host.querySelectorAll('.rl-reel-track')];
-    tracks.forEach(t => { t.style.transition = 'none'; t.style.transform = 'translateY(0)'; });
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
-        tracks.forEach((t, i) => {
-          t.style.transition = `transform ${(1.5 * speed).toFixed(2)}s cubic-bezier(.2,.85,.1,1) ${(i * 0.35 * speed).toFixed(2)}s`;
-          t.style.transform = `translateY(${-5 * SLOT_LINE}px)`;
-        });
-      });
-    });
-    spinTimer = setTimeout(()=>finish(win), 2600 * speed);
+      wheel.classList.remove('spinning');
+      [...wheel.querySelectorAll('.rl-sec')].forEach(g => g.classList.toggle('dim', +g.dataset.i !== winIndex));
+      finish(items[winIndex % items.length]);
+    }, 3900 * speed);
   }
   modesEl.addEventListener('click', e => {
     const btn = e.target.closest('button[data-mode]');
-    if (!btn || spinning) return;
+    if (!btn || spinning || btn.dataset.mode === mode) return;
     haptic('selection');
-    setMode(btn.dataset.mode, true);
+    setMode(btn.dataset.mode, false);
   });
   document.getElementById('openRoulette').onclick = open;
   document.getElementById('rlClose').onclick = () => { haptic('selection'); close(); };
-  document.getElementById('rlAgain').onclick = () => { if (!spinning){ haptic('selection'); spin(); } };
-  document.getElementById('rlOpen').onclick = () => {
+  spinBtn.onclick = () => { if (!spinning){ haptic('impact','medium'); spin(); } };
+  openBtn.onclick = () => {
     if (spinning || !winner) return;
     haptic('selection');
     const movie = winner;
@@ -3678,6 +4091,7 @@ const Roulette = (function(){
   return {
     open, close, spin, setMode,
     getMode: () => mode,
+    getIdle: () => !spinning && !winner,
     modes: MODES,
     setSpeed: (f) => { speed = f > 0 ? f : 1; },
   };
@@ -3827,6 +4241,60 @@ function renderAchievementsScreen(){
   const bar = document.getElementById('achievementsBar');
   if (bar) bar.style.width = Math.round(unlockedCount / BADGES.length * 100) + '%';
 }
+/* Своё окно ввода вместо window.prompt: в Telegram Desktop системный prompt не
+   открывается вообще, поэтому «Добавить по ID» там просто не работало. */
+/* ============ FAQ: коротко и по делу, без технического жаргона ============ */
+const FAQ_ITEMS = [
+  ['Что делают свайпы на главной?', 'Вправо — «Смотрел», влево — «Мимо» (больше не покажем), вверх — «Хочу чекнуть», вниз — «Смотрю сейчас». Те же действия есть кнопками под карточкой.'],
+  ['Что такое «Смотрю сейчас»?', 'Это тайтлы, которые ты смотришь прямо сейчас. Для сериалов там же видно, сколько серий уже отсмотрено — можно отмечать по одной.'],
+  ['Как работает «Вернуться»?', 'Кнопка внизу слева отменяет последний свайп: тайтл возвращается в ленту. Кнопку можно смахнуть в сторону, а разделы она не переключает.'],
+  ['Что такое Смотриметры?', 'Это оценка по восьми критериям, от 1 до 8 баллов каждый, суммарно до 68. Оценки видны друзьям в «Ленте» — можно сравнить вкусы.'],
+  ['Почему фильмы в ленте не повторяются?', 'Приложение помнит, что ты уже видел, и не показывает это снова. Если подборка иссякла, оно тихо догружает новые популярные тайтлы.'],
+  ['Что такое «Хочу чекнуть»?', 'Список на потом. Когда он подрастёт, запусти рандомайзер — рулетку или колесо — и он выберет один тайтл за тебя.'],
+  ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
+  ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
+  ['Как растёт СмотраLVL?', 'Опыт дают действия: просмотр, «Хочу чекнуть», «Смотрю», оценка и ачивки. Прогресс виден полоской вверху экрана и карточкой в профиле.'],
+  ['Что за игрушка вверху главной?', 'Это просто прикол. Нажми — переключится на другую, цвета всегда из твоей темы.'],
+];
+function renderFaq(){
+  const host = document.getElementById('faqBody');
+  if (!host) return;
+  host.innerHTML = FAQ_ITEMS.map(([q, a]) => `<div class="faq-item"><div class="faq-q">${esc(q)}</div><div class="faq-a">${esc(a)}</div></div>`).join('');
+}
+document.getElementById('openFaq').onclick = () => {
+  haptic('selection');
+  renderFaq();
+  document.getElementById('faqScreen').classList.add('open');
+};
+document.getElementById('closeFaq').onclick = () => document.getElementById('faqScreen').classList.remove('open');
+function askFriendId(){
+  return new Promise(resolve => {
+    const sheetEl = document.getElementById('askSheet');
+    const backdropEl = document.getElementById('askBackdrop');
+    const input = document.getElementById('askInput');
+    if (!sheetEl || !input){ resolve(''); return; }
+    input.value = '';
+    sheetEl.classList.add('open');
+    backdropEl.classList.add('open');
+    setTimeout(() => { try{ input.focus(); }catch(e){} }, 120);
+    const okBtn = document.getElementById('askOk'), cancelBtn = document.getElementById('askCancel');
+    function close(value){
+      sheetEl.classList.remove('open');
+      backdropEl.classList.remove('open');
+      input.onkeydown = null; okBtn.onclick = null; cancelBtn.onclick = null; backdropEl.onclick = null;
+      resolve(value);
+    }
+    okBtn.onclick = () => {
+      const v = (input.value || '').trim().replace(/[^0-9]/g, '');
+      if (!v){ input.classList.add('shake'); setTimeout(()=>input.classList.remove('shake'), 400); return; }
+      haptic('selection');
+      close(v);
+    };
+    cancelBtn.onclick = () => close('');
+    backdropEl.onclick = () => close('');
+    input.onkeydown = (e) => { if (e.key === 'Enter') okBtn.onclick(); };
+  });
+}
 function openBadgeDetail(badgeId){
   const b = BADGES.find(x=>x.id===badgeId);
   if (!b) return;
@@ -3843,14 +4311,53 @@ function openBadgeDetail(badgeId){
   } else {
     dateEl.textContent = 'Ещё не открыта';
   }
+  // Ачивка должна объяснять не только «что», но и «где посмотреть»:
+  // кнопка ведёт в тот раздел, откуда берётся её прогресс.
+  const whereBtn = document.getElementById('badgeWhere');
+  const place = BADGE_PLACES[b.kind];
+  if (whereBtn){
+    whereBtn.classList.toggle('show', !!place);
+    whereBtn.textContent = place ? place.label : '';
+    whereBtn.onclick = () => {
+      if (!place) return;
+      haptic('impact', 'light');
+      document.getElementById('badgeSheet').classList.remove('open');
+      document.getElementById('badgeBackdrop').classList.remove('open');
+      place.open();
+    };
+  }
   document.getElementById('badgeSheet').classList.add('open');
   document.getElementById('badgeBackdrop').classList.add('open');
 }
+/* Куда ведёт ачивка: у каждого типа прогресса свой раздел */
+const BADGE_PLACES = {
+  watched:  { label: 'История просмотров',     open: () => openHistoryAs('watched') },
+  skipped:  { label: 'История «Мимо»',         open: () => openHistoryAs('skipped') },
+  wishlist: { label: 'Раздел «Хочу чекнуть»',  open: () => switchTab('wishlist') },
+  watching: { label: 'Экран «Смотрю сейчас»',  open: () => document.getElementById('openWatchingRow').click() },
+  reviews:  { label: 'Открыть мои оценки',     open: () => openMyTile('reviews') },
+  streak:   { label: 'Стрик в профиле',        open: () => { switchTab('profile'); setTimeout(() => document.getElementById('weekChart')?.scrollIntoView({ behavior:'smooth', block:'center' }), 260); } },
+  genres:   { label: 'Каталог по жанрам',      open: () => switchTab('catalog') },
+  episodes: { label: 'Экран «Смотрю сейчас»',  open: () => document.getElementById('openWatchingRow').click() },
+};
 document.getElementById('badgeBackdrop').onclick = () => {
   document.getElementById('badgeSheet').classList.remove('open');
   document.getElementById('badgeBackdrop').classList.remove('open');
 };
-document.getElementById('openAchievements').onclick = () => { document.getElementById('achievementsScreen').classList.add('open'); renderAchievementsScreen(); };
+/* Ачивки доступны из каждого раздела: кнопка-кубок в шапке главной, в каталоге,
+   в «Хочу чекнуть» и в оценках, плюс строка «Ачивки» в профиле. */
+function openAchievementsScreen(){
+  haptic('selection');
+  document.getElementById('achievementsScreen').classList.add('open');
+  renderAchievementsScreen();
+}
+[...document.querySelectorAll('[data-ach-open]')].forEach(btn => { btn.onclick = openAchievementsScreen; });
+document.getElementById('openAchievements').onclick = openAchievementsScreen;
+document.getElementById('homeLevelStrip').onclick = () => {
+  haptic('selection');
+  switchTab('profile');
+  setTimeout(() => document.getElementById('levelCard')?.scrollIntoView({ behavior:'smooth', block:'center' }), 260);
+};
 document.getElementById('closeAchievements').onclick = () => document.getElementById('achievementsScreen').classList.remove('open');
 
 /* ============ SHARE ============ */
@@ -4766,12 +5273,42 @@ async function openMyTile(kind){
   if (kind === 'skipped') return openTitleList('Мимо', moviesOf(state.skipped), { view: 'grid' });
   if (kind === 'badges'){ document.getElementById('achievementsScreen').classList.add('open'); return renderAchievementsScreen(); }
   if (kind === 'reviews'){
-    const ratings = await myRatingMap();
+    const [ratings, friendRatings] = await Promise.all([myRatingMap(), friendRatingsByMovie()]);
     const movies = moviesOf([...ratings.keys()]);
-    return openTitleList('Мои оценки', movies, { view: 'rows', scoreOf: m => ratings.get(m.id) ?? ratings.get(mid(m)) ?? 0, empty: 'Ты пока не оценил ни одного тайтла' });
+    const mine = m => ratings.get(m.id) ?? ratings.get(mid(m)) ?? 0;
+    return openTitleList('Мои оценки', movies, {
+      view: 'rows',
+      scoreOf: mine,
+      extraOf: m => {
+        const chips = friendRatingChips(friendRatings, m, mine(m));
+        if (chips) return chips;
+        return friendRatings.size ? '' : `<div class="fpr-row-extra">оценки друзей появятся, когда друзья оценят свои фильмы</div>`;
+      },
+      empty: 'Ты пока не оценил ни одного тайтла',
+    });
   }
 }
-/* «1 день / 2 дня / 5 дней» — чтобы подпись не выглядела машинной */
+/* «1 минуту / 3 минуты / 12 минут» и «1 день / 2 дня / 5 дней» — чтобы подписи
+   не выглядели машинными. Одна и та же логика для дат и для стрика. */
+function pluralWord(n, one, few, many){
+  const t = n % 100;
+  if (t >= 11 && t <= 14) return many;
+  switch (n % 10){ case 1: return one; case 2: case 3: case 4: return few; default: return many; }
+}
+function relTime(iso){
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  if (!isFinite(t)) return '';
+  const min = Math.round((Date.now() - t) / 60000);
+  if (min < 1) return 'только что';
+  if (min < 60) return min + ' ' + pluralWord(min, 'минуту', 'минуты', 'минут') + ' назад';
+  const hours = Math.round(min / 60);
+  if (hours < 24) return hours + ' ' + pluralWord(hours, 'час', 'часа', 'часов') + ' назад';
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'вчера';
+  if (days < 31) return days + ' ' + pluralWord(days, 'день', 'дня', 'дней') + ' назад';
+  return new Date(t).toLocaleDateString('ru-RU', { day:'numeric', month:'long' });
+}
 function daysWord(n){
   const t = n % 100;
   if (t >= 11 && t <= 14) return 'дней';
@@ -5171,9 +5708,7 @@ async function renderRank(){
     <div class="set-sub" style="margin-top:10px; text-align:center;">Твой ID для друзей: <b style="color:var(--text);">${TG_ID}</b></div>`;
   document.getElementById('inviteBtn').onclick = shareApp;
   document.getElementById('addFriendBtn').onclick = async () => {
-    let id = '';
-    try{ id = window.prompt('Введи Telegram ID друга (он есть у него внизу этого списка):') || ''; }catch(e){}
-    id = id.trim();
+    const id = await askFriendId();
     if (!id) return;
     const ok = await addFriend(id);
     if (ok){ showToast('Друг добавлен', 'check'); haptic('notification','success'); renderRank(); }
@@ -5591,7 +6126,7 @@ function reviewCardHTML(r, profileMap, opts){
     <div class="review-body">
       <div class="review-head">
         <div class="review-avatar" style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}">${safePhoto ? '' : esc((name[0]||'?').toUpperCase())}</div>
-        <div class="review-meta"><div class="review-name">${safeName}</div><div class="review-movie">${esc(movieName)}</div></div>
+        <div class="review-meta"><div class="review-name">${safeName}</div><div class="review-movie">${esc(movieName)}${r.created_at ? ' · ' + relTime(r.created_at) : ''}</div></div>
         <div class="review-score">${r.total}/${SCORE_MAX}</div>
       </div>
       ${r.text ? `<div class="review-text">${esc(r.text)}</div>` : ''}
@@ -5601,10 +6136,23 @@ function reviewCardHTML(r, profileMap, opts){
   </div>`;
 }
 
+/* Лента оценок: последний собранный вариант показываем сразу, а данные обновляем
+   следом. Раньше при каждом заходе висела долгая «крутилка», а если база не
+   отвечала — экран оставался пустым навсегда. */
+let feedCacheHTML = '';
+function withTimeout(p, ms, fallback){
+  return Promise.race([p, new Promise(res => setTimeout(() => res(fallback), ms))]);
+}
 async function renderFeed(mode){
   mode = mode || feedMode;
   const body = document.getElementById('feedBody');
-  body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Загружаю…</div>`;
+  if (feedCacheHTML){
+    body.innerHTML = feedCacheHTML
+      + `<div class="empty-note" id="feedUpdating" style="padding:12px 4px;">Обновляю данные…</div>`;
+    setTimeout(() => { const n = document.getElementById('feedUpdating'); if (n) n.style.display = 'none'; }, 2500);
+  } else {
+    body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Загружаю…</div>`;
+  }
 
   if (mode === 'global'){
     const rows = (await getRatingAggregates(400)).slice(0, 60);
@@ -5636,7 +6184,18 @@ async function renderFeed(mode){
   }
 
   // Режим «С друзьями»: оценки друзей + мои, со сравнением со средним
-  const [reviews, friendIds, aggregates] = await Promise.all([getFeedReviews(40), getFriendIds(), getRatingAggregates(400)]);
+  const pack = await withTimeout(Promise.all([getFeedReviews(40), getFriendIds(), getRatingAggregates(400)]), 7000, null);
+  if (!pack){
+    // База не ответила: показываем то, что уже собрано, либо честно предлагаем повторить.
+    if (!feedCacheHTML){
+      body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Оценки не подгрузились — похоже, нет связи.<br>
+        <button id="feedRetry" style="margin-top:14px; padding:12px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-weight:600;">Повторить</button></div>`;
+      const btn = document.getElementById('feedRetry');
+      if (btn) btn.onclick = () => { haptic('selection'); renderFeed(true); };
+    }
+    return;
+  }
+  const [reviews, friendIds, aggregates] = pack;
   const avgByMovie = new Map(aggregates.map(a => [a.movieId, a]));
   const friendSet = new Set(friendIds);
   const mine = reviews.filter(r => r.telegram_id === TG_ID);
@@ -5652,11 +6211,19 @@ async function renderFeed(mode){
     if (!list.length) return '';
     return `<div class="feed-caption">${title}</div>` + list.map(r => reviewCardHTML(r, profileMap, { avgByMovie })).join('');
   };
+  /* Тайтлы из оценок друга могли ещё не попасть в каталог — подтягиваем их,
+     чтобы вместо «Тайтл #12345» было название и обложка. */
+  const missingForFeed = [...new Set(reviews.map(r => r.movie_id))].filter(k => !keyToMovie(k) && !stubFailed.has(k));
+  if (missingForFeed.length && !renderFeed._busy){
+    renderFeed._busy = true;
+    fillMissingTitles(missingForFeed).then(changed => { renderFeed._busy = false; if (changed) renderFeed(mode); });
+  }
   body.innerHTML = reviews.length
     ? (friends.length
         ? block(friendIds.length ? 'Оценки друзей' : 'Оценки зрителей', friends) + block('Твои оценки', mine)
         : block('Твои оценки', mine) + `<div class="empty-note" style="padding:18px 4px;">Друзей пока нет — пригласи их в профиле, и здесь появятся их оценки</div>`)
     : '';
+  feedCacheHTML = body.innerHTML;
   [...body.querySelectorAll('.review-card')].forEach(card => {
     card.onclick = (e) => {
       const uid = +card.dataset.uid;
@@ -5838,7 +6405,9 @@ switchTab = function(id){
     }
   }
   const isOverlayOpen = () => !!document.querySelector('.overlay-screen.open, .sheet.open, #tutorial.show, .roulette.show, #onboarding.show, #splash:not(.hide), #radialMenu.show');
-  const blocked = (el) => !!(el && el.closest('.card, .chips, input, textarea, .rl-card, .tut-demo, [data-no-swipe]'));
+  /* Всё, с чего НЕ начинается свайп по разделам. «Вернуться» в списке: раньше при
+     попытке смахнуть саму кнопку переключался раздел — это выглядело как баг. */
+  const blocked = (el) => !!(el && el.closest('.card, .chips, input, textarea, .rl-card, .tut-demo, #undoBtn, .undo-pill, .sheet, [data-no-swipe]'));
   document.addEventListener('touchstart', (e) => {
     const t0 = e.touches[0];
     if (t0){
@@ -5933,6 +6502,16 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
 
 /* ============ INIT ============ */
 (async () => {
+  /* Первый кадр — без сети: состояние из памяти телефона и каталог из кэша.
+     Дальше сеть уточняет данные, и экраны тихо перерисовываются. */
+  applyLocalState();
+  if (!applyCatalog(loadTmdbCache()) && !MOVIES.length){
+    stackEl.innerHTML = deckLoadingHTML('Загружаю подборку…');
+  } else {
+    deck = dedupeByKey(sortByPopularity(MOVIES.filter(m => isUnseen(m) && !isServed(m))));
+    if (deck.length < 3) deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
+    renderStack();
+  }
   await Promise.all([loadState(), loadMovies()]);
   setupGenreChips();
   if (MOVIES.length){
