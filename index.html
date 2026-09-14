@@ -109,18 +109,78 @@
   #home{ overflow:hidden; touch-action:pan-y; padding-top:6px; }
   @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
-  .eyebrow{ font-size:13px; color:var(--text-dim); margin:18px 0 10px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .eyebrow{ font-size:13px; color:var(--text-dim); margin:12px 0 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-shrink:0; }
   .eyebrow span.count{ color:var(--text); background:var(--surface); padding:2px 9px; border-radius:20px; font-size:12px; }
+  /* Кнопка обновления — только иконка, без подписи «Обновить» */
+  .icon-refresh{ width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:var(--surface); border:1px solid var(--border); color:var(--text-dim); transition:transform .15s ease, color .15s ease; }
+  .icon-refresh:active{ transform:scale(.92) rotate(-25deg); color:var(--accent); }
+  /* Переключатель «С друзьями / Общий рейтинг» */
+  .seg{ display:flex; gap:4px; padding:4px; background:var(--surface); border:1px solid var(--border); border-radius:14px; margin-bottom:12px; flex-shrink:0; }
+  .seg-btn{ flex:1; padding:9px 10px; border:none; border-radius:11px; background:none; color:var(--text-dim);
+    font-size:12.5px; font-weight:600; font-family:'Inter'; transition:background .18s ease, color .18s ease; }
+  .seg-btn.active{ background:var(--accent); color:var(--on-accent); }
+  .feed-caption{ font-size:12px; color:var(--text-dim); margin:0 0 10px; }
+  .rate-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; margin-bottom:8px; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; cursor:pointer; animation:rise .3s ease both; }
+  .rate-row .rate-poster{ width:44px; height:62px; border-radius:9px; background-size:cover; background-position:center; flex:0 0 auto; border:1px solid var(--border); }
+  .rate-row .rate-mid{ flex:1; min-width:0; }
+  .rate-row .rate-title{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rate-row .rate-sub{ font-size:11.5px; color:var(--text-dim); margin-top:3px; }
+  .rate-row .rate-score{ font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; color:var(--accent); flex:0 0 auto; }
+  .rate-row .rate-score small{ display:block; font-family:'Inter'; font-size:9.5px; color:var(--text-dim); font-weight:500; text-align:right; }
+  /* Число в «Хочу чекнуть» — крупная акцентная пилюля: сразу видно, сколько накопилось */
+  .wish-total{ display:inline-flex; align-items:center; justify-content:center; min-width:34px; padding:3px 11px;
+    border-radius:20px; background:var(--accent); color:var(--on-accent); font-family:'Unbounded',sans-serif;
+    font-size:13.5px; font-weight:700; line-height:1.25; vertical-align:middle; box-shadow:0 6px 16px -8px var(--accent-glow); }
+  .roulette-btn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:13px;
+    margin:4px 0 12px; border:none; border-radius:14px; font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700;
+    color:var(--on-accent); background:linear-gradient(120deg, var(--accent), var(--accent-2));
+    box-shadow:0 12px 26px -14px var(--accent-glow); transition:transform .14s ease; }
+  .roulette-btn:active{ transform:scale(.97); }
+  .roulette-btn .rl-ico{ font-size:16px; }
+  /* ---- Рулетка: лента постеров, которая останавливается на случайном тайтле ---- */
+  .roulette{ position:absolute; inset:0; z-index:90; display:none; align-items:center; justify-content:center;
+    background:rgba(7,8,14,.82); backdrop-filter:blur(6px); padding:20px; }
+  .roulette.show{ display:flex; animation:fadeIn .25s ease; }
+  .rl-card{ width:min(420px, 100%); background:var(--surface); border:1px solid var(--border); border-radius:22px;
+    padding:18px 16px 16px; box-shadow:0 30px 70px -20px rgba(0,0,0,.8); }
+  .rl-card h3{ font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; margin:0 0 14px; text-align:center; }
+  .rl-strip-wrap{ position:relative; height:150px; overflow:hidden; border-radius:16px; background:var(--bg-2);
+    border:1px solid var(--border); margin-bottom:14px; }
+  .rl-strip-wrap::before, .rl-strip-wrap::after{ content:''; position:absolute; top:0; bottom:0; width:52px; z-index:3; pointer-events:none; }
+  .rl-strip-wrap::before{ left:0; background:linear-gradient(90deg, var(--bg-2), transparent); }
+  .rl-strip-wrap::after{ right:0; background:linear-gradient(270deg, var(--bg-2), transparent); }
+  .rl-marker{ position:absolute; left:50%; top:6px; bottom:6px; width:2px; margin-left:-1px; z-index:4;
+    background:linear-gradient(180deg, transparent, var(--accent), transparent); box-shadow:0 0 12px var(--accent-glow); }
+  .rl-strip{ display:flex; gap:10px; padding:10px 0 10px 40px; will-change:transform; }
+  .rl-item{ flex:0 0 auto; width:86px; height:130px; border-radius:12px; background-size:cover; background-position:center;
+    border:1px solid var(--border); opacity:.55; transition:opacity .2s ease, transform .2s ease; position:relative; overflow:hidden; }
+  .rl-item span{ position:absolute; left:0; right:0; bottom:0; padding:14px 5px 5px; font-size:9px; font-weight:600;
+    background:linear-gradient(180deg, transparent, rgba(6,7,12,.92)); }
+  .rl-item.win{ opacity:1; transform:scale(1.06); border-color:var(--accent); box-shadow:0 0 0 2px var(--accent), 0 10px 26px -10px var(--accent-glow); }
+  .rl-result{ text-align:center; min-height:52px; margin-bottom:12px; }
+  .rl-result .rl-name{ font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; line-height:1.25; }
+  .rl-result .rl-meta{ font-size:12px; color:var(--text-dim); margin-top:4px; }
+  .rl-actions{ display:flex; gap:8px; }
+  .rl-actions button{ flex:1; padding:12px 8px; border-radius:13px; border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text); font-size:13px; font-weight:600; font-family:'Inter'; }
+  .rl-actions button.primary{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  .rl-actions button:active{ transform:scale(.97); }
   .view-toggle{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; flex:0 0 auto; }
   .view-toggle button{ appearance:none; -webkit-appearance:none; margin:0; padding:0; line-height:0; width:32px; height:28px; border-radius:9px; background:transparent; border:none; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease; }
   .view-toggle button svg{ width:15px; height:15px; display:block; }
   .view-toggle button.active{ background:var(--accent); color:var(--on-accent); }
 
   /* ===== Genre chips ===== */
-  .chips{ display:flex; gap:8px; overflow-x:auto; padding:2px 0 4px; flex-shrink:0; }
+  /* Ряд фильтров: одинаковый шаг между рядами и от сетки — раньше чипсы липли
+     к поиску и друг к другу без отступа */
+  .chips{ display:flex; gap:8px; overflow-x:auto; padding:0; margin:0 0 10px; flex-shrink:0; }
+  .chips:last-of-type{ margin-bottom:14px; }
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
   .chip.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  .search-input{ width:100%; margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
+  .search-input{ width:100%; margin:0 0 12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
+  .search-input::placeholder{ color:var(--text-dim); }
   .search-input::placeholder{ color:var(--text-dim); }
   .home-bottom{ display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 0 0; flex:0 0 auto; }
   .surprise-btn{ padding:9px 18px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
@@ -157,8 +217,8 @@
     will-change:transform;
   }
   .card .poster{ position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(0.92) contrast(1.03); transition:filter .18s ease; }
-  /* Пока карточку ведут пальцем — подложка темнеет, надпись «СМОТРЕЛ/МИМО/…» читается */
-  .card.card-dragging .poster{ filter:saturate(0.9) contrast(1.03) brightness(0.55); }
+  /* Пока карточку ведут пальцем, ничего не гаснет мгновенно: под штампы подкладывается
+     .veil, чья плотность растёт вместе с ходом пальца (см. обработчик жеста). */
   .poster-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.3; color:var(--text); }
   .card .shade{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 32%, rgba(9,10,16,0.97) 100%); }
   .card .badges-row{ position:relative; padding:14px 16px 0; display:flex; gap:5px; flex-wrap:nowrap; overflow:hidden; }
@@ -167,7 +227,10 @@
   .card .title{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:22px; line-height:1.15; }
   .card .meta{ margin-top:5px; color:var(--text-dim); font-size:13px; display:flex; align-items:center; gap:8px; }
   .card .meta .star{ color:var(--accent); }
-  .stamp{ position:absolute; padding:7px 16px; border-radius:9px; border:2.5px solid; font-weight:800; font-size:14px; opacity:0; letter-spacing:0.5px; font-family:'Unbounded',sans-serif; }
+  /* Вуаль поверх всего содержимого карточки (включая название): пока карточку ведут
+     к краю, она плавно темнеет целиком. Штампы стоят выше вуали и остаются яркими. */
+  .card .veil{ position:absolute; inset:0; background:rgba(6,7,12,0.82); opacity:0; pointer-events:none; z-index:5; transition:opacity .08s linear; }
+  .stamp{ position:absolute; z-index:6; padding:7px 16px; border-radius:9px; border:2.5px solid; font-weight:800; font-size:14px; opacity:0; letter-spacing:0.5px; font-family:'Unbounded',sans-serif; }
   .stamp.watched{ top:26px; left:22px; color:var(--watched); border-color:var(--watched); transform:rotate(-12deg); }
   .stamp.skip{ top:26px; right:22px; color:var(--skip); border-color:var(--skip); transform:rotate(12deg); }
   /* Штамп ставим на ту сторону, откуда карточка уходит: вверх — ЧЕКНУТЬ внизу,
@@ -178,11 +241,15 @@
   @keyframes popPulse{ 0%{transform:scale(1);} 45%{transform:scale(1.22);} 100%{transform:scale(1);} }
   .pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
 
-  .actions{ display:flex; justify-content:center; align-items:center; gap:20px; padding:16px 0 6px; flex:0 0 auto; }
+  /* Четыре действия вместо трёх: кнопки чуть компактнее, чтобы ряд не расползался */
+  .actions{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 6px 6px; flex:0 0 auto; }
   .act-item{ display:flex; flex-direction:column; align-items:center; gap:7px; }
   .act-lbl{ font-size:11.5px; color:var(--text-dim); font-weight:600; letter-spacing:.01em; }
   .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
   .actions button:active{ transform:scale(.92); }
+  /* Свайп по нижнему табу: соседняя вкладка слегка подсвечивается, полоса едет за пальцем */
+  nav{ transition:transform .18s ease; }
+  nav button.peek{ color:var(--accent); opacity:.85; }
   .actions .no,.actions .yes{ width:66px; height:66px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
   .actions .no{ color:var(--skip); background:rgba(225,91,111,0.10); border-color:rgba(225,91,111,0.35); }
   .actions .yes{ color:var(--watched); background:rgba(67,184,138,0.10); border-color:rgba(67,184,138,0.35); }
@@ -190,6 +257,15 @@
   .actions .wishbtn{ width:54px; height:54px; color:var(--wish); background:rgba(255,159,224,0.10); border-color:rgba(255,159,224,0.30); }
   .actions .wishbtn svg{ width:22px; height:22px; }
   .actions .wishbtn.active{ background:var(--wish); color:var(--on-accent); border-color:var(--wish); }
+  /* «Смотрю» — то же действие, что свайп вниз: раньше кнопки не было */
+  .actions .watchbtn{ width:54px; height:54px; color:var(--watching); background:rgba(79,195,255,0.10); border-color:rgba(79,195,255,0.30); }
+  .actions .watchbtn svg{ width:22px; height:22px; }
+  .actions .watchbtn.active{ background:var(--watching); color:var(--on-accent); border-color:var(--watching); }
+  @media (max-width: 380px){
+    .actions{ gap:6px; }
+    .actions .no,.actions .yes{ width:60px; height:60px; }
+    .actions .wishbtn,.actions .watchbtn{ width:50px; height:50px; }
+  }
 
   /* Пока колода догружается — красивая заглушка вместо пустоты */
   .deck-loading{ position:absolute; inset:0; border-radius:26px; border:1px solid var(--border); background:var(--surface);
@@ -245,7 +321,7 @@
   .segmented button{ flex:1; padding:9px; border:none; background:none; color:var(--text-dim); border-radius:9px; font-size:13px; font-weight:600; }
   .segmented button.active{ background:var(--surface-2); color:var(--text); }
   .empty-note{ text-align:center; color:var(--text-dim); font-size:13px; padding:40px 20px; }
-  .feed-hint{ font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:2px 0 4px; }
+  .screen-hint{ font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:2px 0 4px; }
 
   /* ===== Detail sheet ===== */
   .sheet-backdrop{ position:absolute; inset:0; background:rgba(10,9,7,0.65); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
@@ -327,6 +403,42 @@
   .profile-name{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:18px; }
   .profile-sub{ color:var(--text-dim); font-size:12.5px; margin-top:3px; }
   .stats-row{ display:flex; gap:10px; margin-top:20px; }
+  /* ---- Профиль друга: мэтч и сравнение ---- */
+  .match-card{ display:flex; align-items:center; gap:14px; margin-top:18px; padding:14px;
+    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.10)); border:1px solid var(--accent-border); border-radius:18px; }
+  .match-ring{ width:74px; height:74px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:conic-gradient(var(--accent) calc(var(--p, 0) * 1%), var(--surface-2) 0);
+    position:relative; }
+  .match-ring::after{ content:''; position:absolute; inset:7px; border-radius:50%; background:var(--surface); }
+  .match-num{ position:relative; z-index:2; font-family:'Unbounded',sans-serif; font-weight:800; font-size:19px; color:var(--text); }
+  .match-num small{ font-size:10px; font-weight:600; color:var(--text-dim); }
+  .match-title{ font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; }
+  .match-sub{ font-size:12px; color:var(--text-dim); margin-top:5px; line-height:1.4; }
+  .friend-bars{ margin-top:16px; }
+  /* Моя статистика: жанры, средний балл и темп просмотра */
+  .my-stats{ margin-top:16px; background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px 15px; }
+  .ms-title{ font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
+  .ms-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+  .ms-cell{ text-align:center; }
+  .ms-num{ font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
+  .ms-lbl{ font-size:10.5px; color:var(--text-dim); margin-top:3px; }
+  .ms-genres{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .fb-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:6px; }
+  .fb-row b{ color:var(--text); }
+  .fb-bar{ height:6px; background:var(--surface-2); border-radius:4px; overflow:hidden; margin-bottom:12px; }
+  .fb-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:4px; }
+  .genre-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .common-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:10px; }
+  .common-item{ aspect-ratio:2/3; border-radius:10px; background-size:cover; background-position:center; border:1px solid var(--border);
+    position:relative; overflow:hidden; cursor:pointer; }
+  .common-item span{ position:absolute; left:0; right:0; bottom:0; padding:14px 5px 5px; font-size:8.5px; line-height:1.15;
+    background:linear-gradient(180deg, transparent, rgba(6,7,12,.94)); }
+  .friend-watched{ margin-top:10px; }
+  .fw-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .fw-row:last-child{ border-bottom:none; }
+  .fw-poster{ width:38px; height:54px; border-radius:8px; background-size:cover; background-position:center; flex:0 0 auto; border:1px solid var(--border); }
+  .fw-title{ font-size:13px; font-weight:600; }
+  .fw-sub{ font-size:11px; color:var(--text-dim); margin-top:2px; }
   .stat-card{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 8px; text-align:center; cursor:pointer; transition:transform .15s ease, background .15s ease; }
   .stat-card:active{ transform:scale(.95); background:var(--surface-2); }
   .stat-num{ font-family:'Unbounded', sans-serif; font-size:20px; font-weight:700; }
@@ -419,7 +531,7 @@
   nav button.nav-home.active{ color:var(--accent); }
 
   /* ===== Splash ===== */
-  #splash{ position:absolute; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; transition:opacity .45s ease; }
+  #splash{ position:absolute; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .55s ease; }
   /* Объёмная надпись SMOTRA — живой текст. Что делает её объёмной:
      — градиент по буквам (background-clip:text) даёт глянцевый «пластик»;
      — пять слоёв drop-shadow с нулевым смещением по X и растущим по Y дают
@@ -434,34 +546,62 @@
   @keyframes glowPulse{
     0%,100%{ opacity:.24; transform:translate(-50%,-50%) scale(.94); }
     50%{ opacity:.4; transform:translate(-50%,-50%) scale(1.05); } }
-  #splash .s-title{ position:relative; display:flex; align-items:flex-end; gap:.012em; perspective:700px;
-    font-family:'Unbounded', sans-serif; font-weight:900; font-size:clamp(34px, 12.6vw, 52px);
-    letter-spacing:-.012em; line-height:1.06; }
-  #splash .s-title span{ display:inline-block; will-change:transform;
-    background-image:linear-gradient(178deg, #fbf9ff 0%, #d8ccff 14%, #a694ff 34%, #7c6bff 52%, #5b46e6 70%, #3f2cb4 86%, #a08dff 100%);
-    background-size:100% 260%; background-position:0 0;
+  #splash .s-3d{ position:relative; display:flex; flex-direction:column; align-items:center; }
+  #splash .s-title, #splash .s-refl{ display:flex; align-items:flex-end; gap:.014em;
+    font-family:'Unbounded', sans-serif; font-weight:900; font-size:clamp(44px, 16vw, 66px);
+    letter-spacing:-.015em; line-height:1; }
+  #splash .s-title{ perspective:800px; }
+  #splash .s-title span, #splash .s-refl span{ display:inline-block; will-change:transform; }
+  /* Буквы: белый глянец + выдавленный торец из слоёв тени + неоновое свечение.
+     Градиент обрезан по тексту, поэтому по нему может ехать блик. */
+  #splash .s-title span{
+    background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 42%, #d7d2f4 56%, #ffffff 70%, #f2eeff 88%, #cfc8ee 100%);
+    background-size:100% 300%; background-position:0 0;
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
     filter:
-      drop-shadow(0 1px 0 #5b46e6) drop-shadow(0 2px 0 #5340dc)
-      drop-shadow(0 3px 0 #4936cc) drop-shadow(0 5px 0 #3d2bb2)
-      drop-shadow(0 9px 14px rgba(12,8,40,.85))
-      drop-shadow(0 0 20px var(--accent-glow));
+      drop-shadow(0 1px 0 #cfc9ee) drop-shadow(0 2px 0 #b9b2e6)
+      drop-shadow(0 3px 0 #9d94d8) drop-shadow(0 4px 0 #837ac6)
+      drop-shadow(0 5px 0 #6a61b4) drop-shadow(0 6px 0 #554da2)
+      drop-shadow(0 12px 18px rgba(8,6,30,.75))
+      drop-shadow(0 0 24px var(--accent-glow));
     opacity:0; transform-origin:50% 100%;
-    animation:wordIn .86s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 5.2s ease-in-out 1.4s infinite; }
-  @keyframes wordIn{ 0%{ opacity:0; transform:translateY(26px) rotateX(-64deg) scale(.9); } 62%{ opacity:1; } 100%{ opacity:1; transform:none; } }
+    animation:wordIn .95s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 4.6s ease-in-out 1.9s infinite; }
+  /* Буква O — акцентная, сине-фиолетовая, как в остальном интерфейсе */
+  #splash .s-title span.o{
+    background-image:linear-gradient(180deg, #ded9ff 0%, #b3a6ff 26%, #7c6bff 52%, #5b46e6 66%, #7d8dff 84%, #cfd6ff 100%);
+    filter:
+      drop-shadow(0 1px 0 #6f5cf0) drop-shadow(0 2px 0 #5f4ce0)
+      drop-shadow(0 3px 0 #503fd0) drop-shadow(0 4px 0 #4335bc)
+      drop-shadow(0 5px 0 #382ca6) drop-shadow(0 6px 0 #2f248f)
+      drop-shadow(0 12px 20px rgba(8,6,30,.8))
+      drop-shadow(0 0 26px var(--accent-glow)) drop-shadow(0 0 44px rgba(124,107,255,.5)); }
+  @keyframes wordIn{
+    0%{ opacity:0; transform:translateY(38px) rotateX(-72deg) scale(.86); }
+    55%{ opacity:1; } 78%{ transform:translateY(-4px) rotateX(6deg) scale(1.02); }
+    100%{ opacity:1; transform:none; } }
   @keyframes wordSheen{ 0%{ background-position:0 0; } 50%{ background-position:0 100%; } 100%{ background-position:0 0; } }
+  /* Отражение: та же надпись, перевёрнутая, растворяется книзу */
+  #splash .s-refl{ margin-top:2px; transform:translateY(2px);
+    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.16) 42%, transparent 78%);
+    mask-image:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.16) 42%, transparent 78%);
+    opacity:0; animation:reflIn 1.2s ease .7s forwards; }
+  #splash .s-refl span{ transform:scaleY(-1) translateY(1px); }
+  @keyframes reflIn{ to{ opacity:1; } }
   @media (prefers-reduced-motion: reduce){
-    #splash .s-glow{ animation:none; } #splash .s-title span{ animation:wordIn .5s ease forwards; }
+    #splash .s-glow{ animation:none; }
+    #splash .s-title span{ animation:wordIn .5s ease forwards; }
   }
   /* Слоган — тем же Unbounded, что и весь интерфейс: кегль меньше и разрядка,
      чтобы он читался подписью под объёмной надписью, а не вторым заголовком */
   #splash .s-sub{ font-family:'Unbounded', sans-serif; font-size:12.5px; font-weight:500;
-    color:var(--text-dim); opacity:0; letter-spacing:.14em; line-height:1.45; text-align:center; animation:fadeUp .6s 1.1s ease forwards; }
+    color:var(--text-dim); opacity:0; letter-spacing:.14em; line-height:1.45; text-align:center;
+    animation:fadeUp .8s 2.2s ease forwards; }
   #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--accent); }
-  #splash .s-credit{ position:absolute; bottom:calc(28px + var(--safe-bottom)); font-size:11px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .6s 2.3s ease forwards; }
+  #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; color:var(--text-dim); opacity:0; letter-spacing:.03em; animation:fadeUp .8s 3.1s ease forwards; }
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes fadeUp{ to{ opacity:1; } }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
   #splash.hide{ opacity:0; pointer-events:none; }
 
   /* ===== Onboarding ===== */
@@ -625,8 +765,11 @@
   .rad-item{ position:absolute; left:50%; top:50%; width:64px; height:64px; margin:-32px 0 0 -32px; box-sizing:border-box; padding:3px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--text-dim); z-index:2; box-shadow:0 8px 22px -8px rgba(0,0,0,0.6); transition:transform .28s cubic-bezier(.2,1.4,.4,1), background .15s ease, color .15s ease, border-color .15s ease; transform:translate(0,0) scale(.3); opacity:0; }
   #radialMenu.show .rad-item{ opacity:1; }
   .rad-item svg{ width:20px; height:20px; }
-  /* Подпись не должна касаться обводки кружка: ограничиваем ширину и линии */
-  .rad-item .rad-lbl{ font-size:9px; font-weight:600; max-width:48px; padding:0 2px; text-align:center; line-height:1.05; overflow-wrap:anywhere; }
+  /* Подпись живёт внутри кружка и не должна касаться обводки. Держим её одной
+     строкой, а размер шрифта подгоняет скрипт (fitRadLabels) под хорду кружка;
+     если слово всё равно не влезает — включается перенос по мягкому переносу. */
+  .rad-item .rad-lbl{ font-size:9.5px; font-weight:600; max-width:46px; padding:0 1px; text-align:center;
+    line-height:1.1; white-space:nowrap; letter-spacing:-.01em; hyphens:manual; }
   .rad-item.hot{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); transform:var(--rad-pos) scale(1.18) !important; box-shadow:0 12px 30px -6px var(--accent-glow); }
   .rad-item.danger.hot{ background:var(--skip); border-color:var(--skip); color:#fff; box-shadow:0 12px 30px -6px rgba(193,73,63,0.6); }
 
@@ -646,11 +789,14 @@
 
 <!-- SPLASH -->
 <div id="splash">
-  <!-- Объёмная надпись SMOTRA: это настоящий текст (Unbounded 900), буквы
-       собираются скриптом. Объём — слоями drop-shadow, глянец — движущийся
-       градиент по буквам, поэтому надпись живая, а не картинка. -->
+  <!-- Объёмная надпись SMOTRA: настоящий текст (Unbounded 900), буквы собираются
+       скриптом. Объём — цепочкой drop-shadow (торец + тень + свечение), глянец —
+       градиент по буквам с бегущим бликом, ниже — отражение. Картинок нет. -->
   <div class="s-glow" aria-hidden="true"></div>
-  <div class="s-title" id="sTitle" aria-label="SMOTRA"></div>
+  <div class="s-3d">
+    <div class="s-title" id="sTitle" aria-label="SMOTRA"></div>
+    <div class="s-refl" id="sRefl" aria-hidden="true"></div>
+  </div>
   <div class="s-sub">свайпай <em>и вайбуй</em></div>
   <div class="s-credit">made <b>tengizka</b></div>
 </div>
@@ -714,6 +860,7 @@
     <div class="actions">
       <div class="act-item"><button class="no" id="btnSkip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="act-lbl">Мимо</span></div>
       <div class="act-item"><button class="wishbtn" id="btnWish"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 3 1-6.1-4.4-4.3 6.1-.9z"/></svg></button><span class="act-lbl">Чекнуть</span></div>
+      <div class="act-item"><button class="watchbtn" id="btnWatching"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5l14 8.5-14 8.5z"/></svg></button><span class="act-lbl">Смотрю</span></div>
       <div class="act-item"><button class="yes" id="btnWatched"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button><span class="act-lbl">Смотрел</span></div>
     </div>
     <div class="home-bottom">
@@ -726,8 +873,8 @@
     <div class="eyebrow"><span>Каталог</span><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
     <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…">
     <div class="chips" id="typeChips"></div>
-    <div class="chips" id="catChips" style="margin-top:6px;"></div>
-    <div class="grid2" id="catGrid" style="margin-top:10px;"></div>
+    <div class="chips" id="catChips"></div>
+    <div class="grid2" id="catGrid"></div>
     <div id="catShowMore" style="display:none; text-align:center; padding:16px 0;">
       <button id="catShowMoreBtn" style="padding:12px 22px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-weight:600; font-size:13.5px;">Показать ещё</button>
     </div>
@@ -736,16 +883,26 @@
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
-    <div class="eyebrow"><span>Хочу чекнуть <span class="count" id="wishCount">0</span></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
+    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
+    <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…">
     <div class="chips" id="wishSort"></div>
-    <div id="wishList" style="margin-top:12px;"></div>
+    <button class="roulette-btn" id="openRoulette"><span class="rl-ico">🎲</span> Рандомайзер</button>
+    <div id="wishList"></div>
   </section>
 
   <!-- FEED (лента рецензий) -->
   <section id="feed" class="screen">
-    <div class="eyebrow"><span>Лента рецензий</span><button id="feedRefresh" class="view-toggle" style="cursor:pointer; padding:5px 11px; gap:5px; font-size:11.5px; color:var(--text-dim); background:var(--surface); border:1px solid var(--border);"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>Обновить</button></div>
-    <div class="feed-hint">Что смотрят и как оценивают другие зрители SMOTRA. Нажми на карточку, чтобы открыть тайтл.</div>
-    <div id="feedBody" style="margin-top:6px;"></div>
+    <div class="eyebrow">
+      <span>Оценки</span>
+      <button id="feedRefresh" class="icon-refresh" aria-label="Обновить" title="Обновить">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+      </button>
+    </div>
+    <div class="seg" id="feedSeg">
+      <button class="seg-btn active" data-mode="friends">С друзьями</button>
+      <button class="seg-btn" data-mode="global">Общий рейтинг</button>
+    </div>
+    <div id="feedBody"></div>
   </section>
 
   <!-- PROFILE -->
@@ -758,6 +915,7 @@
       </div>
     </div>
 
+    <div class="my-stats" id="myStats"></div>
     <div class="stats-row">
       <div class="stat-card" id="statCardWatched"><div class="stat-num" id="statWatched">0</div><div class="stat-label"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;"><path d="M20 6L9 17l-5-5"/></svg> просмотрено</div></div>
       <div class="stat-card" id="statCardSkipped"><div class="stat-num" id="statSkipped">0</div><div class="stat-label"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;"><path d="M6 6l12 12M18 6L6 18"/></svg> пропущено</div></div>
@@ -833,7 +991,7 @@
     <span class="count" id="watchingCount" style="margin-left:auto;">0</span>
   </div>
   <div class="ov-body">
-    <div class="feed-hint" style="margin-bottom:6px;">Тайтлы, которые ты сейчас смотришь. Удерживай карточку для быстрых действий.</div>
+    <div class="screen-hint" style="margin-bottom:6px;">Тайтлы, которые ты сейчас смотришь. Удерживай карточку для быстрых действий.</div>
     <span class="view-toggle" data-section="watching" style="margin-bottom:10px; display:inline-flex;"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span>
     <div id="watchingList" style="margin-top:12px;"></div>
   </div>
@@ -989,6 +1147,23 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- РАНДОМАЙЗЕР: лента постеров из «Хочу чекнуть» крутится и останавливается на одном тайтле -->
+<div class="roulette" id="roulette">
+  <div class="rl-card">
+    <h3>Что посмотреть?</h3>
+    <div class="rl-strip-wrap">
+      <div class="rl-marker"></div>
+      <div class="rl-strip" id="rlStrip"></div>
+    </div>
+    <div class="rl-result" id="rlResult"></div>
+    <div class="rl-actions">
+      <button id="rlAgain">Ещё раз</button>
+      <button class="primary" id="rlOpen">Открыть</button>
+      <button id="rlClose">Закрыть</button>
+    </div>
+  </div>
+</div>
 <button id="undoBtn" class="undo-pill"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11a5 5 0 0 1 0 10h-5"/><path d="M7 3L3 7l4 4"/></svg>Вернуться</button>
 
 <script>
@@ -1037,9 +1212,18 @@
          (Unbounded 900) с объёмом из слоёв тени, бегущим бликом и въездом по
          буквам; подписи в кружках меню больше не касаются обводки; в туториале
          нечему свисать за границу экрана (overflow:hidden, сжимаемые блоки и
-         запас на нижнюю панель Telegram). */
-const APP_VERSION = '0.14';
-const APP_BUILD_DATE = '2026-09-13';
+         запас на нижнюю панель Telegram).
+  0.15 — большая переделка по замечаниям: заставка — белый объёмный текст с
+         акцентной «O», отражением, свечением и длинной сценой; каталог с
+         ровными отступами и каждый раз новой популярной подборкой; в «Хочу
+         чекнуть» поиск, крупный счётчик и рулетка-рандомайзер; вуаль на карточке
+         темнеет постепенно и закрывает текст, штампы поверх; кнопка «Смотрю» в
+         ряду действий; раздел оценок переделан (друзья / общий рейтинг, сравнение
+         со средним, профили друзей со статистикой и мэтчем); больше ачивок;
+         свайпы назад по разделам и листание нижнего таба; туториал жёстко
+         прижимает кнопку к видимой части экрана. */
+const APP_VERSION = '0.15';
+const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
 const ICONS = {
@@ -1144,7 +1328,7 @@ if (tg) {
   }
 }
 // Вне Telegram (браузер, десктоп) держим ту же стабильную высоту приложения.
-window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial(); });
+window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial(); if (Radial.active) Radial.fit(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { syncAppHeight(); applySafeArea(); fitTutorial(); }, 250));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
 syncAppHeight();
@@ -1229,6 +1413,7 @@ async function dbSaveReview(movieId, big, small, text){
     // приложение рапортовало «опубликовано», даже когда запись отклонялась.
     const { error } = await sb.from('reviews').upsert({ telegram_id: TG_ID, movie_id: movieId, big, small, total, text: text || '', updated_at: new Date().toISOString() }, { onConflict: 'telegram_id,movie_id' });
     if (error){ console.error('[supabase] reviews upsert', error); return false; }
+    bumpReviewCount(movieId);   // счётчик оценок для ачивок
     return true;
   }catch(e){ console.error(e); return false; }
 }
@@ -1318,24 +1503,154 @@ function avatarBlockHTML(name, photoUrl, size){
   }
   return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:var(--on-accent); margin:0 auto 14px;">${esc((name[0]||'?').toUpperCase())}</div>`;
 }
+/* Списки друга: то, что он смотрел и хочет посмотреть. Читаем из тех же таблиц,
+   что и свои (swipes/wishlist по его telegram_id); если доступ закрыт — тихо
+   показываем то, что знаем из его оценок. */
+async function getFriendLists(id){
+  const out = { watched: [], wishlist: [], watching: [] };
+  try{
+    const [sw, wl, wa] = await Promise.all([
+      sb.from('swipes').select('movie_id,action').eq('telegram_id', id),
+      sb.from('wishlist').select('movie_id').eq('telegram_id', id),
+      sb.from('watching').select('movie_id').eq('telegram_id', id),
+    ]);
+    (sw.data || []).forEach(r => { if (r.action === 'watched') out.watched.push(r.movie_id); else if (r.action === 'skipped') out.skipped = (out.skipped || []).concat(r.movie_id); });
+    (wl.data || []).forEach(r => out.wishlist.push(r.movie_id));
+    (wa.data || []).forEach(r => out.watching.push(r.movie_id));
+  }catch(e){}
+  return out;
+}
+/* Мэтч двух профилей: пересечение просмотренного, желаний и оценок + совпадение вкусов */
+function computeMatch(mine, theirs, myRatings, theirRatings){
+  const setMine = new Set(mine), setTheirs = new Set(theirs);
+  const common = [...setMine].filter(k => setTheirs.has(k));
+  const genreCount = (list) => {
+    const m = new Map();
+    list.forEach(key => { const mv = keyToMovie(key); if (!mv) return; (mv.genres||[]).forEach(g => m.set(g, (m.get(g)||0)+1)); });
+    return m;
+  };
+  const gm = genreCount(mine), gt = genreCount(theirs);
+  const allGenres = new Set([...gm.keys(), ...gt.keys()]);
+  let shared = 0, total = 0;
+  allGenres.forEach(g => {
+    const a = (gm.get(g)||0) / Math.max(1, mine.length);
+    const b = (gt.get(g)||0) / Math.max(1, theirs.length);
+    shared += Math.min(a, b);
+    total += Math.max(a, b);
+  });
+  const genreMatch = total ? shared / total : 0;
+  const overlap = (setMine.size && setTheirs.size)
+    ? common.length / Math.max(1, Math.min(setMine.size, setTheirs.size))
+    : 0;
+  let closeScores = 0, compared = 0;
+  myRatings.forEach((val, movieId) => {
+    if (theirRatings.has(movieId)){
+      compared++;
+      if (Math.abs(val - theirRatings.get(movieId)) <= 8) closeScores++;   // в пределах 8 баллов из 68
+    }
+  });
+  const taste = compared ? closeScores / compared : null;
+  const parts = [overlap, genreMatch].concat(taste === null ? [] : [taste]);
+  const score = Math.round((parts.reduce((a,b)=>a+b,0) / parts.length) * 100);
+  return {
+    score: Math.max(0, Math.min(100, score)),
+    common: common.map(keyToMovie).filter(Boolean).slice(0, 24),
+    overlap: Math.round(overlap*100),
+    genreMatch: Math.round(genreMatch*100),
+    taste: taste === null ? null : Math.round(taste*100),
+    compared,
+  };
+}
+async function myRatingMap(){
+  const map = new Map();
+  try{
+    const { data } = await sb.from('reviews').select('movie_id,total').eq('telegram_id', TG_ID);
+    (data || []).forEach(r => map.set(r.movie_id, Number(r.total) || 0));
+  }catch(e){}
+  return map;
+}
+async function theirRatingMap(id){
+  const map = new Map();
+  try{
+    const { data } = await sb.from('reviews').select('movie_id,total').eq('telegram_id', id);
+    (data || []).forEach(r => map.set(r.movie_id, Number(r.total) || 0));
+  }catch(e){}
+  return map;
+}
 async function openFriendProfile(id){
   document.getElementById('friendProfileScreen').classList.add('open');
   const body = document.getElementById('friendProfileBody');
-  body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Загружаю…</div>`;
-  const [profile, watchedCount, skippedCount] = await Promise.all([
-    getProfile(id), getActionCount(id,'watched'), getActionCount(id,'skipped')
+  body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Собираю статистику…</div>`;
+  const [profile, lists, mine, myRatings, theirRatings] = await Promise.all([
+    getProfile(id), getFriendLists(id), getFriendLists(TG_ID), myRatingMap(), theirRatingMap(id),
   ]);
   const name = friendDisplayName(profile);
+  const watchedTheir = lists.watched.map(keyToMovie).filter(Boolean);
+  const watchedMine = mine.watched;
+  const match = computeMatch(watchedMine, lists.watched, myRatings, theirRatings);
+  // Топ-жанры друга считаем по его просмотренному
+  const genreMap = new Map();
+  watchedTheir.forEach(m => (m.genres||[]).forEach(g => genreMap.set(g, (genreMap.get(g)||0)+1)));
+  const topGenres = [...genreMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const avg = theirRatings.size
+    ? Math.round([...theirRatings.values()].reduce((a,b)=>a+b,0) / theirRatings.size)
+    : null;
+
   body.innerHTML = `
     <div style="text-align:center; padding-top:10px;">
-      ${avatarBlockHTML(name, profile?.photo_url, 88)}
+      ${avatarBlockHTML(name, profile?.photo_url, 84)}
       <div style="font-size:18px; font-weight:700;">${esc(name)}</div>
       ${profile?.username ? `<div class="set-sub">@${esc(profile.username)}</div>` : ''}
     </div>
-    <div class="stats-row" style="margin-top:20px;">
-      <div class="stat-card"><div class="stat-num">${watchedCount}</div><div class="stat-label">просмотрено</div></div>
-      <div class="stat-card"><div class="stat-num">${skippedCount}</div><div class="stat-label">пропущено</div></div>
-    </div>`;
+
+    <div class="match-card">
+      <div class="match-ring" style="--p:${match.score}">
+        <div class="match-num">${match.score}<small>%</small></div>
+      </div>
+      <div class="match-text">
+        <div class="match-title">Ваш мэтч в кино</div>
+        <div class="match-sub">${match.compared ? `Совпало по оценкам: ${match.taste}% · общих тайтлов: ${match.common.length}` : `Общих тайтлов: ${match.common.length}`}</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">${lists.watched.length}</div><div class="stat-label">смотрел</div></div>
+      <div class="stat-card"><div class="stat-num">${lists.wishlist.length}</div><div class="stat-label">хочет</div></div>
+      <div class="stat-card"><div class="stat-num">${avg === null ? '—' : avg}</div><div class="stat-label">средний балл</div></div>
+    </div>
+
+    <div class="friend-bars">
+      <div class="fb-row"><span>Совпадение списков</span><b>${match.overlap}%</b></div>
+      <div class="fb-bar"><i style="width:${match.overlap}%"></i></div>
+      <div class="fb-row"><span>Похожесть вкусов</span><b>${match.genreMatch}%</b></div>
+      <div class="fb-bar"><i style="width:${match.genreMatch}%"></i></div>
+      ${match.taste === null ? '' : `<div class="fb-row"><span>Совпадение оценок</span><b>${match.taste}%</b></div>
+      <div class="fb-bar"><i style="width:${match.taste}%"></i></div>`}
+    </div>
+
+    ${topGenres.length ? `<div class="set-title" style="margin-top:18px;">Любимые жанры</div>
+      <div class="genre-tags">${topGenres.map(([g,n])=>`<span class="genre-tag">${esc(g)} · ${n}</span>`).join('')}</div>` : ''}
+
+    ${match.common.length ? `<div class="set-title" style="margin-top:18px;">Смотрели оба (${match.common.length})</div>
+      <div class="common-grid">${match.common.slice(0,12).map(m => `
+        <div class="common-item" data-movie="${m.id}" data-type="${m.type}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}">
+          <span>${esc(m.title)}</span>
+        </div>`).join('')}</div>` : ''}
+
+    ${watchedTheir.length ? `<div class="set-title" style="margin-top:18px;">Что смотрел (${watchedTheir.length})</div>
+      <div class="friend-watched">${watchedTheir.slice(0,30).map(m => `
+        <div class="fw-row" data-movie="${m.id}">
+          <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
+          <div class="fw-mid"><div class="fw-title">${esc(m.title)}</div><div class="fw-sub">${esc(m.year)} · ${esc(m.genres && m.genres[0] || TYPE_LABEL[m.type] || 'Тайтл')}</div></div>
+        </div>`).join('')}</div>`
+      : `<div class="empty-note" style="padding:20px 4px;">Пока не видно, что ${esc(name)} смотрел: список появится, когда он свайпнет карточки</div>`}
+  `;
+  [...body.querySelectorAll('[data-movie]')].forEach(el => {
+    el.onclick = () => {
+      const movie = movieById(+el.dataset.movie, el.dataset.type);
+      if (movie) openSheet(movie);
+    };
+  });
 }
 document.getElementById('closeFriendProfile').onclick = () => document.getElementById('friendProfileScreen').classList.remove('open');
 
@@ -1406,21 +1721,34 @@ async function loadState(){
 /* ============ SPLASH ============ */
 const word = 'SMOTRA';
 /* Заголовок заставки: настоящий текст, по буквам — своя задержка въезда
-   и свой сдвиг блика, поэтому надпись «оживает» слева направо. */
+   и свой сдвиг блика, поэтому надпись «оживает» слева направо.
+   Рядом собираем точную копию для отражения — она перевёрнута и растворяется. */
+const sTitle = document.getElementById('sTitle');
+const sRefl = document.getElementById('sRefl');
 [...'SMOTRA'].forEach((ch, i) => {
+  const delay = (0.15 + i * 0.11).toFixed(3);
   const sp = document.createElement('span');
   sp.textContent = ch;
-  sp.style.animationDelay = `${(0.1 + i * 0.075).toFixed(3)}s, ${(1.45 + i * 0.17).toFixed(2)}s`;
-  document.getElementById('sTitle').appendChild(sp);
+  if (ch === 'O') sp.classList.add('o');
+  sp.style.animationDelay = `${delay}s, ${(2.1 + i * 0.16).toFixed(2)}s`;
+  sTitle.appendChild(sp);
+  const rf = document.createElement('span');
+  rf.textContent = ch;
+  if (ch === 'O') rf.classList.add('o');
+  sRefl.appendChild(rf);
 });
-setTimeout(()=>{
+/* Сцена заставки длиннее: буквы въезжают до ~1.2с, отражение — к 1.9с,
+   слоган — к 2.2с, подпись автора — к 3.1с. Держим заставку 4.8с, чтобы всё
+   это успели увидеть (параметр ?splash оставляет её на экране для проверки). */
+const SPLASH_PREVIEW = /[?&]splash/.test(location.search);   // ?splash — оставить заставку для проверки
+if (!SPLASH_PREVIEW) setTimeout(()=>{
   document.getElementById('splash').classList.add('hide');
   if (!localStorage.getItem('smotra_onboarded')) {
     document.getElementById('onboarding').classList.add('show');
   } else {
     maybeStartTutorial();
   }
-}, 3000);
+}, 4800);
 
 /* ============ STREAK (реальные дни захода) ============ */
 const STREAK_KEY = 'smotra_visit_days';
@@ -1611,7 +1939,7 @@ const TUTORIAL_STEPS = [
           <div class="trd-item" data-i="0">${ICON('check',24)}<span class="trd-lbl">Смотрел</span></div>
           <div class="trd-item" data-i="1">${ICON('star',24)}<span class="trd-lbl">Чекнуть</span></div>
           <div class="trd-item" data-i="2">${ICON('clapper',24)}<span class="trd-lbl">Оценка</span></div>
-          <div class="trd-item" data-i="3">${ICON('share',24)}<span class="trd-lbl">Поделиться</span></div>
+          <div class="trd-item" data-i="3">${ICON('share',24)}<span class="trd-lbl">Поде­литься</span></div>
           <div class="trd-item" data-i="4">${ICON('play',24)}<span class="trd-lbl">Смотрю</span></div>
         </div>
       </div>`,
@@ -1683,6 +2011,31 @@ function tutCaptionOverflow(){
   if (!box.height) return false;                        // раскладка ещё не посчитана
   return actions.getBoundingClientRect().bottom > tutVisibleBottom(box) - 2;
 }
+/* Последний рубеж: если после всех подгонок нижний ряд всё равно ниже видимой
+   части экрана — поднимаем содержимое слоя ровно на величину переполнения.
+   Так кнопка «Дальше» не может уехать за низ ни при какой раскладке. */
+/* Последний рубеж: что бы ни случилось с раскладкой, нижний ряд туториала
+   («Дальше») обязан быть внутри видимой части экрана. Меряем по факту и поднимаем
+   содержимое внутренним отступом снизу — в несколько проходов, потому что сжатие
+   подписи забирает часть переполнения. */
+function clampTutorial(){
+  const t = document.getElementById('tutorial');
+  const actions = t && t.querySelector('.tut-actions');
+  if (!t || !actions || !t.classList.contains('show')) return;
+  t.style.paddingBottom = '';
+  if (!t.getBoundingClientRect().height) return;
+  const base = parseFloat(getComputedStyle(t).paddingBottom) || 0;
+  let added = 0;
+  for (let pass = 0; pass < 4; pass++){
+    const box = t.getBoundingClientRect();
+    const over = Math.ceil(actions.getBoundingClientRect().bottom - tutVisibleBottom(box));
+    if (over <= 0) break;
+    added += Math.min(over, 120);            // один проход не больше 120px, чтобы не улететь вверх
+    t.style.paddingBottom = (base + added) + 'px';
+    if (added >= 280) break;                 // сцена уже сжата до предела
+  }
+  if (!added) t.style.paddingBottom = '';
+}
 function fitTutorial(){
   const t = document.getElementById('tutorial');
   if (!t || !t.classList.contains('show')) return;
@@ -1710,6 +2063,7 @@ function fitTutorial(){
     k = tutDemoScale(demo, stage);
   }
   tutApplyScale(demo, k);
+  clampTutorial();
 }
 /* Насколько можно показать демо, чтобы оно целиком влезло в сцену */
 function tutDemoScale(demo, stage){
@@ -2021,11 +2375,18 @@ function combineLists(parts){
 }
 
 const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v4_dedupe';
-const TMDB_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 часов — не дёргаем TMDB на каждый запуск
+const TMDB_CACHE_TTL = 90 * 60 * 1000; // 1.5 часа: подборка должна обновляться, но не на каждый тап
+/* Каталог больше не «одни и те же фильмы»: у TMDB популярное разложено по страницам,
+   поэтому на каждый запуск берём случайное окно страниц (1..5) — набор остаётся
+   популярным, но каждый раз новым. Кэш привязан к этому окну. */
+const DISCOVER_WINDOW = 5;
+let discoverStart = 1 + Math.floor(Math.random() * DISCOVER_WINDOW);
+const DISCOVER_PAGES = 2;   // сколько страниц каждой категории тянем на старте
 function loadTmdbCache(){
   try{
     const raw = JSON.parse(localStorage.getItem(TMDB_CACHE_KEY) || 'null');
     if (!raw || Date.now() - raw.ts > TMDB_CACHE_TTL) return null;
+    if (raw.start !== discoverStart || raw.pages !== DISCOVER_PAGES) return null; // окно другое — тянем заново
     return raw;
   }catch(e){ return null; }
 }
@@ -2049,7 +2410,7 @@ function writeTmdbCache(movies){
       posterPath:m.posterPath, seasons:m.seasons, episodesTotal:m.episodesTotal, cast:m.cast,
       isCartoon:!!m.isCartoon, isAnime:!!m.isAnime,
     }));
-    localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), movies: slim, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV }));
+    localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify({ ts: Date.now(), start: discoverStart, pages: DISCOVER_PAGES, movies: slim, genreMovie: GENRE_MOVIE, genreTv: GENRE_TV }));
   }catch(e){
     try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e2){}
   }
@@ -2084,15 +2445,24 @@ async function loadMovies(){
   }
   try{
     await loadGenres();
-    tmdbPage = 1;
-    const u = discoverUrls(tmdbPage);
-    const [films, series, anime, cartoons] = await Promise.all([
-      fetchList(u.film, 'film', GENRE_MOVIE),
-      fetchList(u.series, 'series', GENRE_TV),
-      fetchList(u.anime, 'anime', GENRE_TV),
-      fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
-    ]);
-    const combined = combineLists({ films, series, anime, cartoons });
+    tmdbPage = discoverStart;
+    // Берём сразу окно страниц (по 2 на категорию): выборка остаётся популярной,
+    // но при следующем запуске окно смещается и подборка выглядит иначе.
+    const pages = Array.from({ length: DISCOVER_PAGES }, (_, i) => discoverStart + i);
+    const lists = { films: [], series: [], anime: [], cartoons: [] };
+    for (const page of pages){
+      const u = discoverUrls(page);
+      const [films, series, anime, cartoons] = await Promise.all([
+        fetchList(u.film, 'film', GENRE_MOVIE),
+        fetchList(u.series, 'series', GENRE_TV),
+        fetchList(u.anime, 'anime', GENRE_TV),
+        fetchList(u.cartoon, 'cartoon', GENRE_MOVIE),
+      ]);
+      lists.films.push(...films); lists.series.push(...series);
+      lists.anime.push(...anime); lists.cartoons.push(...cartoons);
+    }
+    tmdbPage = discoverStart + DISCOVER_PAGES - 1;
+    const combined = combineLists(lists);
     if (combined.length){
       MOVIES = combined; rebuildMovieIndex(); tutMoviesCache = null; saveTmdbCache(combined); tmdbFailed = false;
       // Догружаем пару страниц в фоне: больше на старте — это десятки запросов к TMDB
@@ -2283,11 +2653,29 @@ function hasArt(m){ return !!m.posterPath; }
 function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.posterPath}`; }
 function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${esc(posterUrl(m, size))}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
+/* Ачивки. kind — по какому счётчику открывается: watched (смотрел), wishlist,
+   watching, skipped, streak (дни подряд), reviews (оценки), genres (жанры). */
 const BADGES = [
-  { id:'b1', min:1, icon:'clapper', name:'Дебют', desc:'Отметь первый просмотренный тайтл' },
-  { id:'b2', min:5, icon:'popcorn', name:'Втянулся', desc:'Отметь 5 просмотренных тайтлов' },
-  { id:'b3', min:10, icon:'reel', name:'Киноман', desc:'Отметь 10 просмотренных тайтлов' },
-  { id:'b4', min:25, icon:'trophy', name:'Марафонец', desc:'Отметь 25 просмотренных тайтлов' },
+  { id:'b1',  kind:'watched',  min:1,   icon:'clapper',  name:'Дебют',          desc:'Отметь первый просмотренный тайтл' },
+  { id:'b2',  kind:'watched',  min:5,   icon:'popcorn',  name:'Втянулся',       desc:'Отметь 5 просмотренных тайтлов' },
+  { id:'b3',  kind:'watched',  min:10,  icon:'reel',     name:'Киноман',        desc:'Отметь 10 просмотренных тайтлов' },
+  { id:'b4',  kind:'watched',  min:25,  icon:'trophy',   name:'Марафонец',      desc:'Отметь 25 просмотренных тайтлов' },
+  { id:'b5',  kind:'watched',  min:50,  icon:'fire',     name:'Полтинник',      desc:'Отметь 50 просмотренных тайтлов' },
+  { id:'b6',  kind:'watched',  min:100, icon:'starFill', name:'Сотка',          desc:'Отметь 100 просмотренных тайтлов' },
+  { id:'b7',  kind:'watched',  min:200, icon:'trophy',   name:'Легенда SMOTRA', desc:'Отметь 200 просмотренных тайтлов' },
+  { id:'b8',  kind:'wishlist', min:5,   icon:'star',     name:'Списком',        desc:'Собери 5 тайтлов в «Хочу чекнуть»' },
+  { id:'b9',  kind:'wishlist', min:25,  icon:'sparkles', name:'Киноплан',       desc:'Собери 25 тайтлов в «Хочу чекнуть»' },
+  { id:'b10', kind:'watching', min:3,   icon:'play',     name:'Сейчас смотрю',  desc:'Держи 3 тайтла в «Смотрю»' },
+  { id:'b11', kind:'skipped',  min:25,  icon:'cross',    name:'Привереда',      desc:'Пропусти 25 тайтлов' },
+  { id:'b12', kind:'skipped',  min:100, icon:'cross',    name:'Ничего не зашло',desc:'Пропусти 100 тайтлов' },
+  { id:'b13', kind:'reviews',  min:1,   icon:'clapper',  name:'Критик',         desc:'Поставь первую оценку по шкале' },
+  { id:'b14', kind:'reviews',  min:10,  icon:'reel',     name:'Рецензент',      desc:'Поставь 10 оценок по шкале' },
+  { id:'b15', kind:'streak',   min:3,   icon:'fire',     name:'Разогрев',       desc:'Заходи 3 дня подряд' },
+  { id:'b16', kind:'streak',   min:7,   icon:'fire',     name:'Неделя в кино',  desc:'Заходи 7 дней подряд' },
+  { id:'b17', kind:'streak',   min:30,  icon:'trophy',   name:'Месяц подряд',   desc:'Заходи 30 дней подряд' },
+  { id:'b18', kind:'genres',   min:5,   icon:'sparkles', name:'Жанровый',       desc:'Посмотри тайтлы из 5 разных жанров' },
+  { id:'b19', kind:'genres',   min:10,  icon:'starFill', name:'Всеядный',       desc:'Посмотри тайтлы из 10 разных жанров' },
+  { id:'b20', kind:'episodes', min:50,  icon:'popcorn',  name:'Сериальщик',     desc:'Отметь 50 просмотренных серий' },
 ];
 
 let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
@@ -2302,7 +2690,24 @@ const state = {
   unlocked: [],
   badgeDates: {},
   episodes: {},
+  reviews: 0,          // сколько раз ставил оценку по Смотриметрам
 };
+/* Оценки считаем локально: сервер тут не нужен, а ачивки за рецензии — нужны. */
+const REVIEWS_COUNT_KEY = 'smotra_reviews_count';
+try{ state.reviews = Number(localStorage.getItem(REVIEWS_COUNT_KEY) || 0) || 0; }catch(e){}
+const REVIEWS_IDS_KEY = 'smotra_reviews_ids';   // какие тайтлы уже оценены — чтобы не накручивать счётчик
+let ratedIds = new Set();
+try{ ratedIds = new Set(JSON.parse(localStorage.getItem(REVIEWS_IDS_KEY) || '[]')); }catch(e){ ratedIds = new Set(); }
+function bumpReviewCount(movieId){
+  if (movieId != null){
+    if (ratedIds.has(movieId)){ checkBadges(); return; }   // повторная правка оценки — не новая оценка
+    ratedIds.add(movieId);
+    try{ localStorage.setItem(REVIEWS_IDS_KEY, JSON.stringify([...ratedIds])); }catch(e){}
+  }
+  state.reviews = ratedIds.size || (state.reviews || 0) + 1;
+  try{ localStorage.setItem(REVIEWS_COUNT_KEY, String(state.reviews)); }catch(e){}
+  checkBadges();
+}
 // ID у фильмов и сериалов живут в разных пространствах, поэтому тип — часть ключа.
 function movieById(id, type){
   if (type) return MOVIES.find(m => m.id === id && m.type === type) || null;
@@ -2317,6 +2722,87 @@ function dedupeByKey(list){
 }
 
 document.getElementById('shakeBtn').onclick = shakeDeck;
+
+/* ============ РАНДОМАЙЗЕР ============ */
+const Roulette = (function(){
+  const overlay = document.getElementById('roulette');
+  const strip = document.getElementById('rlStrip');
+  const resultEl = document.getElementById('rlResult');
+  const TILE = 86, GAP = 10;
+  let spinning = false, winner = null, spinTimer = null;
+
+  function pool(){
+    return state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
+  }
+  function close(){
+    overlay.classList.remove('show');
+    spinning = false;
+    clearTimeout(spinTimer);
+  }
+  function open(){
+    const items = pool();
+    if (!items.length){ showToast('Сначала добавь тайтлы в «Хочу чекнуть»', 'star'); return; }
+    overlay.classList.add('show');
+    haptic('impact','medium');
+    spin();
+  }
+  function spin(){
+    const items = pool();
+    if (!items.length) return;
+    resultEl.innerHTML = '<div class="rl-meta">Крутим…</div>';
+    spinning = true;
+    winner = null;
+    [...document.querySelectorAll('.rl-item.win')].forEach(el => el.classList.remove('win'));
+    // Лента: тайтлы повторяются, чтобы полотно было длинным и «ехало» долго
+    const LOOP = 34;
+    const stripItems = [];
+    for (let i = 0; i < LOOP; i++) stripItems.push(items[i % items.length]);
+    const winIndex = Math.floor(Math.random() * (LOOP - 10)) + 5;
+    strip.innerHTML = stripItems.map((m, i) => `
+      <div class="rl-item" data-i="${i}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}">
+        <span>${esc(m.title)}</span>
+      </div>`).join('');
+    strip.style.transition = 'none';
+    strip.style.transform = 'translateX(0)';
+    const wrap = strip.parentElement;
+    const center = (wrap.clientWidth || 320) / 2;
+    const target = -(winIndex * (TILE + GAP) + TILE / 2 - center + 40);
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        strip.style.transition = 'transform 3.4s cubic-bezier(.12,.72,.06,1)';
+        strip.style.transform = `translateX(${target}px)`;
+      });
+    });
+    spinTimer = setTimeout(()=>{
+      spinning = false;
+      winner = items[winIndex % items.length];
+      const tile = strip.querySelector(`.rl-item[data-i="${winIndex}"]`);
+      if (tile) tile.classList.add('win');
+      haptic('notification','success');
+      resultEl.innerHTML = `<div class="rl-name">${esc(winner.title)}</div>
+        <div class="rl-meta">${esc(winner.year)} · ${esc(TYPE_LABEL[winner.type] || 'Фильм')} · ${esc(winner.rating)}<span class="star"> ★</span></div>`;
+    }, 3550);
+  }
+  document.getElementById('openRoulette').onclick = open;
+  document.getElementById('rlClose').onclick = () => { haptic('selection'); close(); };
+  document.getElementById('rlAgain').onclick = () => { if (!spinning){ haptic('selection'); spin(); } };
+  document.getElementById('rlOpen').onclick = () => {
+    if (spinning || !winner) return;
+    haptic('selection');
+    const movie = winner;
+    close();
+    openSheet(movie);
+  };
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  return { open, close };
+})();
+
+/* Поиск в «Хочу чекнуть» */
+document.getElementById('wishSearch').addEventListener('input', (e) => {
+  wishQuery = e.target.value.trim();
+  renderWishlist();
+});
 
 function shareApp(){
   const text = 'Го затрекаем, что смотрели — я в SMOTRA';
@@ -2342,9 +2828,30 @@ function showToast(text, iconName){
 }
 
 /* ============ BADGES ============ */
+/* Значение каждого счётчика для ачивок: считается из состояния и прогресса серий */
+function badgeCounters(){
+  const genres = new Set();
+  state.watched.forEach(key => { const m = keyToMovie(key); if (m) (m.genres || []).forEach(g => genres.add(g)); });
+  let episodes = 0;
+  Object.values(state.episodes || {}).forEach(e => {
+    Object.values(e.seasons || {}).forEach(n => { episodes += Number(n) || 0; });
+  });
+  return {
+    watched: state.watched.length,
+    wishlist: state.wishlist.length,
+    watching: state.watching.length,
+    skipped: state.skipped.length,
+    reviews: state.reviews || 0,
+    streak: (typeof currentStreak === 'number' ? currentStreak : 0),
+    genres: genres.size,
+    episodes: episodes,
+  };
+}
 function checkBadges(){
+  const counters = badgeCounters();
   BADGES.forEach(b=>{
-    if (state.watched.length >= b.min && !state.unlocked.includes(b.id)){
+    const val = counters[b.kind || 'watched'] || 0;
+    if (val >= b.min && !state.unlocked.includes(b.id)){
       state.unlocked.push(b.id);
       state.badgeDates[b.id] = new Date().toISOString();
       showToast(`Ачивка «${b.name}» открыта`, b.icon);
@@ -2428,6 +2935,7 @@ let deckRefreshing = false;
 // Сколько раз подряд мы безуспешно пытались добить колоду. Без этого счётчика
 // «пустая колода → refill → пустая колода» крутилось бесконечно и подвешивало апп.
 let deckRefillTries = 0;
+let stackRenderRetried = false;
 const DECK_REFILL_TRIES_MAX = 2;
 
 /* Колода V2: карточки не пересобираются целиком, а плавно «поднимаются» после
@@ -2437,6 +2945,7 @@ function cardHTML(movie){
   return `
       <div class="poster" style="${posterStyle(movie, 'w500')}">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
       <div class="shade"></div>
+      <div class="veil"></div>
       <div class="stamp watched">СМОТРЕЛ</div>
       <div class="stamp skip">МИМО</div>
       <div class="stamp wish">ЧЕКНУТЬ</div>
@@ -2450,10 +2959,26 @@ function cardHTML(movie){
 function deckLoadingHTML(text){
   return `<div class="deck-loading"><div class="deck-spinner"></div><div class="deck-loading-text">${text || 'Подбираю кино…'}</div><div class="deck-loading-sub">Это займёт пару секунд</div></div>`;
 }
+/* Пустой колоды в интерфейсе не существует: если тайтлы кончились, крутим индикатор
+   и молча дотягиваем новые тайтлы. Как только они пришли — сразу показываем. */
+let exhaustedTimer = null;
 function deckExhaustedNote(){
-  stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Кино закончилось</div><div>Ты разобрал всю подборку. Загляни позже или включи больше типов в фильтре.</div><button id="retryDeck">Обновить подборку</button></div>`;
-  const btn = document.getElementById('retryDeck');
-  if (btn) btn.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
+  stackEl.innerHTML = deckLoadingHTML('Подбираю кино…');
+  if (exhaustedTimer) return;
+  const tick = async () => {
+    if (!stackEl.isConnected) return;
+    if (deck.length){ exhaustedTimer = null; renderStack(); return; }
+    deckRefillTries = 0;
+    await refillDeck();
+    if (deck.length){
+      exhaustedTimer = null;
+      renderStack();
+      showToast('Подобрал ещё', 'sparkles');
+      return;
+    }
+    exhaustedTimer = setTimeout(tick, 4000);
+  };
+  exhaustedTimer = setTimeout(tick, 700);
 }
 /* В колоде не может быть тайтла, с которым уже что-то сделали — правило проекта. */
 function purgeDeck(){
@@ -2500,9 +3025,13 @@ function renderStack(){
   }catch(e){
     console.error('renderStack failed', e);
     if (!stackEl.querySelector('.card')){
-      stackEl.innerHTML = `<div class="empty-deck"><div class="wordmark">Не получилось показать карточки</div><div>Попробуй обновить подборку</div><button id="retryDeck2">Обновить</button></div>`;
-      const b = document.getElementById('retryDeck2');
-      if (b) b.onclick = () => { deckRefillTries = 0; retryLoadMovies(); };
+      // Никаких «обновить подборку»: показываем тот же индикатор и один раз сами
+      // пробуем пересобрать колоду — обычно хватает, чтобы карточки появились.
+      stackEl.innerHTML = deckLoadingHTML('Собираю карточки…');
+      if (!stackRenderRetried){
+        stackRenderRetried = true;
+        setTimeout(() => { stackRenderRetried = false; deckRefillTries = 0; refillOnce(); }, 1200);
+      }
     }
   }
   ensureDeckHeight();
@@ -2556,6 +3085,7 @@ function ensureDeckHeight(){
 function makeDraggable(card, movie){
   let startX, startY, dx=0, dy=0, dragging=false, moved=false, holdTimer=null, radialOn=false;
   const wS = card.querySelector('.stamp.watched'), sS = card.querySelector('.stamp.skip'), wiS = card.querySelector('.stamp.wish'), wchS = card.querySelector('.stamp.watching');
+  const veil = card.querySelector('.veil');
   const clearHold = () => { if (holdTimer){ clearTimeout(holdTimer); holdTimer = null; } };
 
   card.addEventListener('pointerdown', e=>{
@@ -2579,14 +3109,17 @@ function makeDraggable(card, movie){
     if (holdTimer && Math.abs(e.clientX-startX) <= 12 && Math.abs(e.clientY-startY) <= 12) return;
     if (holdTimer) clearHold();
     dx = e.clientX - startX; dy = e.clientY - startY;
-    if (Math.abs(dx) > 6 || Math.abs(dy) > 6){
-      if (!moved) card.classList.add('card-dragging'); // подложка темнеет — надпись видно
+    const dist = Math.max(Math.abs(dx), Math.abs(dy));
+    if (dist > 3){
+      if (!moved) card.classList.add('card-dragging');
       moved = true;
     }
     const rot = dx/18;
     card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
     const vertical = Math.abs(dy) > Math.abs(dx);
-    const t = Math.min(Math.max(Math.abs(dx), Math.abs(dy)) / 120, 1);
+    // Плавность: и затемнение, и штамп растут вместе с ходом пальца, а не включаются рывком
+    const t = Math.min(Math.max((dist - 8) / 108, 0), 1);
+    if (veil) veil.style.opacity = (t * 0.9).toFixed(3);
     wS.style.opacity = (!vertical && dx > 0) ? t : 0;
     sS.style.opacity = (!vertical && dx < 0) ? t : 0;
     wiS.style.opacity = (vertical && dy < 0) ? t : 0;
@@ -2594,7 +3127,7 @@ function makeDraggable(card, movie){
   });
   function release(){
     clearHold();
-    if (radialOn){ Radial.close(true); radialOn = false; dx = 0; dy = 0; card.classList.remove('card-dragging'); return; }
+    if (radialOn){ Radial.close(true); radialOn = false; dx = 0; dy = 0; card.classList.remove('card-dragging'); if (veil) veil.style.opacity = 0; return; }
     if (!dragging) return;
     dragging = false; card.classList.remove('swiping', 'card-dragging');
     const vertical = Math.abs(dy) > Math.abs(dx);
@@ -2604,6 +3137,7 @@ function makeDraggable(card, movie){
       resolveSwipe(card, movie, dx > 0 ? 'watched' : 'skip');
     } else {
       card.style.transform = ''; wS.style.opacity = 0; sS.style.opacity = 0; wiS.style.opacity = 0; wchS.style.opacity = 0;
+      if (veil) veil.style.opacity = 0;
     }
     dx = 0; dy = 0;
   }
@@ -2771,7 +3305,7 @@ const Radial = (function(){
       { icon: isWatched?'cross':'check', lbl: isWatched?'Снять':'Смотрел', active:isWatched, run:()=>toggleQuick('watched', movie) },
       { icon: isWish?'starFill':'star', lbl: isWish?'Убрать':'Чекнуть', active:isWish, run:()=>toggleQuick('wishlist', movie) },
       { icon: 'clapper', lbl:'Оценка', run:()=>{ openReviewScreen(movie); } },
-      { icon: 'share', lbl:'Поделиться', run:()=>{ shareMovie(movie); } },
+      { icon: 'share', lbl:'Поде­литься', run:()=>{ shareMovie(movie); } },
       { icon: isWatching?'pause':'play', lbl: isWatching?'Стоп':'Смотрю', active:isWatching, run:()=>toggleQuick('watching', movie) },
     ];
   }
@@ -2799,6 +3333,7 @@ const Radial = (function(){
       wrap.appendChild(el);
       return { el, dx, dy, ang: Math.atan2(dy,dx), act:a };
     });
+    fitRadLabels();
     menu.classList.add('show');
     hot = -1;
     // раскрываем кнопки из центра
@@ -2807,6 +3342,23 @@ const Radial = (function(){
     haptic('impact','medium');
   }
 
+  /* Подписи в кружках: подбираем кегль так, чтобы строка укладывалась в кружок.
+     Меряем по-настоящему (scrollWidth), а не на глаз — поэтому надпись никогда
+     не вылезает на обводку. */
+  function fitRadLabels(){
+    [...wrap.querySelectorAll('.rad-item .rad-lbl')].forEach(lbl => {
+      const MAX = 46;                 // доступная ширина внутри кружка 64px
+      lbl.style.fontSize = '';
+      lbl.style.whiteSpace = 'nowrap';
+      let fs = 9.5;
+      lbl.style.fontSize = fs + 'px';
+      while (fs > 8 && lbl.scrollWidth > MAX){ fs -= 0.5; lbl.style.fontSize = fs + 'px'; }
+      if (lbl.scrollWidth > MAX){     // в одну строку не влезает — переносим по слогу
+        lbl.style.whiteSpace = '';
+        lbl.style.fontSize = '9px';
+      }
+    });
+  }
   function update(px, py){
     if (!active) return;
     const dx = px - cx, dy = py - cy;
@@ -2842,7 +3394,7 @@ const Radial = (function(){
     if (chosen){ haptic('impact','light'); chosen.run(); }
   }
   backdrop.addEventListener('pointerup', ()=> close(false));
-  return { open, update, close, get active(){ return active; } };
+  return { open, update, close, fit: fitRadLabels, get active(){ return active; } };
 })();
 
 /* Одно и то же радиальное меню работает на ЛЮБОЙ обложке в ЛЮБОМ разделе:
@@ -2896,6 +3448,7 @@ function initLongPress(containerId){
 document.getElementById('btnWatched').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watched'); };
 document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'skip'); };
 document.getElementById('btnWish').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'wish'); };
+document.getElementById('btnWatching').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watching'); };
 
 /* Перерисовываем только то, что реально видно: иначе каждый свайп пересобирал
    весь каталог (60 карточек), чек-лист, «Смотрю» и рейтинг друзей с сетью.
@@ -2914,10 +3467,32 @@ function refreshVisibleScreens(){
    за один свайп updateStats() вызывается несколько раз, и каталог (до 60 карточек)
    перерисовывался столько же раз. */
 let statsFramePending = false;
+/* Статистика в моём профиле: средний балл, темп, любимые жанры */
+function renderMyStats(){
+  const el = document.getElementById('myStats');
+  if (!el) return;
+  const watched = state.watched.map(keyToMovie).filter(Boolean);
+  const genreMap = new Map();
+  watched.forEach(m => (m.genres||[]).forEach(g => genreMap.set(g, (genreMap.get(g)||0)+1)));
+  const topGenres = [...genreMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const days = (() => { try{ const d = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]'); return d.length; }catch(e){ return 0; } })();
+  el.innerHTML = `
+    <div class="ms-title">Твоя статистика</div>
+    <div class="ms-grid">
+      <div class="ms-cell"><div class="ms-num">${state.watched.length}</div><div class="ms-lbl">смотрел</div></div>
+      <div class="ms-cell"><div class="ms-num">${state.wishlist.length}</div><div class="ms-lbl">хочет</div></div>
+      <div class="ms-cell"><div class="ms-num">${state.reviews || 0}</div><div class="ms-lbl">оценок</div></div>
+      <div class="ms-cell"><div class="ms-num">${state.skipped.length}</div><div class="ms-lbl">мимо</div></div>
+      <div class="ms-cell"><div class="ms-num">${state.unlocked.length}</div><div class="ms-lbl">ачивок</div></div>
+      <div class="ms-cell"><div class="ms-num">${days}</div><div class="ms-lbl">дней в приложении</div></div>
+    </div>
+    ${topGenres.length ? `<div class="ms-genres">${topGenres.map(([g,n])=>`<span class="genre-tag">${esc(g)} · ${n}</span>`).join('')}</div>` : ''}`;
+}
 function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
+  renderMyStats();
   if (statsFramePending) return;
   statsFramePending = true;
   requestAnimationFrame(() => { statsFramePending = false; refreshVisibleScreens(); });
@@ -3128,13 +3703,22 @@ document.getElementById('wishSort').addEventListener('click', e=>{
   [...document.querySelectorAll('#wishSort .chip')].forEach(x=>x.classList.toggle('active', x===c));
   renderWishlist();
 });
+let wishQuery = '';
 function renderWishlist(){
   const view = syncViewToggle('wishlist', 'list');
   let items = state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
   if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
   else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
   const el = document.getElementById('wishList');
-  if (!items.length){ el.className = ''; el.innerHTML = `<div class="empty-note">Свайпни карточку наверх — она попадёт сюда</div>`; return; }
+  if (wishQuery){
+    const q = wishQuery.toLowerCase();
+    items = items.filter(m => (m.title || '').toLowerCase().includes(q) || (m.originalTitle || '').toLowerCase().includes(q));
+  }
+  if (!items.length){
+    el.className = '';
+    el.innerHTML = `<div class="empty-note">${wishQuery ? 'Ничего не нашлось — попробуй другое название' : 'Свайпни карточку наверх — она попадёт сюда'}</div>`;
+    return;
+  }
   if (view === 'grid'){
     el.className = 'grid2';
     el.innerHTML = items.map(posterCardHTML).join('');
@@ -3574,42 +4158,130 @@ document.getElementById('deleteReview').onclick = async () => {
   }catch(e){ showToast('Не получилось удалить — проверь связь'); }
 };
 
-/* ============ ЛЕНТА РЕЦЕНЗИЙ ============ */
-document.getElementById('feedRefresh').onclick = () => { haptic('selection'); renderFeed(); };
-async function renderFeed(){
+/* ============ ОЦЕНКИ: ДРУЗЬЯ И ОБЩИЙ РЕЙТИНГ ============ */
+let feedMode = 'friends';       // 'friends' — оценки друзей, 'global' — общий рейтинг
+document.getElementById('feedRefresh').onclick = () => { haptic('selection'); renderFeed(feedMode); };
+document.querySelectorAll('#feedSeg .seg-btn').forEach(btn => {
+  btn.onclick = () => {
+    if (btn.dataset.mode === feedMode) return;
+    haptic('selection');
+    feedMode = btn.dataset.mode;
+    document.querySelectorAll('#feedSeg .seg-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderFeed(feedMode);
+  };
+});
+
+/* Общий рейтинг: считаем среднее по всем рецензиям в базе. Отдельный запрос —
+   в ленте друзей нам нужны сами тексты, а здесь только цифры. */
+async function getRatingAggregates(limit){
+  try{
+    const { data, error } = await sb.from('reviews').select('movie_id,total').order('updated_at', { ascending:false }).limit(limit || 400);
+    if (error) throw error;
+    const map = new Map();
+    (data || []).forEach(r => {
+      const cur = map.get(r.movie_id) || { sum: 0, n: 0 };
+      cur.sum += Number(r.total) || 0;
+      cur.n += 1;
+      map.set(r.movie_id, cur);
+    });
+    return [...map.entries()]
+      .map(([movieId, v]) => ({ movieId, avg: v.sum / v.n, n: v.n }))
+      .sort((a, b) => b.avg - a.avg);
+  }catch(e){ return []; }
+}
+
+function reviewCardHTML(r, profileMap, opts){
+  const name = r.telegram_id === TG_ID ? 'Ты' : friendDisplayName(profileMap[r.telegram_id]);
+  const photo = profileMap[r.telegram_id]?.photo_url;
+  const movie = keyToMovie(r.movie_id);
+  const movieName = movie ? movie.title : `Тайтл #${r.movie_id}`;
+  const safeName = esc(name), safePhoto = photo ? esc(photo) : '';
+  const big = parseJsonField(r.big), small = parseJsonField(r.small);
+  const topCats = [...BIG_CATS.map(c=>({label:c.label, val:big[c.key]})), ...SMALL_CATS.map(c=>({label:c.label, val:small[c.key]}))]
+    .filter(c => c.val).sort((a,b)=>b.val-a.val).slice(0,3);
+  const avg = opts && opts.avgByMovie ? opts.avgByMovie.get(r.movie_id) : null;
+  const diff = avg ? Math.round(Number(r.total) - avg.avg) : null;
+  const cmp = (diff === null || !avg || avg.n < 2) ? '' :
+    `<div class="review-cmp ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff} к среднему (${Math.round(avg.avg)}/${SCORE_MAX})</div>`;
+  return `<div class="review-card" data-movie="${r.movie_id}" data-uid="${r.telegram_id}" style="cursor:pointer;">
+    ${reviewPosterHTML(movie)}
+    <div class="review-body">
+      <div class="review-head">
+        <div class="review-avatar" style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}">${safePhoto ? '' : esc((name[0]||'?').toUpperCase())}</div>
+        <div class="review-meta"><div class="review-name">${safeName}</div><div class="review-movie">${esc(movieName)}</div></div>
+        <div class="review-score">${r.total}/${SCORE_MAX}</div>
+      </div>
+      ${r.text ? `<div class="review-text">${esc(r.text)}</div>` : ''}
+      ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${esc(c.label)}: ${c.val}</span>`).join('')}</div>` : ''}
+      ${cmp}
+    </div>
+  </div>`;
+}
+
+async function renderFeed(mode){
+  mode = mode || feedMode;
   const body = document.getElementById('feedBody');
-  body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Загружаю ленту…</div>`;
-  const reviews = await getFeedReviews(40);
-  if (!reviews.length){ body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Пока никто не написал рецензию — стань первым</div>`; return; }
+  body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Загружаю…</div>`;
+
+  if (mode === 'global'){
+    const rows = (await getRatingAggregates(400)).slice(0, 60);
+    if (!rows.length){
+      body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Пока никто не поставил оценки — стань первым</div>`;
+      return;
+    }
+    body.innerHTML = `<div class="feed-caption">Средний балл по всем оценкам зрителей SMOTRA</div>` +
+      rows.map((r, i) => {
+        const movie = keyToMovie(r.movieId);
+        const title = movie ? movie.title : `Тайтл #${r.movieId}`;
+        const art = movie && hasArt(movie) ? `background-image:url('${esc(posterUrl(movie,'w154'))}')` : (movie ? `background:${posterBG(movie)}` : '');
+        return `<div class="rate-row" data-movie="${r.movieId}" style="animation-delay:${Math.min(i,14)*0.025}s">
+          <div class="rate-poster" style="${art}"></div>
+          <div class="rate-mid">
+            <div class="rate-title">${esc(title)}</div>
+            <div class="rate-sub">${movie ? esc(movie.year) + ' · ' : ''}${r.n} ${r.n === 1 ? 'оценка' : (r.n < 5 ? 'оценки' : 'оценок')}</div>
+          </div>
+          <div class="rate-score">${Math.round(r.avg)}<small>из ${SCORE_MAX}</small></div>
+        </div>`;
+      }).join('');
+    [...body.querySelectorAll('.rate-row')].forEach(row => {
+      row.onclick = () => {
+        const movie = keyToMovie(+row.dataset.movie);
+        if (movie) openSheet(movie); else showToast('Этого тайтла сейчас нет в загруженном каталоге');
+      };
+    });
+    return;
+  }
+
+  // Режим «С друзьями»: оценки друзей + мои, со сравнением со средним
+  const [reviews, friendIds, aggregates] = await Promise.all([getFeedReviews(40), getFriendIds(), getRatingAggregates(400)]);
+  const avgByMovie = new Map(aggregates.map(a => [a.movieId, a]));
+  const friendSet = new Set(friendIds);
+  const mine = reviews.filter(r => r.telegram_id === TG_ID);
+  const friends = reviews.filter(r => friendSet.has(r.telegram_id));
+  if (!reviews.length){
+    body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Пока никто не оценил ни одного тайтла — стань первым</div>`;
+    return;
+  }
   const profiles = await Promise.all([...new Set(reviews.map(r=>r.telegram_id))].map(id => getProfile(id)));
   const profileMap = {};
   profiles.forEach(p => { if (p) profileMap[p.telegram_id] = p; });
-  body.innerHTML = reviews.map(r => {
-    const name = r.telegram_id === TG_ID ? 'Ты' : friendDisplayName(profileMap[r.telegram_id]);
-    const photo = profileMap[r.telegram_id]?.photo_url;
-    const movie = keyToMovie(r.movie_id);
-    const movieName = movie ? movie.title : `Тайтл #${r.movie_id}`;
-    const safeName = esc(name), safePhoto = photo ? esc(photo) : '';
-    const big = parseJsonField(r.big), small = parseJsonField(r.small);
-    const topCats = [...BIG_CATS.map(c=>({label:c.label, val:big[c.key]})), ...SMALL_CATS.map(c=>({label:c.label, val:small[c.key]}))]
-      .filter(c => c.val).sort((a,b)=>b.val-a.val).slice(0,3);
-    return `<div class="review-card" data-movie="${r.movie_id}" style="cursor:pointer;">
-      ${reviewPosterHTML(movie)}
-      <div class="review-body">
-        <div class="review-head">
-          <div class="review-avatar" style="${safePhoto ? `background-image:url('${safePhoto}');` : ''}">${safePhoto ? '' : esc((name[0]||'?').toUpperCase())}</div>
-          <div class="review-meta"><div class="review-name">${safeName}</div><div class="review-movie">${esc(movieName)}</div></div>
-          <div class="review-score">${r.total}/${SCORE_MAX}</div>
-        </div>
-        ${r.text ? `<div class="review-text">${esc(r.text)}</div>` : ''}
-        ${topCats.length ? `<div class="review-mini-cats">${topCats.map(c=>`<span>${esc(c.label)}: ${c.val}</span>`).join('')}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  const block = (title, list) => {
+    if (!list.length) return '';
+    return `<div class="feed-caption">${title}</div>` + list.map(r => reviewCardHTML(r, profileMap, { avgByMovie })).join('');
+  };
+  body.innerHTML = reviews.length
+    ? (friends.length
+        ? block(friendIds.length ? 'Оценки друзей' : 'Оценки зрителей', friends) + block('Твои оценки', mine)
+        : block('Твои оценки', mine) + `<div class="empty-note" style="padding:18px 4px;">Друзей пока нет — пригласи их в профиле, и здесь появятся их оценки</div>`)
+    : '';
   [...body.querySelectorAll('.review-card')].forEach(card => {
-    card.onclick = () => {
+    card.onclick = (e) => {
+      const uid = +card.dataset.uid;
+      if (e.target.closest('.review-avatar') || e.target.closest('.review-name')){
+        if (uid && uid !== TG_ID){ haptic('selection'); openFriendProfile(uid); return; }
+      }
       const movie = keyToMovie(+card.dataset.movie);
-      if (movie){ openSheet(movie); }
+      if (movie) openSheet(movie);
       else showToast('Этого тайтла сейчас нет в загруженном каталоге');
     };
   });
@@ -3687,6 +4359,7 @@ async function refillAndRender(){
   if (deck.length) deckRefillTries = 0;
   renderStack();
 }
+/* Лента рейтингов: первый рендер при входе в раздел (см. switchTab). */
 let feedEverLoaded = false;
 function switchTab(id){
   keepDeckFull();
@@ -3703,6 +4376,94 @@ function switchTab(id){
 document.querySelectorAll('nav button').forEach(btn=>{
   btn.addEventListener('click', () => { haptic('selection'); switchTab(btn.dataset.tab); });
 });
+
+/* ============ ЖЕСТЫ НАВИГАЦИИ ============
+   1) Свайп вправо по экрану — «назад»: к предыдущему разделу, иначе на главную.
+   2) Свайп по нижнему табу листает разделы: полоса едет за пальцем,
+      соседняя вкладка подсвечивается, на отпускании — переезд с анимацией. */
+const TAB_ORDER = ['catalog','wishlist','home','feed','profile'];
+let tabHistory = [];
+function switchTabAnimated(id, dir){
+  const cur = document.querySelector('.screen.active');
+  const next = document.getElementById(id);
+  if (!cur || !next || cur === next){ switchTab(id); return; }
+  const from = (dir || 1) * 70;
+  next.style.animation = 'none';
+  next.style.transform = `translateX(${from}px)`;
+  next.style.opacity = '0';
+  switchTab(id);
+  requestAnimationFrame(()=>{
+    next.style.transition = 'transform .3s cubic-bezier(.2,.8,.2,1), opacity .22s ease';
+    next.style.transform = '';
+    next.style.opacity = '';
+    setTimeout(()=>{ next.style.transition = ''; }, 340);
+  });
+}
+let suppressHistoryPush = false;
+function goBackTab(){
+  const prev = tabHistory.pop();
+  haptic('selection');
+  suppressHistoryPush = true;               // шаг назад не должен сам себя записывать в историю
+  switchTabAnimated(prev || 'home', -1);
+  suppressHistoryPush = false;
+}
+const switchTabBase = switchTab;
+switchTab = function(id){
+  const active = document.querySelector('.screen.active');
+  const activeId = active ? active.id : null;
+  if (!suppressHistoryPush && activeId && activeId !== id && !tabHistory.includes(id)){
+    tabHistory.push(activeId);              // запоминаем только то, откуда ушли, и без дублей
+    if (tabHistory.length > 12) tabHistory.shift();
+  }
+  switchTabBase(id);
+};
+
+(function initGestures(){
+  let sx = 0, sy = 0, tracking = false, fromNav = false;
+  const isOverlayOpen = () => !!document.querySelector('.overlay-screen.open, .sheet.open, #tutorial.show, .roulette.show, #onboarding.show, #splash:not(.hide), #radialMenu.show');
+  const blocked = (el) => !!(el && el.closest('.card, .chips, input, textarea, .rl-card, .tut-demo, [data-no-swipe]'));
+  document.addEventListener('touchstart', (e) => {
+    if (isOverlayOpen()) return;
+    const t = e.touches[0];
+    if (!t) return;
+    fromNav = !!e.target.closest('nav');
+    if (!fromNav && blocked(e.target)) return;
+    sx = t.clientX; sy = t.clientY; tracking = true;
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!tracking || !fromNav) return;
+    const t = e.touches[0];
+    if (!t) return;
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dy) > Math.abs(dx) + 10){ return; }
+    const nav = document.querySelector('nav');
+    nav.style.transform = `translateX(${dx * 0.32}px)`;
+    const i = TAB_ORDER.indexOf((document.querySelector('nav button.active') || {}).dataset?.tab || 'home');
+    const ni = Math.min(TAB_ORDER.length - 1, Math.max(0, i + (dx < 0 ? 1 : -1)));
+    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('peek', b.dataset.tab === TAB_ORDER[ni] && b.dataset.tab !== TAB_ORDER[i]));
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const nav = document.querySelector('nav');
+    const t = e.changedTouches[0];
+    const dx = t ? t.clientX - sx : 0;
+    const dy = t ? t.clientY - sy : 0;
+    nav.style.transform = '';
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('peek'));
+    const wasNav = fromNav;
+    fromNav = false;
+    if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 45) return;
+    const i = TAB_ORDER.indexOf((document.querySelector('nav button.active') || {}).dataset?.tab || 'home');
+    if (wasNav){
+      const ni = Math.min(TAB_ORDER.length - 1, Math.max(0, i + (dx < 0 ? 1 : -1)));
+      if (ni !== i) switchTabAnimated(TAB_ORDER[ni], dx < 0 ? 1 : -1);
+      return;
+    }
+    if (dx > 0) goBackTab();                                  // вправо — назад
+    else if (i >= 0 && i < TAB_ORDER.length - 1) switchTabAnimated(TAB_ORDER[i + 1], 1);   // влево — вперёд
+  }, { passive: true });
+})();
 
 /* Каталог не грузится весь и сразу (это тысячи тайтлов) — подгружаем ещё с TMDB,
    но только когда локально уже показано всё отфильтрованное (иначе просто жмут "Показать ещё"). */
