@@ -420,7 +420,7 @@
   .sheet-actions button.active{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
 
   /* ===== Profile ===== */
-  .profile-head{ display:flex; align-items:center; gap:14px; padding-top:4px; }
+  .profile-head{ display:flex; align-items:center; gap:14px; padding-top:4px; margin-bottom:18px; }
   .avatar{ width:60px; height:60px; border-radius:18px; background:linear-gradient(145deg, var(--accent), var(--accent-2)); background-size:cover; background-position:center; color:var(--on-accent); font-weight:800; font-size:22px; display:flex; align-items:center; justify-content:center; font-family:'Unbounded',sans-serif; }
   .profile-name{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:18px; }
   .profile-sub{ color:var(--text-dim); font-size:12.5px; margin-top:3px; }
@@ -442,6 +442,8 @@
   .fp-hero{ display:flex; align-items:center; gap:14px; padding-top:6px; }
   .fp-name{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; }
   .fp-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
+  .fp-lvl{ display:inline-flex; align-items:center; gap:5px; margin-top:7px; padding:4px 10px; border-radius:20px;
+    font-size:11px; font-weight:700; color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-border); }
   /* Плитки статистики друга: смотрел / хочет / смотрит / оценок / средний балл */
   .fp-tiles{ display:grid; grid-template-columns:repeat(auto-fit, minmax(62px, 1fr)); gap:8px; margin-top:16px; }
   .fp-tile{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; }
@@ -475,10 +477,31 @@
   .fw-row{ content-visibility:auto; contain-intrinsic-size:auto 54px; display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer; }
   .fw-row:last-child{ border-bottom:none; }
   .fw-poster{ width:38px; height:54px; border-radius:9px; background-size:cover; background-position:center; flex:0 0 auto; border:1px solid var(--border); }
+  .fw-mid{ flex:1; min-width:0; }
   .fw-title{ font-size:13px; font-weight:600; }
+  .fw-score{ flex:0 0 auto; font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; color:var(--accent); }
+  .fw-score small{ font-size:9.5px; font-weight:600; color:var(--text-dim); }
   .fw-sub{ font-size:11px; color:var(--text-dim); margin-top:2px; }
   /* Моя статистика: карточка-герой, плитки и полосы любимых жанров */
   .my-stats{ display:flex; flex-direction:column; gap:12px; }
+  /* СмотраLVL: уровень, опыт и полоса до следующего */
+  .lvl-card{ margin-top:16px; padding:15px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface); }
+  .lvl-top{ display:flex; align-items:center; gap:12px; }
+  .lvl-badge{ width:42px; height:42px; border-radius:13px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    color:var(--on-accent); background:linear-gradient(140deg, var(--accent), var(--accent-2)); box-shadow:0 10px 22px -14px var(--accent-glow); }
+  .lvl-name{ font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; }
+  .lvl-xp{ font-size:11.5px; color:var(--text-dim); margin-top:4px; }
+  .lvl-bar{ height:8px; margin-top:12px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .lvl-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .35s cubic-bezier(.2,.8,.2,1); }
+  .badge.more{ opacity:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; position:relative; }
+  .badge.more .b-more{ font-family:'Unbounded',sans-serif; font-size:12px; font-weight:700; color:var(--accent); }
+  .badge.more .b-icon{ color:var(--text-dim); }
+  .badge .b-name{ display:none; }
+  /* Кликабельные пилюли статистики */
+  .ms-tile, .ms-hero-main, .ms-hero-side > div, .fp-tile{ cursor:pointer; transition:transform .14s ease, border-color .18s ease; }
+  .ms-tile:active, .fp-tile:active{ transform:scale(.95); }
+  .ms-hero-main:active, .ms-hero-side > div:active{ opacity:.75; }
+  .fp-tile.hot{ border-color:var(--accent-border); }
   .ms-hero{ display:flex; align-items:center; gap:16px; padding:18px; border-radius:20px;
     background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.06)); border:1px solid var(--accent-border); }
   .ms-hero-main b{ display:block; font-family:'Unbounded',sans-serif; font-size:34px; font-weight:800; line-height:1; color:var(--text); }
@@ -526,15 +549,24 @@
   .rank-row.me .rank-name{ color:var(--accent); font-weight:700; }
 
   /* ===== Settings ===== */
+  .set-profile{ display:flex; align-items:center; gap:12px; padding:14px; border-radius:20px; border:1px solid var(--accent-border);
+    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.05)); }
+  .set-profile-text{ flex:1; min-width:0; }
+  .set-profile-name{ font-family:'Unbounded',sans-serif; font-size:15.5px; font-weight:700; }
+  .set-profile-lvl{ font-size:11.5px; color:var(--accent); font-weight:600; margin-top:4px; }
+  .set-profile-xp{ font-family:'Unbounded',sans-serif; font-size:17px; font-weight:800; }
+  .set-profile-xp small{ font-size:9.5px; font-weight:600; color:var(--text-dim); margin-left:2px; }
+  .set-level-bar{ height:8px; margin:10px 0 16px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .set-level-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
+  .set-xp-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding:12px 14px 14px; }
+  .set-xp-cell{ background:var(--surface-2); border-radius:12px; padding:9px 6px; text-align:center; }
+  .set-xp-cell b{ display:block; font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:var(--accent); }
+  .set-xp-cell span{ display:block; font-size:9.5px; color:var(--text-dim); margin-top:3px; }
   .set-group{ background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:12px; overflow:hidden; }
   .set-row .set-icon{ width:32px; height:32px; border-radius:10px; background:transparent; border:1px solid var(--border); }
   .set-row{ padding:12px 14px; }
   .set-label{ font-size:14px; }
   .set-group-title{ font-size:10.5px; letter-spacing:.12em; padding:12px 14px 4px; opacity:.75; }
-  .set-hero{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:12px; }
-  .set-hero-text{ min-width:0; }
-  .set-hero-label{ font-size:14px; font-weight:600; }
-  .set-hero-sub{ font-size:11.5px; color:var(--text-dim); margin-top:3px; }
   .set-group.danger{ border-color:rgba(193,73,63,0.35); }
   .set-group.danger .set-icon{ background:rgba(193,73,63,0.14); color:var(--skip); }
   .set-group.danger .set-label{ color:var(--skip); }
@@ -565,6 +597,8 @@
   /* ===== Overlay screens (History / Settings) ===== */
   .overlay-screen{ position:absolute; inset:0; background:var(--bg); z-index:25; transform:translateX(100%); transition:transform .32s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column; }
   .overlay-screen.open{ transform:translateX(0); }
+  /* Окно списка открывается поверх профиля: и по слою, и по порядку в разметке */
+  #titleListScreen{ z-index:27; }
   /* Экран «Смотриметры» открывается прямо поверх карточки фильма (шторка z-index:31),
      поэтому поднимаем его выше — иначе окно оценки уезжает за шторку. */
   #reviewScreen{ z-index:48; }
@@ -684,9 +718,13 @@
   /* Сетка, а не flex-колонка: строка со сценой тянется (minmax(0,1fr)) и при
      нехватке места сжимается именно она, а ряд с кнопкой «Дальше» остаётся на
      своём месте. Раньше лишняя высота выдавливала кнопку за нижний край экрана. */
-  #tutorial{ position:absolute; inset:0; height:auto; overflow:hidden; background:var(--bg); z-index:95; display:none;
+  /* height:100dvh — это реально видимая высота экрана (в TG-вебвью тоже), а нижний
+     отступ 96px поднимает ряд с кнопкой над зоной, которую перекрывает интерфейс
+     Telegram. Раньше кнопка упиралась в самый край и её часть пряталась. */
+  #tutorial{ position:fixed; inset:0; height:100dvh; overflow:hidden; background:var(--bg); z-index:95; display:none;
     grid-template-rows:auto minmax(0,1fr) auto auto; gap:12px;
-    padding:calc(12px + var(--safe-top)) 20px calc(18px + var(--safe-bottom)); }
+    padding:calc(12px + var(--safe-top)) 20px calc(96px + var(--safe-bottom)); }
+  @supports not (height: 100dvh){ #tutorial{ height:100%; } }
   #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
   .tut-back{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
@@ -837,7 +875,10 @@
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
      Telegram и выглядели как экраны приложения, а не сайта. */
-  #splash, #onboarding, #tutorial, .overlay-screen{ height:var(--app-h, 100%); bottom:auto; }
+  #splash, #onboarding, .overlay-screen{ height:var(--app-h, 100%); bottom:auto; }
+  /* Туториал меряем по видимой высоте, а не по innerHeight: в Telegram они разные */
+  #tutorial{ height:100dvh; bottom:auto; }
+  @supports not (height: 100dvh){ #tutorial{ height:var(--app-h, 100%); } }
 </style>
 </head>
 <body>
@@ -973,6 +1014,7 @@
       </div>
     </div>
 
+    <div class="level-card" id="levelCard"></div>
     <div class="my-stats" id="myStats"></div>
     <div class="stats-row">
       <div class="stat-card" id="statCardWatched"><div class="stat-num" id="statWatched">0</div><div class="stat-label"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;"><path d="M20 6L9 17l-5-5"/></svg> просмотрено</div></div>
@@ -1096,6 +1138,16 @@
   <div class="ov-body" id="friendProfileBody"></div>
 </div>
 
+<!-- ПОЛНЫЙ СПИСОК (открывается по «Показать все» из профилей и статистики) -->
+<div class="overlay-screen" id="titleListScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeTitleList"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark" id="titleListTitle">Список</div>
+    <span class="count" id="titleListCount" style="margin-left:auto;">0</span>
+  </div>
+  <div class="ov-body" id="titleListBody"></div>
+</div>
+
 <!-- REVIEW COMPOSER -->
 <div class="overlay-screen" id="reviewScreen">
   <div class="ov-head">
@@ -1129,16 +1181,29 @@
   <div class="ov-head">
     <button class="icon-btn" id="closeSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="wordmark">Настройки</div>
+    <span class="count" id="settingsVersionChip" style="margin-left:auto;">0.17</span>
   </div>
   <div class="ov-body">
-    <div class="set-hero">
-      <div class="set-hero-text">
-        <div class="set-hero-label">Тема</div>
-        <div class="set-hero-sub" id="themeNameLabel">Синий</div>
+    <!-- Профиль и уровень: сразу видно, кто ты и сколько уже отсмотрено -->
+    <div class="set-profile">
+      <div class="avatar" id="setAvatar" style="width:52px; height:52px; border-radius:16px; font-size:19px;">Г</div>
+      <div class="set-profile-text">
+        <div class="set-profile-name" id="setName">Гость</div>
+        <div class="set-profile-lvl" id="setLevel">СмотраLVL 1 · Зритель</div>
       </div>
-      <div class="theme-swatches" id="themePicker">
-        <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема"></button>
-        <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема"></button>
+      <div class="set-profile-xp" id="setXP">0<small>XP</small></div>
+    </div>
+    <div class="set-level-bar"><i id="setLevelBar" style="width:0%"></i></div>
+
+    <div class="set-group">
+      <div class="set-group-title">Оформление</div>
+      <div class="set-row" style="cursor:default;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg></div>
+        <div class="set-text"><div class="set-label">Тема</div><div class="set-sub" id="themeNameLabel">Синий</div></div>
+        <div class="theme-swatches" id="themePicker">
+          <button class="theme-swatch" data-theme="neon" aria-label="Синяя тема"></button>
+          <button class="theme-swatch" data-theme="amber" aria-label="Янтарная тема"></button>
+        </div>
       </div>
     </div>
 
@@ -1146,38 +1211,49 @@
       <div class="set-group-title">Отклик</div>
       <div class="set-row" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg></div>
-        <div class="set-text"><div class="set-label">Вибро-отклик</div></div>
+        <div class="set-text"><div class="set-label">Вибро-отклик</div><div class="set-sub">Лёгкая вибрация на действия</div></div>
         <div class="switch" id="switchHaptic" data-key="smotra_haptic"></div>
       </div>
       <div class="set-row" style="cursor:pointer;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg></div>
-        <div class="set-text"><div class="set-label">Показывать 18+</div></div>
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 4.4-3.2 7.4-8 8-4.8-.6-8-3.6-8-8V7z"/></svg></div>
+        <div class="set-text"><div class="set-label">Показывать 18+</div><div class="set-sub">Взрослые тайтлы в подборке</div></div>
         <div class="switch" id="switchAdult" data-key="smotra_adult"></div>
       </div>
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">Настройка вкуса</div>
+      <div class="set-group-title">Вкус и обучение</div>
       <div class="set-row" id="redoOnboarding" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg></div>
-        <div class="set-text"><div class="set-label">Подобрать жанры заново</div></div>
+        <div class="set-text"><div class="set-label">Подобрать жанры заново</div><div class="set-sub">Заново выберем, что тебе нравится</div></div>
         <div class="set-chevron">›</div>
       </div>
       <div class="set-row" id="redoTutorial" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></div>
-        <div class="set-text"><div class="set-label">Обучение заново</div></div>
+        <div class="set-text"><div class="set-label">Обучение заново</div><div class="set-sub">Шесть шагов, как всё работает</div></div>
         <div class="set-chevron">›</div>
       </div>
     </div>
 
     <div class="set-group">
-      <div class="set-row"><div class="set-text"><div class="set-label">Источник данных</div><div class="set-sub">TMDB</div></div></div>
-      <div class="set-row"><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA</div></div></div>
+      <div class="set-group-title">СмотраLVL</div>
+      <div class="set-xp-grid" id="setXpRules"></div>
+    </div>
+
+    <div class="set-group">
+      <div class="set-group-title">Приложение</div>
+      <div class="set-row" id="setShare" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></div>
+        <div class="set-text"><div class="set-label">Пригласить друга</div><div class="set-sub">Ссылка со твоим профилем внутри</div></div>
+        <div class="set-chevron">›</div>
+      </div>
+      <div class="set-row"><div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div><div class="set-text"><div class="set-label">Источник данных</div><div class="set-sub">TMDB · рейтинги зрителей SMOTRA</div></div></div>
+      <div class="set-row"><div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M12 21h.01"/><path d="M7 8l5-5 5 5"/></svg></div><div class="set-text"><div class="set-label">Версия</div><div class="set-sub" id="appVersionLabel">SMOTRA</div></div></div>
     </div>
 
     <div class="set-group danger">
       <div class="set-row" id="resetAll" style="cursor:pointer;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.5 17a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.6 17.4A2 2 0 0 0 4.3 20.4h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
         <div class="set-text"><div class="set-label">Сбросить всё</div><div class="set-sub">Прогресс, списки и ачивки — без возврата</div></div>
         <div class="set-chevron">›</div>
       </div>
@@ -1294,8 +1370,15 @@
          сетку — кнопка «Дальше» не может уехать вниз; Смотриметры перерисованы
          (деления, светящаяся шкала, вердикт); статистика профиля и профили
          друзей переделаны: плитки, полосы, полные списки совпадений и рулетка
-         по чужому «Хочу чекнуть». */
-const APP_VERSION = '0.16';
+         по чужому «Хочу чекнуть».
+  0.17 — туториал меряет себя по видимой высоте (100dvh) и держит кнопку на 96px
+         выше нижнего края — она больше не упирается в интерфейс Telegram; в колоде
+         всегда запас карточек и жёсткий запрет повторов за сессию; «Показать все»
+         и пилюли статистики открывают отдельное окно вместо перерисовки страницы;
+         рулетка в профиле друга крутит «Общее «Хочу чекнуть»»; ачивки в профиле —
+         только иконки (8 + «ещё N»); СмотраLVL — уровни и опыт; настройки
+         пересобраны; любой оверлей закрывается свайпом в сторону. */
+const APP_VERSION = '0.17';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1394,6 +1477,10 @@ if (tg) {
     document.getElementById('userName').textContent = [u.first_name, u.last_name].filter(Boolean).join(' ');
     const av = document.getElementById('avatarInit');
     av.textContent = (u.first_name || 'Г')[0].toUpperCase();
+    const setAv = document.getElementById('setAvatar');
+    if (setAv){ setAv.textContent = av.textContent; if (u.photo_url) setAv.style.backgroundImage = `url('${u.photo_url}')`; }
+    const setName = document.getElementById('setName');
+    if (setName) setName.textContent = document.getElementById('userName').textContent;
     if (u.photo_url) {
       av.style.backgroundImage = `url('${u.photo_url}')`;
       av.textContent = '';
@@ -1645,6 +1732,42 @@ async function myRatingMap(){
   }catch(e){}
   return map;
 }
+/* Универсальное окно со списком тайтлов: используется и в профилях («Показать все»),
+   и при нажатии на пилюли статистики. Ничего не перерисовывает на месте — поэтому
+   страница под окном не прыгает вверх. */
+function openTitleList(title, movies, opts){
+  const o = opts || {};
+  const screen = document.getElementById('titleListScreen');
+  if (!screen) return;
+  document.getElementById('titleListTitle').textContent = title;
+  document.getElementById('titleListCount').textContent = movies.length;
+  const body = document.getElementById('titleListBody');
+  if (!movies.length){
+    body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">${o.empty || 'Здесь пока пусто'}</div>`;
+  } else if (o.view === 'grid'){
+    body.innerHTML = `<div class="common-grid">${movies.map(friendTile).join('')}</div>`;
+  } else {
+    const scoreOf = o.scoreOf;
+    body.innerHTML = `<div class="friend-watched">${movies.map(m => `
+      <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
+        <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
+        <div class="fw-mid">
+          <div class="fw-title">${esc(m.title)}</div>
+          <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')}</div>
+        </div>
+        ${scoreOf ? `<div class="fw-score">${scoreOf(m)}<small>/68</small></div>` : ''}
+      </div>`).join('')}</div>`;
+  }
+  [...body.querySelectorAll('[data-movie]')].forEach(el => {
+    el.onclick = () => {
+      const movie = movieById(+el.dataset.movie, el.dataset.type);
+      if (movie) openSheet(movie);
+    };
+  });
+  document.getElementById('titleListScreen').classList.add('open');
+}
+document.getElementById('closeTitleList').onclick = () => document.getElementById('titleListScreen').classList.remove('open');
+
 /* Плитка-постер: обложка, а поверх — название. Используется во всех сетках профиля. */
 function friendTile(m){
   const art = hasArt(m)
@@ -1652,6 +1775,7 @@ function friendTile(m){
     : `background:${posterBG(m)}`;
   return `<div class="common-item" data-movie="${m.id}" data-type="${m.type}" style="${art}"><span>${esc(m.title)}</span></div>`;
 }
+function moviesFromKeys(keys){ return keys.map(keyToMovie).filter(Boolean); }
 function friendRows(list){
   return list.map(m => `
     <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
@@ -1664,18 +1788,20 @@ function friendRows(list){
 }
 /* Секция профиля: заголовок со счётчиком, сетка и кнопка «Показать все» (по требованию
    список раскрывается целиком — это и есть полный список совпадений). */
-function friendSection(key, title, hint, list, st, tileView){
+function friendSection(title, hint, list, opts){
   if (!list.length) return '';
-  const expanded = !!st[key];
+  const o = opts || {};
   const LIMIT = 12;
-  const shown = expanded ? list : list.slice(0, LIMIT);
-  const body = tileView ? `<div class="common-grid">${shown.map(friendTile).join('')}</div>`
-                        : `<div class="friend-watched">${friendRows(shown)}</div>`;
+  const shown = list.slice(0, LIMIT);
+  const body = o.rows ? `<div class="friend-watched">${friendRows(shown)}</div>`
+                      : `<div class="common-grid">${shown.map(friendTile).join('')}</div>`;
+  const listOpts = JSON.stringify({ view: o.rows ? 'rows' : 'grid' }).replace(/"/g, '&quot;');
   return `<div class="fp-sec">
     <div class="fp-head"><span>${title}<b class="fp-count">${list.length}</b></span></div>
     ${hint ? `<div class="fp-hint">${hint}</div>` : ''}
+    ${o.roulette ? `<button class="fp-roulette" id="fpRoulette"><span class="rl-ico">🎲</span> Рандомайзер по общему списку</button>` : ''}
     ${body}
-    ${list.length > LIMIT ? `<button class="fp-more" data-more="${key}">${expanded ? 'Свернуть' : 'Показать все ' + list.length}</button>` : ''}
+    ${list.length > LIMIT ? `<button class="fp-more" data-open-list="${esc(title)}" data-list-opts="${listOpts}">Показать все ${list.length}</button>` : ''}
   </div>`;
 }
 async function openFriendProfile(id){
@@ -1706,16 +1832,17 @@ async function openFriendProfile(id){
     ? Math.round([...theirRatings.values()].reduce((a,b)=>a+b,0) / theirRatings.size)
     : null;
   // Раскрытые секции: нажатие «Показать все» перерисовывает профиль целиком
-  const expandedState = openFriendProfile._expanded && openFriendProfile._id === id ? openFriendProfile._expanded : {};
-  openFriendProfile._id = id;
-  openFriendProfile._expanded = expandedState;
 
+  // Уровень друга считаем по его же спискам (ачивок и стрика мы про него не знаем)
+  const friendLevel = levelFor(smotraXP(
+    { watched: lists.watched.length, wishlist: wishTheir.length, watching: watchingTheir.length, skipped: lists.skipped.length },
+    theirRatings.size, 0, 0));
   const statTiles = [
-    { num: lists.watched.length, lbl: 'смотрел' },
-    { num: wishTheir.length, lbl: 'хочет' },
-    { num: watchingTheir.length, lbl: 'смотрит' },
-    { num: theirRatings.size, lbl: 'оценок' },
-    { num: avg === null ? '—' : avg, lbl: 'средний балл' },
+    { num: lists.watched.length, lbl: 'смотрел', tile: 'watched' },
+    { num: wishTheir.length, lbl: 'хочет', tile: 'wishlist' },
+    { num: watchingTheir.length, lbl: 'смотрит', tile: 'watching' },
+    { num: theirRatings.size, lbl: 'оценок', tile: 'reviews' },
+    { num: avg === null ? '—' : avg, lbl: 'средний балл', tile: 'reviews' },
   ];
 
   body.innerHTML = `
@@ -1724,6 +1851,7 @@ async function openFriendProfile(id){
       <div class="fp-hero-text">
         <div class="fp-name">${esc(name)}</div>
         <div class="fp-sub">${profile?.username ? '@' + esc(profile.username) : 'зритель SMOTRA'}</div>
+        <div class="fp-lvl">${ICON(friendLevel.icon, 13)} СмотраLVL ${friendLevel.level} · ${esc(friendLevel.name)}</div>
       </div>
     </div>
 
@@ -1738,7 +1866,7 @@ async function openFriendProfile(id){
     </div>
 
     <div class="fp-tiles">
-      ${statTiles.map(t => `<div class="fp-tile"><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
+      ${statTiles.map(t => `<div class="fp-tile" data-ftile="${t.tile}" role="button"><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
     </div>
 
     <div class="fp-bars">
@@ -1756,31 +1884,32 @@ async function openFriendProfile(id){
         <div class="msg-bar"><i style="width:${Math.round(n/genreTotal*100)}%"></i></div></div>`).join('')}
     </div>` : ''}
 
-    ${friendSection('wishCommon', 'Общее в «Хочу чекнуть»', 'Эти тайтлы вы оба отложили посмотреть', wishCommon, expandedState, true)}
+    ${friendSection('Общее в «Хочу чекнуть»', 'Эти тайтлы вы оба отложили посмотреть — рулетка выберет один', wishCommon, { roulette: true })}
 
-    ${wishTheir.length ? `<div class="fp-sec">
-      <div class="fp-head"><span>Хочет посмотреть<b class="fp-count">${wishTheir.length}</b></span></div>
-      <div class="fp-hint">Нажми рулетку — выберет случайный тайтл из его списка</div>
-      <button class="fp-roulette" id="fpRoulette"><span class="rl-ico">🎲</span> Рандомайзер по его списку</button>
-      <div class="${expandedState.wish ? 'friend-watched' : 'friend-watched'}">${friendRows(expandedState.wish ? wishTheir : wishTheir.slice(0, 12))}</div>
-      ${wishTheir.length > 12 ? `<button class="fp-more" data-more="wish">${expandedState.wish ? 'Свернуть' : 'Показать все ' + wishTheir.length}</button>` : ''}
-    </div>` : ''}
+    ${friendSection('Хочет посмотреть', '', wishTheir, { rows: true })}
 
-    ${friendSection('common', 'Смотрели оба', 'Полный список совпадений по просмотренному', match.common, expandedState, true)}
+    ${friendSection('Смотрели оба', 'Совпадения по просмотренному', match.common, {})}
 
-    ${watchingTheir.length ? friendSection('watching', 'Смотрит сейчас', '', watchingTheir, expandedState, true) : ''}
+    ${watchingTheir.length ? friendSection('Смотрит сейчас', '', watchingTheir, {}) : ''}
 
-    ${watchedTheir.length ? friendSection('watched', 'Что смотрел', '', watchedTheir, expandedState, false)
+    ${watchedTheir.length ? friendSection('Что смотрел', '', watchedTheir, { rows: true })
       : `<div class="empty-note" style="padding:20px 4px;">Пока не видно, что ${esc(name)} смотрел: список появится, когда он свайпнет карточки</div>`}
   `;
 
-  // Клики: раскрытие секций, тайтлы → карточка фильма, рулетка по списку друга
-  [...body.querySelectorAll('[data-more]')].forEach(btn => {
+  // Клики: «Показать все» открывает отдельное окно со списком, тайтлы → карточка фильма
+  const listsByTitle = {
+    'Общее в «Хочу чекнуть»': wishCommon,
+    'Хочет посмотреть': wishTheir,
+    'Смотрели оба': match.common,
+    'Смотрит сейчас': watchingTheir,
+    'Что смотрел': watchedTheir,
+  };
+  [...body.querySelectorAll('[data-open-list]')].forEach(btn => {
     btn.onclick = () => {
-      const key = btn.dataset.more;
-      expandedState[key] = !expandedState[key];
+      const title = btn.dataset.openList;
+      const o = JSON.parse(btn.dataset.listOpts || '{}');
       haptic('selection');
-      openFriendProfile(id);
+      openTitleList(`${name} · ${title}`, listsByTitle[title] || [], o);
     };
   });
   [...body.querySelectorAll('[data-movie]')].forEach(el => {
@@ -1789,8 +1918,29 @@ async function openFriendProfile(id){
       if (movie) openSheet(movie);
     };
   });
+  // Пилюли друга: тап открывает окно с его тайтлами
+  const hisTiles = {
+    watched: ['Смотрел', watchedTheir, 'grid'],
+    wishlist: ['Хочет посмотреть', wishTheir, 'rows'],
+    watching: ['Смотрит сейчас', watchingTheir, 'grid'],
+    reviews: ['Оценки', moviesFromKeys([...theirRatings.keys()]), 'rows'],
+  };
+  [...body.querySelectorAll('[data-ftile]')].forEach(node => {
+    node.onclick = () => {
+      const t = hisTiles[node.dataset.ftile];
+      if (!t) return;
+      haptic('selection');
+      openTitleList(`${name} · ${t[0]}`, t[1], { view: t[2],
+        scoreOf: node.dataset.ftile === 'reviews' ? (m => theirRatings.get(m.id) ?? theirRatings.get(mid(m)) ?? 0) : null,
+        empty: 'Пока пусто' });
+    };
+  });
   const rouletteBtn = document.getElementById('fpRoulette');
-  if (rouletteBtn) rouletteBtn.onclick = () => { haptic('impact','medium'); Roulette.open(wishTheir, 'Что посмотреть · ' + name); };
+  if (rouletteBtn) rouletteBtn.onclick = () => {
+    haptic('impact','medium');
+    // Крутим именно пересечение: то, что оба отложили посмотреть
+    Roulette.open(wishCommon.length ? wishCommon : wishTheir, 'Что посмотреть · ' + name);
+  };
 }
 document.getElementById('closeFriendProfile').onclick = () => document.getElementById('friendProfileScreen').classList.remove('open');
 
@@ -2731,7 +2881,7 @@ function sortByPopularity(arr){
   return arr.slice().sort((a,b) => personalScore(b) - personalScore(a));
 }
 async function refillDeck(){
-  let fresh = MOVIES.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m)));
+  let fresh = MOVIES.filter(m => isUnseen(m) && !servedKeys.has(mid(m)) && !deck.some(x => sameMovie(x, m)));
   let attempts = 0;
   // Тянем новые страницы, пока не наберём приличный запас (или пока TMDB не иссякнет).
   while (fresh.length < 12 && attempts < 6){
@@ -2742,11 +2892,17 @@ async function refillDeck(){
   }
   if (fresh.length) deckRefillTries = 0;
   // Пока мы ждали TMDB, часть карточек могла уехать свайпом — не возвращаем их в ленту.
-  const stillFresh = dedupeByKey(fresh.filter(m => isUnseen(m) && !deck.some(x => sameMovie(x, m))));
+  const stillFresh = dedupeByKey(fresh.filter(m => isUnseen(m) && !servedKeys.has(mid(m)) && !deck.some(x => sameMovie(x, m))));
   deck = deck.concat(sortByPopularity(stillFresh));
   // За сессию колода не должна разрастаться бесконечно: дальние карточки не нужны,
   // их всегда можно догрузить заново.
   if (deck.length > 200) deck = deck.slice(0, 200);
+  // Запас всегда держим не меньше 12 карточек: пользователь не должен видеть
+  // «Подбираю кино…» сразу после свайпа.
+  if (deck.filter(isUnseen).length < 12 && !tmdbFailed && refillDeck._retry !== true){
+    refillDeck._retry = true;
+    setTimeout(() => { refillDeck._retry = false; if (document.getElementById('home')?.classList.contains('active') && deck.filter(isUnseen).length < 12) refillOnce(); }, 900);
+  }
 }
 function shakeDeck(){
   deckRefillTries = 0;
@@ -3023,25 +3179,35 @@ function checkBadges(){
   });
   renderBadges();
 }
+/* В профиле показываем только иконки и не весь список: 20 подписанных плиток
+   выглядели тяжёлой сеткой. Название — в карточке ачивки по тапу. */
+const BADGES_PREVIEW = 8;
+function badgeTileHTML(b, iconSize){
+  const on = state.unlocked.includes(b.id);
+  return `<div class="badge ${on ? 'unlocked' : ''}" data-badge="${b.id}" role="button" aria-label="${esc(b.name)}">
+    <div class="b-icon">${ICON(b.icon, iconSize || 20)}</div>
+    <div class="b-name">${esc(b.name)}</div>
+  </div>`;
+}
 function renderBadges(){
-  document.getElementById('badgesGrid').innerHTML = BADGES.map(b => `
-    <div class="badge ${state.unlocked.includes(b.id) ? 'unlocked' : ''}" data-badge="${b.id}">
-      <div class="b-icon">${ICON(b.icon, 20)}</div>
-      <div class="b-name">${b.name}</div>
-    </div>`).join('');
-  [...document.getElementById('badgesGrid').querySelectorAll('.badge')].forEach(el=>{
+  const grid = document.getElementById('badgesGrid');
+  const shown = BADGES.slice(0, BADGES_PREVIEW);
+  const rest = BADGES.length - shown.length;
+  grid.innerHTML = shown.map(b => badgeTileHTML(b, 20)).join('')
+    + (rest > 0 ? `<div class="badge more" id="badgesMore" role="button" aria-label="Все ачивки"><div class="b-icon">${ICON('sparkles', 20)}</div><span class="b-more">+${rest}</span></div>` : '');
+  [...grid.querySelectorAll('.badge[data-badge]')].forEach(el=>{
     el.onclick = () => openBadgeDetail(el.dataset.badge);
   });
+  const more = document.getElementById('badgesMore');
+  if (more) more.onclick = () => { haptic('selection'); document.getElementById('achievementsScreen').classList.add('open'); renderAchievementsScreen(); };
+  const allLink = document.getElementById('openAchievements');
+  if (allLink) allLink.firstChild.textContent = `Все ${BADGES.length} `;
   renderAchievementsScreen();
 }
 function renderAchievementsScreen(){
   const el = document.getElementById('achievementsGrid');
   if (!el) return;
-  el.innerHTML = BADGES.map(b => `
-    <div class="badge ${state.unlocked.includes(b.id) ? 'unlocked' : ''}" data-badge="${b.id}">
-      <div class="b-icon">${ICON(b.icon, 24)}</div>
-      <div class="b-name">${b.name}</div>
-    </div>`).join('');
+  el.innerHTML = BADGES.map(b => badgeTileHTML(b, 22)).join('');
   [...el.querySelectorAll('.badge')].forEach(node=>{
     node.onclick = () => openBadgeDetail(node.dataset.badge);
   });
@@ -3092,6 +3258,9 @@ function shareMovie(movie){
 /* ============ HOME STACK ============ */
 const stackEl = document.getElementById('stack');
 let deck = [];
+/* Ключи, которые за эту сессию уже показывались. Даже если состояние почему-то
+   не записалось, повторно тайтл в колоду не вернётся — повтор в ленте исключён. */
+const servedKeys = new Set();
 
 let deckRefreshing = false;
 // Сколько раз подряд мы безуспешно пытались добить колоду. Без этого счётчика
@@ -3150,6 +3319,7 @@ function purgeDeck(){
   return before - deck.length;
 }
 function makeCard(movie, depth){
+  if (depth === 0 && movie) servedKeys.add(mid(movie));
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.id = movie.id;
@@ -3333,11 +3503,11 @@ function refillOnce(){
 /* Фоновое пополнение: пользователь никогда не должен видеть пустую ленту.
    Тихо дотягиваем колоду, пока он листает другие разделы. */
 function keepDeckFull(){
-  if (document.getElementById('home')?.classList.contains('active')) return;
   if (deckRefreshing || tmdbFailed) return;
-  if (deck.filter(isUnseen).length >= 8) return;
+  if (deck.filter(isUnseen).length >= 12) return;
   refillOnce();
 }
+setInterval(keepDeckFull, 6000);   // тихо дотягиваем запас, пока человек листает
 
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
@@ -3363,7 +3533,7 @@ function resolveSwipe(card, movie, action){
     deck = deck.filter(m => !sameMovie(m, movie));
     if (card.isConnected) restackAfterTop(card);
     else renderStack();          // состав DOM уже изменился (очень быстрые свайпы) — рисуем заново
-    if (deck.length < 4) refillOnce();
+    if (deck.filter(isUnseen).length < 12) refillOnce();
     ensureDeckHeight();
   }, 300);
 }
@@ -3415,6 +3585,7 @@ function undoLastSwipe(){
   if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); }
   deck = deck.filter(m => !sameMovie(m, movie));
   deck.unshift(movie);
+  servedKeys.delete(mid(movie));   // отменённый свайп — тайтл снова можно показать
   haptic('impact','medium');
   updateStats();
   renderStack();
@@ -3637,6 +3808,60 @@ function refreshVisibleScreens(){
    за один свайп updateStats() вызывается несколько раз, и каталог (до 60 карточек)
    перерисовывался столько же раз. */
 let statsFramePending = false;
+/* ============ СМОТРА LVL: уровни и опыт ============
+   Опыт считаем из действий, которые уже есть в состоянии: ничего дополнительно
+   хранить не нужно, и после сброса прогресса уровень честно упадёт. */
+const LEVELS = [
+  { xp: 0,    name: 'Зритель',       icon: 'play' },
+  { xp: 150,  name: 'Киноновичок',   icon: 'clapper' },
+  { xp: 400,  name: 'Кинолюб',       icon: 'star' },
+  { xp: 800,  name: 'Киноман',       icon: 'sparkles' },
+  { xp: 1400, name: 'Синеман',       icon: 'popcorn' },
+  { xp: 2300, name: 'Киногуру',      icon: 'trophy' },
+  { xp: 3500, name: 'Легенда SMOTRA',icon: 'rocket' },
+];
+const XP_RULES = { watched: 10, wishlist: 6, watching: 4, skipped: 1, review: 25, badge: 40, streakDay: 5 };
+/* Опыт по любому набору списков (свой профиль или списки друга) */
+function smotraXP(lists, reviewsCount, badgesCount, streak){
+  return (lists.watched || 0) * XP_RULES.watched
+       + (lists.wishlist || 0) * XP_RULES.wishlist
+       + (lists.watching || 0) * XP_RULES.watching
+       + (lists.skipped || 0) * XP_RULES.skipped
+       + (reviewsCount || 0) * XP_RULES.review
+       + (badgesCount || 0) * XP_RULES.badge
+       + (streak || 0) * XP_RULES.streakDay;
+}
+function levelFor(xp){
+  let i = 0;
+  while (i + 1 < LEVELS.length && xp >= LEVELS[i + 1].xp) i++;
+  const cur = LEVELS[i], next = LEVELS[i + 1] || null;
+  const span = next ? next.xp - cur.xp : 1;
+  const done = next ? xp - cur.xp : span;
+  return { level: i + 1, name: cur.name, icon: cur.icon, xp, next,
+           toNext: next ? next.xp - xp : 0, pct: Math.max(0, Math.min(100, Math.round(done / span * 100))) };
+}
+function myXP(){
+  return smotraXP({ watched: state.watched.length, wishlist: state.wishlist.length, watching: state.watching.length, skipped: state.skipped.length },
+                  state.reviews || 0, state.unlocked.length, currentStreak);
+}
+function levelCardHTML(level, compact){
+  return `<div class="lvl-card${compact ? ' compact' : ''}">
+    <div class="lvl-top">
+      <div class="lvl-badge">${ICON(level.icon, 22)}</div>
+      <div class="lvl-text">
+        <div class="lvl-name">СмотраLVL ${level.level} · ${esc(level.name)}</div>
+        <div class="lvl-xp">${level.xp} XP${level.next ? ` · до «${esc(level.next.name)}» ${level.toNext} XP` : ' · максимальный уровень'}</div>
+      </div>
+    </div>
+    <div class="lvl-bar"><i style="width:${level.pct}%"></i></div>
+  </div>`;
+}
+function renderLevelCard(){
+  const el = document.getElementById('levelCard');
+  if (!el) return;
+  el.innerHTML = levelCardHTML(levelFor(myXP()));
+}
+
 /* Статистика в моём профиле: герой-число, плитки и полосы любимых жанров.
    Считается на лету из состояния — ничего не грузим из сети. */
 function renderMyStats(){
@@ -3650,27 +3875,45 @@ function renderMyStats(){
   let days = 0;
   try{ days = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]').length; }catch(e){}
   const tiles = [
-    { icon: 'clapper', num: state.reviews || 0, lbl: 'оценок' },
-    { icon: 'cross', num: state.skipped.length, lbl: 'мимо' },
-    { icon: 'play', num: state.watching.length, lbl: 'смотрю' },
-    { icon: 'check', num: state.unlocked.length, lbl: 'ачивок' },
+    { icon: 'clapper', num: state.reviews || 0, lbl: 'оценок', tile: 'reviews' },
+    { icon: 'cross', num: state.skipped.length, lbl: 'мимо', tile: 'skipped' },
+    { icon: 'play', num: state.watching.length, lbl: 'смотрю', tile: 'watching' },
+    { icon: 'check', num: state.unlocked.length, lbl: 'ачивок', tile: 'badges' },
   ];
   el.innerHTML = `
     <div class="ms-hero">
-      <div class="ms-hero-main"><b>${state.watched.length}</b><span>просмотрено тобой</span></div>
+      <div class="ms-hero-main" data-tile="watched" role="button"><b>${state.watched.length}</b><span>просмотрено тобой</span></div>
       <div class="ms-hero-side">
-        <div><b>${state.wishlist.length}</b><span>в «Хочу чекнуть»</span></div>
+        <div data-tile="wishlist" role="button"><b>${state.wishlist.length}</b><span>в «Хочу чекнуть»</span></div>
         <div><b>${currentStreak}</b><span>дней подряд</span></div>
       </div>
     </div>
     <div class="ms-tiles">
-      ${tiles.map(t => `<div class="ms-tile"><div class="ms-ico">${ICON(t.icon, 15)}</div><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
+      ${tiles.map(t => `<div class="ms-tile" data-tile="${t.tile}" role="button"><div class="ms-ico">${ICON(t.icon, 15)}</div><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
     </div>
     ${topGenres.length ? `<div class="ms-subtitle">Любимые жанры</div>
       ${topGenres.map(([g,n]) => { const pct = Math.round(n/genreTotal*100); return `
         <div class="ms-genre"><div class="msg-top"><span>${esc(g)}</span><b>${pct}%</b></div>
           <div class="msg-bar"><i style="width:${pct}%"></i></div></div>`; }).join('')}` : ''}
     <div class="ms-foot">В приложении ${days} ${daysWord(days)} · стрик ${currentStreak}</div>`;
+  // Пилюли кликабельны: открывают окно с тайтлами этой категории
+  [...el.querySelectorAll('[data-tile]')].forEach(node => {
+    node.onclick = () => { haptic('selection'); openMyTile(node.dataset.tile); };
+  });
+}
+/* Что показать при нажатии на пилюлю в своём профиле */
+async function openMyTile(kind){
+  const moviesOf = keys => keys.map(keyToMovie).filter(Boolean);
+  if (kind === 'watched') return openTitleList('Просмотрено', moviesOf(state.watched), { view: 'grid' });
+  if (kind === 'wishlist') return openTitleList('Хочу чекнуть', moviesOf(state.wishlist), { view: 'grid' });
+  if (kind === 'watching') return openTitleList('Смотрю сейчас', moviesOf(state.watching), { view: 'grid' });
+  if (kind === 'skipped') return openTitleList('Мимо', moviesOf(state.skipped), { view: 'grid' });
+  if (kind === 'badges'){ document.getElementById('achievementsScreen').classList.add('open'); return renderAchievementsScreen(); }
+  if (kind === 'reviews'){
+    const ratings = await myRatingMap();
+    const movies = moviesOf([...ratings.keys()]);
+    return openTitleList('Мои оценки', movies, { view: 'rows', scoreOf: m => ratings.get(m.id) ?? ratings.get(mid(m)) ?? 0, empty: 'Ты пока не оценил ни одного тайтла' });
+  }
 }
 /* «1 день / 2 дня / 5 дней» — чтобы подпись не выглядела машинной */
 function daysWord(n){
@@ -3683,6 +3926,7 @@ function updateStats(){
   document.getElementById('statSkipped').textContent = state.skipped.length;
   document.getElementById('wishCount').textContent = state.wishlist.length;
   renderMyStats();
+  renderLevelCard();
   if (statsFramePending) return;
   statsFramePending = true;
   requestAnimationFrame(() => { statsFramePending = false; refreshVisibleScreens(); });
@@ -3972,7 +4216,30 @@ document.getElementById('statCardStreak').onclick = () => {
   document.getElementById('weekChart').scrollIntoView({ behavior:'smooth', block:'center' });
   showToast('Заходи каждый день — стрик растёт', 'fire');
 };
-document.getElementById('openSettings').onclick = () => { keepDeckFull(); document.getElementById('settingsScreen').classList.add('open'); };
+/* Настройки: профиль с уровнем, что даёт опыт, и версия — всё перед глазами */
+function renderSettingsScreen(){
+  const level = levelFor(myXP());
+  const lvlEl = document.getElementById('setLevel');
+  if (lvlEl) lvlEl.textContent = `СмотраLVL ${level.level} · ${level.name}`;
+  const xpEl = document.getElementById('setXP');
+  if (xpEl) xpEl.innerHTML = `${level.xp}<small>XP</small>`;
+  const bar = document.getElementById('setLevelBar');
+  if (bar) bar.style.width = level.pct + '%';
+  const chip = document.getElementById('settingsVersionChip');
+  if (chip) chip.textContent = APP_VERSION;
+  const nameEl = document.getElementById('setName');
+  if (nameEl) nameEl.textContent = document.getElementById('userName').textContent;
+  const av = document.getElementById('setAvatar');
+  const src = document.getElementById('avatarInit');
+  if (av && src){ av.textContent = src.textContent; av.style.backgroundImage = src.style.backgroundImage; }
+  const rules = document.getElementById('setXpRules');
+  if (rules) rules.innerHTML = [
+    ['Смотрел', XP_RULES.watched], ['Хочу чекнуть', XP_RULES.wishlist], ['Смотрю', XP_RULES.watching],
+    ['Оценка', XP_RULES.review], ['Ачивка', XP_RULES.badge], ['Мимо', XP_RULES.skipped],
+  ].map(([lbl, xp]) => `<div class="set-xp-cell"><b>+${xp}</b><span>${lbl}</span></div>`).join('');
+}
+document.getElementById('openSettings').onclick = () => { keepDeckFull(); renderSettingsScreen(); document.getElementById('settingsScreen').classList.add('open'); };
+document.getElementById('setShare').onclick = () => { haptic('selection'); shareApp(); };
 document.getElementById('closeSettings').onclick = () => document.getElementById('settingsScreen').classList.remove('open');
 
 /* ============ RANK ============ */
@@ -4641,9 +4908,52 @@ switchTab = function(id){
 
 (function initGestures(){
   let sx = 0, sy = 0, tracking = false, fromNav = false, lastDx = 0;
+
+  /* ---------- Любой экран-оверлей закрывается свайпом в сторону ----------
+     Верхним считаем тот, у кого больше z-index (а при равенстве — который ниже
+     в разметке), поэтому вложенные окна закрываются по одному, начиная с верхнего. */
+  let ovEl = null, ovX = 0, ovY = 0, ovDx = 0, ovTrack = false, ovShown = false;
+  const topOverlay = () => {
+    const open = [...document.querySelectorAll('.overlay-screen.open, .roulette.show')];
+    if (!open.length) return null;
+    return open.sort((a, b) => {
+      const za = parseInt(getComputedStyle(a).zIndex, 10) || 0;
+      const zb = parseInt(getComputedStyle(b).zIndex, 10) || 0;
+      if (za !== zb) return za - zb;
+      return open.indexOf(a) - open.indexOf(b);
+    })[open.length - 1];
+  };
+  function resetOverlayDrag(){
+    if (!ovEl) return;
+    ovEl.style.transition = '';
+    ovEl.style.transform = '';
+    ovEl = null; ovTrack = false; ovShown = false; ovDx = 0;
+  }
+  function dismissOverlay(el){
+    if (!el) return;
+    haptic('selection');
+    if (el.classList.contains('overlay-screen')){
+      el.style.transition = '';
+      el.style.transform = '';
+      el.classList.remove('open');
+    } else if (el.classList.contains('roulette')){
+      try{ Roulette.close(); }catch(err){ el.classList.remove('show'); }
+      el.style.transition = '';
+      el.style.transform = '';
+    }
+  }
   const isOverlayOpen = () => !!document.querySelector('.overlay-screen.open, .sheet.open, #tutorial.show, .roulette.show, #onboarding.show, #splash:not(.hide), #radialMenu.show');
   const blocked = (el) => !!(el && el.closest('.card, .chips, input, textarea, .rl-card, .tut-demo, [data-no-swipe]'));
   document.addEventListener('touchstart', (e) => {
+    const t0 = e.touches[0];
+    if (t0){
+      const top = topOverlay();
+      if (top && !e.target.closest('.sheet, input, textarea, .cat-slider, [data-no-swipe]')){
+        ovEl = top; ovTrack = true; ovShown = false; ovDx = 0;
+        ovX = t0.clientX; ovY = t0.clientY;
+        return;                       // свайпаем именно оверлей, а не разделы под ним
+      }
+    }
     if (isOverlayOpen()) return;
     const t = e.touches[0];
     if (!t) return;
@@ -4652,6 +4962,19 @@ switchTab = function(id){
     sx = t.clientX; sy = t.clientY; tracking = true;
   }, { passive: true });
   document.addEventListener('touchmove', (e) => {
+    const tm = e.touches[0];
+    if (ovTrack && ovEl && tm){
+      const dx = tm.clientX - ovX, dy = tm.clientY - ovY;
+      if (!ovShown && Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) + 4){
+        ovShown = true;
+        ovEl.style.transition = 'none';     // экран едет за пальцем без задержки
+      }
+      if (ovShown){
+        ovDx = dx;
+        ovEl.style.transform = `translateX(${dx}px)`;
+      }
+      return;
+    }
     if (!tracking || !fromNav) return;
     const t = e.touches[0];
     if (!t) return;
@@ -4660,6 +4983,19 @@ switchTab = function(id){
     lastDx = t.clientX - sx;
   }, { passive: true });
   document.addEventListener('touchend', (e) => {
+    if (ovTrack){
+      const closedBySwipe = ovShown && Math.abs(ovDx) > 70;   // в любую сторону — назад
+      if (closedBySwipe){
+        const el = ovEl, dir = ovDx < 0 ? -1 : 1;
+        el.style.transition = 'transform .24s cubic-bezier(.3,.8,.3,1)';
+        el.style.transform = `translateX(${dir * 100}%)`;
+        setTimeout(() => dismissOverlay(el), 180);
+        ovEl = null; ovTrack = false; ovShown = false; ovDx = 0;
+      } else {
+        resetOverlayDrag();
+      }
+      return;
+    }
     if (!tracking) return;
     tracking = false;
     const t = e.changedTouches[0];
