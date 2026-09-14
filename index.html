@@ -141,7 +141,7 @@
   .roulette-btn .rl-ico{ font-size:16px; }
   /* ---- Рулетка: лента постеров, которая останавливается на случайном тайтле ---- */
   .roulette{ position:absolute; inset:0; z-index:90; display:none; align-items:center; justify-content:center;
-    background:rgba(7,8,14,.82); backdrop-filter:blur(6px); padding:20px; }
+    background:var(--surface); padding:20px; }
   .roulette.show{ display:flex; animation:fadeIn .25s ease; }
   .rl-card{ width:min(420px, 100%); background:var(--surface); border:1px solid var(--border); border-radius:22px;
     padding:18px 16px 16px; box-shadow:0 30px 70px -20px rgba(0,0,0,.8); }
@@ -181,7 +181,6 @@
   .chip.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
   .search-input{ width:100%; margin:0 0 12px; padding:12px 14px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-family:'Inter'; flex-shrink:0; }
   .search-input::placeholder{ color:var(--text-dim); }
-  .search-input::placeholder{ color:var(--text-dim); }
   .home-bottom{ display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 0 0; flex:0 0 auto; }
   .surprise-btn{ padding:9px 18px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:13px; font-weight:600; }
   .surprise-btn:active{ transform:scale(.96); }
@@ -193,7 +192,7 @@
   #home{ align-items:stretch; padding:8px 16px 10px; }
   .stack{ position:relative; flex:1 1 auto; min-height:0; margin-top:0; }
   /* Иконка фильтра живёт прямо на обложке верхней карточки */
-  .stack-filter{ position:absolute; top:16px; right:16px; z-index:14; width:40px; height:40px; border-radius:14px; background:rgba(9,10,16,0.55); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.16); color:#fff; display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:transform .15s ease, background .2s ease, color .2s ease; }
+  .stack-filter{ position:absolute; top:16px; right:16px; z-index:14; width:40px; height:40px; border-radius:14px; background:rgba(9,10,16,0.78); border:1px solid rgba(255,255,255,0.16); color:#fff; display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:transform .15s ease, background .2s ease, color .2s ease; }
   .stack-filter svg{ width:18px; height:18px; }
   .stack-filter:active{ transform:scale(.9); }
   .stack-filter.open{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
@@ -211,18 +210,21 @@
   .card{
     position:absolute; inset:0; border-radius:26px; overflow:hidden;
     background:var(--surface); border:1px solid var(--border);
-    box-shadow:0 24px 50px -22px rgba(0,0,0,0.65);
+    /* contain: перерисовка карточки не задевает остальной экран — это заметно
+       на телефонах при перетаскивании */
+    contain:layout paint style;
+    box-shadow:0 18px 34px -20px rgba(0,0,0,0.6);
     touch-action:none; display:flex; flex-direction:column; justify-content:flex-end;
     transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
     will-change:transform;
   }
-  .card .poster{ position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(0.92) contrast(1.03); transition:filter .18s ease; }
+  .card .poster{ position:absolute; inset:0; background-size:cover; background-position:center; }
   /* Пока карточку ведут пальцем, ничего не гаснет мгновенно: под штампы подкладывается
      .veil, чья плотность растёт вместе с ходом пальца (см. обработчик жеста). */
   .poster-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.3; color:var(--text); }
   .card .shade{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 32%, rgba(9,10,16,0.97) 100%); }
   .card .badges-row{ position:relative; padding:14px 16px 0; display:flex; gap:5px; flex-wrap:nowrap; overflow:hidden; }
-  .genre-tag{ font-size:10px; padding:3px 8px; border-radius:7px; background:rgba(9,10,16,0.5); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.1); white-space:nowrap; font-weight:500; letter-spacing:.01em; }
+  .genre-tag{ font-size:10px; padding:3px 8px; border-radius:7px; background:rgba(9,10,16,0.72); border:1px solid rgba(255,255,255,0.1); white-space:nowrap; font-weight:500; letter-spacing:.01em; }
   .card .info{ position:relative; padding:8px 20px 16px; }
   .card .title{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:22px; line-height:1.15; }
   .card .meta{ margin-top:5px; color:var(--text-dim); font-size:13px; display:flex; align-items:center; gap:8px; }
@@ -248,8 +250,6 @@
   .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
   .actions button:active{ transform:scale(.92); }
   /* Свайп по нижнему табу: соседняя вкладка слегка подсвечивается, полоса едет за пальцем */
-  nav{ transition:transform .18s ease; }
-  nav button.peek{ color:var(--accent); opacity:.85; }
   .actions .no,.actions .yes{ width:66px; height:66px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
   .actions .no{ color:var(--skip); background:rgba(225,91,111,0.10); border-color:rgba(225,91,111,0.35); }
   .actions .yes{ color:var(--watched); background:rgba(67,184,138,0.10); border-color:rgba(67,184,138,0.35); }
@@ -277,7 +277,7 @@
   .deck-loading-text{ position:relative; font-size:13.5px; font-weight:600; color:var(--text); }
   .deck-loading-sub{ position:relative; font-size:12px; }
   /* Пока палец ведёт карточку — никаких transition, движение строго за пальцем */
-  .card.swiping{ transition:none !important; }
+  .card.swiping{ transition:none !important; will-change:transform; }
   @keyframes cardShuffle{ 0%{ transform:translate(0,0) rotate(0) scale(1); } 35%{ transform:translate(var(--sh-x,0), -26px) rotate(var(--sh-r,-8deg)) scale(.94); } 70%{ transform:translate(0,0) rotate(0) scale(1.02); } 100%{ transform:translate(0,0) rotate(0) scale(1); } }
   .card.shuffling{ animation:cardShuffle .62s cubic-bezier(.3,.7,.3,1) both; animation-delay:var(--sh-d,0s); }
 
@@ -292,6 +292,8 @@
 
   /* ===== Catalog ===== */
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding-bottom:10px; }
+  /* Каталог бывает длинным: то, что не видно, не рисуется вовсе */
+  .grid2 .poster-card, .grid2 .row-card{ content-visibility:auto; contain-intrinsic-size:260px 390px; }
   .poster-card{ position:relative; border-radius:16px; overflow:hidden; aspect-ratio:2/3; background:var(--surface); border:1px solid var(--border); transition:transform .15s ease; }
   .poster-card.card-enter{ animation:rise .35s cubic-bezier(.2,.8,.2,1) both; }
   .poster-card:active{ transform:scale(.96); }
@@ -300,14 +302,14 @@
   .pc-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.4; color:var(--text); }
   .poster-card .pc-shade{ position:absolute; inset:0; background:linear-gradient(180deg, transparent 55%, rgba(9,10,16,0.92) 100%); }
   .poster-card .pc-title{ position:absolute; left:10px; right:10px; bottom:10px; font-size:13px; font-weight:600; line-height:1.25; }
-  .pc-flag{ position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:8px; background:rgba(9,10,16,0.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
+  .pc-flag{ position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:8px; background:rgba(9,10,16,0.82); display:flex; align-items:center; justify-content:center; }
   .pc-flag svg{ width:13px; height:13px; }
   .pc-flag.watched svg{ color:var(--watched); }
   .pc-flag.wish svg{ color:var(--wish); }
   .pc-flag.watching{ color:var(--watching); font-size:11px; }
 
   /* ===== List rows (wishlist / history) ===== */
-  .row-card{ display:flex; gap:12px; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:10px; align-items:center; transition:transform .15s ease, background .15s ease; }
+  .row-card{ content-visibility:auto; contain-intrinsic-size:auto 100px; display:flex; gap:12px; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:10px; align-items:center; transition:transform .15s ease, background .15s ease; }
   .row-card.card-enter{ animation:rise .3s cubic-bezier(.2,.8,.2,1) both; }
   .row-card:active{ transform:scale(.98); background:var(--surface-2); }
   .row-card .thumb{ width:52px; height:74px; border-radius:10px; background-size:cover; background-position:center; background-repeat:no-repeat; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:20px; }
@@ -330,7 +332,9 @@
   .sheet.open{ transform:translateY(0); }
   .sheet .poster-lg{ height:360px; border-radius:26px 26px 0 0; position:relative; overflow:hidden; background-position:center; background-size:cover; }
   /* Размытая заливка позади — постер целиком (contain) ложится поверх, ничего не обрезаем */
-  .sheet .poster-lg .pl-blur{ position:absolute; inset:0; background-size:cover; background-position:center; filter:blur(26px) saturate(1.1) brightness(.55); transform:scale(1.25); }
+  /* Раньше здесь был filter:blur(26px): выглядел мягко, но на телефоне шторка
+     открывалась с рывком. Теперь это растянутая подложка с приглушением. */
+  .sheet .poster-lg .pl-blur{ position:absolute; inset:0; background-size:cover; background-position:center; transform:scale(1.18); opacity:.42; }
   .sheet .poster-lg .pl-full{ position:absolute; inset:0; background-size:contain; background-position:center; background-repeat:no-repeat; z-index:1; }
   .sheet .poster-lg::after{ content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg, transparent 62%, var(--surface) 100%); }
   .sheet-poster-icon{ position:relative; z-index:3; display:flex; align-items:center; justify-content:center; height:100%; opacity:.32; color:var(--text); }
@@ -350,23 +354,46 @@
   .season-fillall{ display:flex; align-items:center; gap:5px; padding:6px 10px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--text-dim); font-size:11.5px; font-weight:600; }
   .season-stepper{ display:flex; gap:8px; flex:0 0 auto; }
 
-  /* ===== Рецензии / шкала СМОТРЫ ===== */
-  /* Объёмные «смотриметры»: крупная цифра, толстая шкала, большой бегунок */
-  .cat-row{ margin-bottom:22px; }
-  .cat-top{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px; }
-  .cat-top span:first-child{ color:var(--text); font-size:15.5px; font-weight:500; }
-  .cat-top .cat-val{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; color:var(--accent); line-height:1; }
-  .cat-slider{ --pct:50%; width:100%; -webkit-appearance:none; appearance:none; height:12px; border-radius:8px; outline:none;
+  /* ===== Смотриметры: крупная шкала, светящийся бегунок, деления ===== */
+  /* Заголовки групп («Главное · до 8») — с линией до края */
+  #reviewScreen .set-group-title{ display:flex; align-items:center; gap:10px; padding:16px 2px 8px; opacity:1; color:var(--text-dim); font-weight:700; }
+  #reviewScreen .set-group-title::after{ content:''; flex:1; height:1px; background:var(--border); }
+  .cat-row{ margin-bottom:14px; }
+  .cat-card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:13px 14px 6px;
+    transition:border-color .2s ease, box-shadow .25s ease; }
+  .cat-row.hot .cat-card{ border-color:var(--accent-border); box-shadow:0 14px 30px -24px var(--accent-glow); }
+  .cat-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; gap:10px; }
+  .cat-name{ color:var(--text); font-size:14.5px; font-weight:600; }
+  .cat-val{ display:inline-flex; align-items:baseline; gap:1px; font-family:'Unbounded',sans-serif; font-size:19px; font-weight:800;
+    color:var(--text); background:linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; }
+  .cat-val small{ font-size:11px; font-weight:600; -webkit-text-fill-color:var(--text-dim); color:var(--text-dim); }
+  /* Деления: заполненные светятся, пустые — просто фон */
+  .cat-dots{ display:flex; gap:4px; margin-bottom:9px; }
+  .cat-dots i{ flex:1; height:5px; border-radius:3px; background:var(--surface-2); transition:background .18s ease, transform .18s ease; }
+  .cat-dots i.on{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); transform:scaleY(1.25); }
+  .cat-dots i.top{ background:var(--accent); box-shadow:0 0 8px var(--accent-glow); }
+  .cat-slider{ --pct:50%; width:100%; -webkit-appearance:none; appearance:none; height:14px; border-radius:9px; outline:none; margin:0 0 6px;
     background:linear-gradient(90deg, var(--accent) 0%, var(--accent-2) var(--pct), var(--surface-2) var(--pct), var(--surface-2) 100%);
-    box-shadow:inset 0 1px 3px rgba(0,0,0,0.45), inset 0 -1px 0 rgba(255,255,255,0.05); }
-  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 70%); border:3px solid var(--bg-2);
-    box-shadow:0 4px 12px -2px rgba(0,0,0,0.7), 0 0 0 4px var(--accent-soft); transition:transform .12s ease; }
-  .cat-slider:active::-webkit-slider-thumb{ transform:scale(1.12); }
+    box-shadow:inset 0 1px 3px rgba(0,0,0,0.45); }
+  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:30px; height:30px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 72%); border:3px solid var(--bg-2);
+    box-shadow:0 4px 12px -2px rgba(0,0,0,0.7), 0 0 0 4px var(--accent-soft); transition:transform .12s ease, box-shadow .18s ease; }
+  .cat-slider:active::-webkit-slider-thumb{ transform:scale(1.14); box-shadow:0 6px 16px -2px rgba(0,0,0,0.75), 0 0 0 7px var(--accent-soft); }
   .cat-slider::-moz-range-thumb{ width:26px; height:26px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 4px 12px -2px rgba(0,0,0,0.7); }
-  .cat-slider::-moz-range-track{ height:12px; border-radius:8px; background:var(--surface-2); }
-  .cat-slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 2px 6px rgba(0,0,0,0.4); }
-
+  .cat-slider::-moz-range-track{ height:14px; border-radius:9px; background:var(--surface-2); }
+  /* Итог: крупная цифра, шкала до 68 и словесный вердикт */
+  .score-hero{ margin-top:14px; padding:16px 16px 14px; border-radius:20px; border:1px solid var(--accent-border);
+    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.05)); }
+  .score-hero-top{ display:flex; align-items:flex-end; justify-content:space-between; gap:10px; }
+  .score-hero-top .sh-label{ font-size:12px; color:var(--text-dim); }
+  .score-hero-top .sh-value{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:30px; line-height:1; color:var(--text); }
+  .score-hero-top .sh-value b{ font-size:14px; font-weight:700; color:var(--text-dim); }
+  .score-verdict{ margin-top:6px; font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700;
+    background:linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .score-bar{ height:9px; margin-top:12px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .score-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .25s ease; }
+  .score-total.pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
   .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; display:flex; gap:12px; }
   .review-poster{ width:46px; height:68px; border-radius:10px; flex:0 0 auto; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; color:var(--text-dim); border:1px solid var(--border); }
   .review-body{ flex:1; min-width:0; }
@@ -377,11 +404,6 @@
   .review-movie{ font-size:11.5px; color:var(--text-dim); }
   .review-score{ flex:0 0 auto; background:var(--surface-2); border-radius:11px; padding:5px 10px; font-weight:800; font-size:13px; color:var(--accent); }
   /* Итог по смотриметрам — крупная строка, как на макете */
-  .score-total{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding:16px 4px 0; border-top:1px solid var(--border); }
-  .score-total span:first-child{ color:var(--text-dim); font-size:14px; }
-  .score-total span:last-child{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:24px; color:var(--text); }
-  .score-total span:last-child b{ color:var(--accent); font-weight:800; }
-  .score-total.pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
   .review-text{ font-size:13px; color:var(--text-dim); margin-top:10px; line-height:1.5; }
   .review-mini-cats{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .review-mini-cats span{ font-size:11px; color:var(--text-dim); background:var(--surface-2); border-radius:8px; padding:3px 8px; }
@@ -403,42 +425,79 @@
   .profile-name{ font-family:'Unbounded', sans-serif; font-weight:700; font-size:18px; }
   .profile-sub{ color:var(--text-dim); font-size:12.5px; margin-top:3px; }
   .stats-row{ display:flex; gap:10px; margin-top:20px; }
-  /* ---- Профиль друга: мэтч и сравнение ---- */
-  .match-card{ display:flex; align-items:center; gap:14px; margin-top:18px; padding:14px;
-    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.10)); border:1px solid var(--accent-border); border-radius:18px; }
-  .match-ring{ width:74px; height:74px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
-    background:conic-gradient(var(--accent) calc(var(--p, 0) * 1%), var(--surface-2) 0);
+  /* ---- Мэтч и профиль друга ---- */
+  .match-card{ display:flex; align-items:center; gap:14px; margin-top:16px; padding:15px;
+    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.08)); border:1px solid var(--accent-border); border-radius:20px;
+    box-shadow:0 14px 30px -24px var(--accent-glow); }
+  .match-ring{ width:78px; height:78px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:conic-gradient(from -90deg, var(--accent) calc(var(--p, 0) * 1%), var(--surface-2) 0);
     position:relative; }
-  .match-ring::after{ content:''; position:absolute; inset:7px; border-radius:50%; background:var(--surface); }
-  .match-num{ position:relative; z-index:2; font-family:'Unbounded',sans-serif; font-weight:800; font-size:19px; color:var(--text); }
+  .match-ring::after{ content:''; position:absolute; inset:8px; border-radius:50%; background:var(--surface); }
+  .match-num{ position:relative; z-index:2; font-family:'Unbounded',sans-serif; font-weight:800; font-size:20px; color:var(--text); }
   .match-num small{ font-size:10px; font-weight:600; color:var(--text-dim); }
   .match-title{ font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; }
-  .match-sub{ font-size:12px; color:var(--text-dim); margin-top:5px; line-height:1.4; }
-  .friend-bars{ margin-top:16px; }
-  /* Моя статистика: жанры, средний балл и темп просмотра */
-  .my-stats{ margin-top:16px; background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px 15px; }
-  .ms-title{ font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; }
-  .ms-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
-  .ms-cell{ text-align:center; }
-  .ms-num{ font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
-  .ms-lbl{ font-size:10.5px; color:var(--text-dim); margin-top:3px; }
-  .ms-genres{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .match-sub{ font-size:12px; color:var(--text-dim); margin-top:6px; line-height:1.45; }
+  .friend-bars{ margin-top:14px; }
+  /* Шапка профиля: аватар + имя */
+  .fp-hero{ display:flex; align-items:center; gap:14px; padding-top:6px; }
+  .fp-name{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; }
+  .fp-sub{ font-size:12.5px; color:var(--text-dim); margin-top:4px; }
+  /* Плитки статистики друга: смотрел / хочет / смотрит / оценок / средний балл */
+  .fp-tiles{ display:grid; grid-template-columns:repeat(auto-fit, minmax(62px, 1fr)); gap:8px; margin-top:16px; }
+  .fp-tile{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; }
+  .fp-tile b{ display:block; font-family:'Unbounded',sans-serif; font-size:17px; font-weight:700; color:var(--text); }
+  .fp-tile span{ display:block; font-size:10px; color:var(--text-dim); margin-top:4px; line-height:1.2; }
+  .fp-bars{ margin-top:16px; background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:14px 15px 4px; }
+  /* Секции: заголовок со счётчиком, подсказка, сетка, «показать все» */
+  .fp-sec{ margin-top:18px; }
+  .fp-head{ display:flex; align-items:center; justify-content:space-between; font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
+  .fp-count{ display:inline-flex; align-items:center; justify-content:center; min-width:26px; margin-left:8px; padding:2px 8px;
+    border-radius:20px; background:var(--accent-soft); color:var(--accent); font-family:'Inter',sans-serif; font-size:11.5px; font-weight:700; }
+  .fp-hint{ font-size:11.5px; color:var(--text-dim); margin-top:6px; line-height:1.4; }
+  .fp-more{ display:block; width:100%; margin-top:10px; padding:11px; border-radius:13px; background:var(--surface); border:1px solid var(--border);
+    color:var(--text); font-size:13px; font-weight:600; }
+  .fp-more:active{ transform:scale(.98); background:var(--surface-2); }
+  .fp-roulette{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin:10px 0 4px; padding:12px;
+    border:none; border-radius:14px; font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:var(--on-accent);
+    background:linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow:0 12px 26px -16px var(--accent-glow); transition:transform .14s ease; }
+  .fp-roulette:active{ transform:scale(.97); }
   .fb-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:6px; }
   .fb-row b{ color:var(--text); }
-  .fb-bar{ height:6px; background:var(--surface-2); border-radius:4px; overflow:hidden; margin-bottom:12px; }
-  .fb-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:4px; }
+  .fb-bar{ height:7px; background:var(--surface-2); border-radius:5px; overflow:hidden; margin-bottom:12px; }
+  .fb-bar i{ display:block; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:5px; }
   .genre-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
   .common-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:10px; }
-  .common-item{ aspect-ratio:2/3; border-radius:10px; background-size:cover; background-position:center; border:1px solid var(--border);
-    position:relative; overflow:hidden; cursor:pointer; }
-  .common-item span{ position:absolute; left:0; right:0; bottom:0; padding:14px 5px 5px; font-size:8.5px; line-height:1.15;
+  .common-item{ aspect-ratio:2/3; border-radius:11px; background-size:cover; background-position:center; border:1px solid var(--border);
+    position:relative; overflow:hidden; cursor:pointer; content-visibility:auto; contain-intrinsic-size:120px 180px; }
+  .common-item span{ position:absolute; left:0; right:0; bottom:0; padding:16px 5px 6px; font-size:8.5px; line-height:1.15; font-weight:600;
     background:linear-gradient(180deg, transparent, rgba(6,7,12,.94)); }
   .friend-watched{ margin-top:10px; }
-  .fw-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .fw-row{ content-visibility:auto; contain-intrinsic-size:auto 54px; display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer; }
   .fw-row:last-child{ border-bottom:none; }
-  .fw-poster{ width:38px; height:54px; border-radius:8px; background-size:cover; background-position:center; flex:0 0 auto; border:1px solid var(--border); }
+  .fw-poster{ width:38px; height:54px; border-radius:9px; background-size:cover; background-position:center; flex:0 0 auto; border:1px solid var(--border); }
   .fw-title{ font-size:13px; font-weight:600; }
   .fw-sub{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+  /* Моя статистика: карточка-герой, плитки и полосы любимых жанров */
+  .my-stats{ display:flex; flex-direction:column; gap:12px; }
+  .ms-hero{ display:flex; align-items:center; gap:16px; padding:18px; border-radius:20px;
+    background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.06)); border:1px solid var(--accent-border); }
+  .ms-hero-main b{ display:block; font-family:'Unbounded',sans-serif; font-size:34px; font-weight:800; line-height:1; color:var(--text); }
+  .ms-hero-main span{ display:block; font-size:11.5px; color:var(--text-dim); margin-top:6px; }
+  .ms-hero-side{ margin-left:auto; display:flex; flex-direction:column; gap:10px; text-align:right; }
+  .ms-hero-side b{ font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
+  .ms-hero-side span{ display:block; font-size:10.5px; color:var(--text-dim); margin-top:2px; }
+  .ms-tiles{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .ms-tile{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; text-align:center; }
+  .ms-tile .ms-ico{ display:flex; justify-content:center; color:var(--accent); margin-bottom:6px; }
+  .ms-tile b{ display:block; font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
+  .ms-tile span{ display:block; font-size:10px; color:var(--text-dim); margin-top:3px; line-height:1.2; }
+  .ms-subtitle{ font-family:'Unbounded',sans-serif; font-size:12.5px; font-weight:700; margin-top:2px; }
+  .ms-genre{ margin-top:10px; }
+  .ms-genre .msg-top{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-dim); margin-bottom:5px; }
+  .ms-genre .msg-top b{ color:var(--text); }
+  .ms-genre .msg-bar{ height:6px; background:var(--surface-2); border-radius:4px; overflow:hidden; }
+  .ms-genre .msg-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .ms-foot{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
   .stat-card{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 8px; text-align:center; cursor:pointer; transition:transform .15s ease, background .15s ease; }
   .stat-card:active{ transform:scale(.95); background:var(--surface-2); }
   .stat-num{ font-family:'Unbounded', sans-serif; font-size:20px; font-weight:700; }
@@ -541,53 +600,48 @@
        въезжают по очереди с разворотом по оси X. */
   #splash .s-glow{ position:absolute; left:50%; top:50%; width:min(430px, 90vw); height:230px; pointer-events:none;
     transform:translate(-50%,-50%);
-    background:radial-gradient(closest-side, var(--accent-glow), transparent 72%);
-    filter:blur(26px); opacity:.34; animation:glowPulse 4.2s ease-in-out infinite; }
+    /* Раньше было filter:blur(26px) — на телефоне это одна из самых дорогих
+       операций; мягкого радиального градиента для свечения достаточно */
+    background:radial-gradient(closest-side, rgba(124,107,255,.5) 0%, rgba(124,107,255,.18) 44%, transparent 74%);
+    opacity:.8; animation:glowPulse 4.2s ease-in-out infinite; }
   @keyframes glowPulse{
     0%,100%{ opacity:.24; transform:translate(-50%,-50%) scale(.94); }
     50%{ opacity:.4; transform:translate(-50%,-50%) scale(1.05); } }
   #splash .s-3d{ position:relative; display:flex; flex-direction:column; align-items:center; }
-  #splash .s-title, #splash .s-refl{ display:flex; align-items:flex-end; gap:.014em;
+  #splash .s-title{ display:flex; align-items:flex-end; gap:.014em; perspective:800px;
     font-family:'Unbounded', sans-serif; font-weight:900; font-size:clamp(44px, 16vw, 66px);
     letter-spacing:-.015em; line-height:1; }
-  #splash .s-title{ perspective:800px; }
-  #splash .s-title span, #splash .s-refl span{ display:inline-block; will-change:transform; }
   /* Буквы: белый глянец + выдавленный торец из слоёв тени + неоновое свечение.
      Градиент обрезан по тексту, поэтому по нему может ехать блик. */
   #splash .s-title span{
+    display:inline-block;
     background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 42%, #d7d2f4 56%, #ffffff 70%, #f2eeff 88%, #cfc8ee 100%);
     background-size:100% 300%; background-position:0 0;
     -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; color:transparent;
+    /* Торец — текстовыми тенями (в разы дешевле фильтра), объём и свечение — двумя слоями */
+    text-shadow:
+      0 1px 0 #cfc9ee, 0 2px 0 #b9b2e6, 0 3px 0 #9d94d8, 0 4px 0 #837ac6,
+      0 5px 0 #6a61b4, 0 6px 0 #554da2, 0 7px 0 #453e8c, 0 8px 0 #382f75;
     filter:
-      drop-shadow(0 1px 0 #cfc9ee) drop-shadow(0 2px 0 #b9b2e6)
-      drop-shadow(0 3px 0 #9d94d8) drop-shadow(0 4px 0 #837ac6)
-      drop-shadow(0 5px 0 #6a61b4) drop-shadow(0 6px 0 #554da2)
-      drop-shadow(0 12px 18px rgba(8,6,30,.75))
-      drop-shadow(0 0 24px var(--accent-glow));
+      drop-shadow(0 10px 16px rgba(8,6,30,.7))
+      drop-shadow(0 0 20px var(--accent-glow));
     opacity:0; transform-origin:50% 100%;
     animation:wordIn .95s cubic-bezier(.2,.9,.25,1) forwards, wordSheen 4.6s ease-in-out 1.9s infinite; }
   /* Буква O — акцентная, сине-фиолетовая, как в остальном интерфейсе */
   #splash .s-title span.o{
     background-image:linear-gradient(180deg, #ded9ff 0%, #b3a6ff 26%, #7c6bff 52%, #5b46e6 66%, #7d8dff 84%, #cfd6ff 100%);
+    text-shadow:
+      0 1px 0 #6f5cf0, 0 2px 0 #5f4ce0, 0 3px 0 #503fd0, 0 4px 0 #4335bc,
+      0 5px 0 #382ca6, 0 6px 0 #2f248f, 0 7px 0 #272077, 0 8px 0 #201a62;
     filter:
-      drop-shadow(0 1px 0 #6f5cf0) drop-shadow(0 2px 0 #5f4ce0)
-      drop-shadow(0 3px 0 #503fd0) drop-shadow(0 4px 0 #4335bc)
-      drop-shadow(0 5px 0 #382ca6) drop-shadow(0 6px 0 #2f248f)
-      drop-shadow(0 12px 20px rgba(8,6,30,.8))
-      drop-shadow(0 0 26px var(--accent-glow)) drop-shadow(0 0 44px rgba(124,107,255,.5)); }
+      drop-shadow(0 10px 18px rgba(8,6,30,.75))
+      drop-shadow(0 0 24px var(--accent-glow)); }
   @keyframes wordIn{
     0%{ opacity:0; transform:translateY(38px) rotateX(-72deg) scale(.86); }
     55%{ opacity:1; } 78%{ transform:translateY(-4px) rotateX(6deg) scale(1.02); }
     100%{ opacity:1; transform:none; } }
   @keyframes wordSheen{ 0%{ background-position:0 0; } 50%{ background-position:0 100%; } 100%{ background-position:0 0; } }
-  /* Отражение: та же надпись, перевёрнутая, растворяется книзу */
-  #splash .s-refl{ margin-top:2px; transform:translateY(2px);
-    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.16) 42%, transparent 78%);
-    mask-image:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.16) 42%, transparent 78%);
-    opacity:0; animation:reflIn 1.2s ease .7s forwards; }
-  #splash .s-refl span{ transform:scaleY(-1) translateY(1px); }
-  @keyframes reflIn{ to{ opacity:1; } }
   @media (prefers-reduced-motion: reduce){
     #splash .s-glow{ animation:none; }
     #splash .s-title span{ animation:wordIn .5s ease forwards; }
@@ -602,7 +656,7 @@
   #splash .s-credit b{ color:var(--accent); font-weight:700; }
   @keyframes fadeUp{ to{ opacity:1; } }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
-  #splash.hide{ opacity:0; pointer-events:none; }
+  #splash.hide{ opacity:0; pointer-events:none; visibility:hidden; }
 
   /* ===== Onboarding ===== */
   #onboarding{ position:absolute; inset:0; background:var(--bg); z-index:90; display:none; flex-direction:column; }
@@ -615,7 +669,7 @@
   .ob-chip{ padding:11px 16px; border-radius:14px; background:var(--surface); border:1px solid var(--border); font-size:14px; transition:transform .12s ease, background .15s ease, border-color .15s ease; }
   .ob-chip:active{ transform:scale(.95); }
   .ob-chip.sel{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  #onboarding .ob-actions{ flex:0 0 auto; display:flex; flex-direction:column; gap:8px; padding:14px 24px calc(16px + var(--safe-bottom)); border-top:1px solid var(--border); background:linear-gradient(180deg, transparent, var(--bg) 22%); backdrop-filter:blur(8px); }
+  #onboarding .ob-actions{ flex:0 0 auto; display:flex; flex-direction:column; gap:8px; padding:14px 24px calc(16px + var(--safe-bottom)); border-top:1px solid var(--border); background:linear-gradient(180deg, rgba(7,8,14,0) 0%, var(--bg) 26%);  }
   #onboarding .ob-go{ background:var(--accent); color:var(--on-accent); border:none; padding:15px; border-radius:14px; font-weight:700; font-size:15px; transition:transform .12s ease; }
   #onboarding .ob-go:active{ transform:scale(.98); }
   #onboarding .ob-go:disabled{ opacity:.5; }
@@ -627,8 +681,13 @@
   /* overflow:hidden + сжимаемые блоки = кнопка «Дальше» физически не может
      оказаться за границей слоя: если места мало, сначала ужимается сцена,
      потом подпись, и только потом всё вместе уменьшает fitTutorial. */
-  #tutorial{ position:absolute; inset:0; height:auto; overflow:hidden; background:var(--bg); z-index:95; display:none; flex-direction:column; gap:12px; padding:calc(12px + var(--safe-top)) 20px calc(18px + var(--safe-bottom)); }
-  #tutorial.show{ display:flex; }
+  /* Сетка, а не flex-колонка: строка со сценой тянется (minmax(0,1fr)) и при
+     нехватке места сжимается именно она, а ряд с кнопкой «Дальше» остаётся на
+     своём месте. Раньше лишняя высота выдавливала кнопку за нижний край экрана. */
+  #tutorial{ position:absolute; inset:0; height:auto; overflow:hidden; background:var(--bg); z-index:95; display:none;
+    grid-template-rows:auto minmax(0,1fr) auto auto; gap:12px;
+    padding:calc(12px + var(--safe-top)) 20px calc(18px + var(--safe-bottom)); }
+  #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
   .tut-back{ width:34px; height:34px; border-radius:11px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
   .tut-back svg{ width:19px; height:19px; }
@@ -640,7 +699,7 @@
   .tut-progress span.done b{ width:100%; }
   .tut-progress span.active b{ width:100%; }
   .tut-skip-top{ background:none; border:none; color:var(--text-dim); font-size:12.5px; padding:7px 2px; flex:0 0 auto; }
-  .tut-stage{ flex:1 1 auto; min-height:76px; padding-bottom:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .tut-stage{ min-height:0; padding-bottom:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
   /* Демо-карточка всегда одного размера: если высоты мало, fitTutorial поджимает её
      трансформацией, а не размерами — иначе иконки и штампы становятся крошечными. */
   .tut-demo{ position:relative; width:208px; height:292px; flex:0 0 auto; }
@@ -713,7 +772,7 @@
   /* Кнопка «Дальше» — в нижней части экрана. Сцену выше делает «резиновой»
      (flex:1 1 auto + min-height), поэтому кнопку никогда не выдавливает за экран,
      а fitTutorial дополнительно подрезает слой по реально видимой высоте. */
-  .tut-actions{ display:flex; gap:8px; flex:0 0 auto; margin-top:auto; }
+  .tut-actions{ z-index:2; display:flex; gap:8px; flex:0 0 auto; margin-top:auto; }
   .tut-next{ flex:1; background:var(--accent); color:var(--on-accent); border:none; padding:14px; border-radius:14px; font-weight:700; font-size:15.5px; transition:transform .12s ease; box-shadow:0 10px 26px -14px var(--accent-glow); }
   .tut-next:active{ transform:scale(.98); }
   /* Компактные режимы включает скрипт (fitTutorial), если не влезает подпись шага.
@@ -755,7 +814,7 @@
   /* ===== Радиальное меню (зажми обложку → выбери сектор → отпусти) ===== */
   #radialMenu{ position:absolute; inset:0; z-index:70; display:none; touch-action:none; }
   #radialMenu.show{ display:block; }
-  #radialMenu .rad-backdrop{ position:absolute; inset:0; background:rgba(9,8,7,0.55); backdrop-filter:blur(2px); opacity:0; transition:opacity .18s ease; }
+  #radialMenu .rad-backdrop{ position:absolute; inset:0; background:rgba(9,8,7,0.72); opacity:0; transition:opacity .18s ease; }
   #radialMenu.show .rad-backdrop{ opacity:1; }
   #radialMenu .rad-wrap{ position:absolute; transform:translate(-50%,-50%); }
   .rad-center{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:72px; height:72px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; text-align:center; z-index:3; box-shadow:0 10px 30px -10px rgba(0,0,0,0.7); overflow:hidden; }
@@ -790,12 +849,11 @@
 <!-- SPLASH -->
 <div id="splash">
   <!-- Объёмная надпись SMOTRA: настоящий текст (Unbounded 900), буквы собираются
-       скриптом. Объём — цепочкой drop-shadow (торец + тень + свечение), глянец —
-       градиент по буквам с бегущим бликом, ниже — отражение. Картинок нет. -->
+       скриптом. Торец — текстовыми тенями, глянец — градиент по буквам с бегущим
+       бликом, свечение — два слоя. Картинок и отражения нет. -->
   <div class="s-glow" aria-hidden="true"></div>
   <div class="s-3d">
     <div class="s-title" id="sTitle" aria-label="SMOTRA"></div>
-    <div class="s-refl" id="sRefl" aria-hidden="true"></div>
   </div>
   <div class="s-sub">свайпай <em>и вайбуй</em></div>
   <div class="s-credit">made <b>tengizka</b></div>
@@ -1051,7 +1109,13 @@
     <div id="reviewBigSliders"></div>
     <div class="set-group-title" style="padding-left:0; padding-top:0; margin-top:6px;">Детали · до 5</div>
     <div id="reviewSmallSliders"></div>
-    <div class="score-total" id="reviewTotalRow"><span>Смотриметр</span><span id="reviewTotalValue">0<b>/68</b></span></div>
+    <div class="score-hero" id="reviewTotalRow">
+      <div class="score-hero-top">
+        <div><div class="sh-label">Смотриметр</div><div class="sh-value" id="reviewTotalValue">0<b>/68</b></div></div>
+        <div class="score-verdict" id="reviewVerdict">Оцени</div>
+      </div>
+      <div class="score-bar"><i id="reviewTotalBar" style="width:0%"></i></div>
+    </div>
     <div class="set-group-title" style="padding-left:0; padding-top:0; margin-top:14px;">Текст рецензии</div>
     <textarea id="reviewText" rows="5" placeholder="Что понравилось, что нет, кому советуешь…" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; color:var(--text); font-family:'Inter'; font-size:14px; resize:vertical;"></textarea>
     <button id="submitReview" style="width:100%; margin-top:16px; padding:14px; border-radius:14px; background:var(--accent); color:var(--on-accent); font-weight:700; font-size:15px; border:none;">Опубликовать</button>
@@ -1221,8 +1285,17 @@
          ряду действий; раздел оценок переделан (друзья / общий рейтинг, сравнение
          со средним, профили друзей со статистикой и мэтчем); больше ачивок;
          свайпы назад по разделам и листание нижнего таба; туториал жёстко
-         прижимает кнопку к видимой части экрана. */
-const APP_VERSION = '0.15';
+         прижимает кнопку к видимой части экрана.
+  0.16 — производительность и внешний вид: убраны backdrop-filter, filter:blur и
+         цепочки drop-shadow (на iPhone из-за них всё подлагивало), карточки и
+         плитки каталога изолированы contain/content-visibility, перетаскивание
+         считается раз в кадр; панель вкладок больше не ездит за пальцем;
+         заставка без отражения, но всё такая же объёмная; туториал переехал на
+         сетку — кнопка «Дальше» не может уехать вниз; Смотриметры перерисованы
+         (деления, светящаяся шкала, вердикт); статистика профиля и профили
+         друзей переделаны: плитки, полосы, полные списки совпадений и рулетка
+         по чужому «Хочу чекнуть». */
+const APP_VERSION = '0.16';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1503,24 +1576,27 @@ function avatarBlockHTML(name, photoUrl, size){
   }
   return `<div style="width:${size}px; height:${size}px; border-radius:${Math.round(size*0.27)}px; background:linear-gradient(145deg,var(--accent),var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:${Math.round(size*0.36)}px; font-weight:800; color:var(--on-accent); margin:0 auto 14px;">${esc((name[0]||'?').toUpperCase())}</div>`;
 }
-/* Списки друга: то, что он смотрел и хочет посмотреть. Читаем из тех же таблиц,
-   что и свои (swipes/wishlist по его telegram_id); если доступ закрыт — тихо
-   показываем то, что знаем из его оценок. */
+/* ============ ПРОФИЛИ ДРУЗЕЙ: списки, статистика, мэтч ============
+   Читаем те же таблицы, что и для себя, но по telegram_id друга. Если доступ
+   закрыт — тихо показываем то, что знаем из его оценок. */
 async function getFriendLists(id){
-  const out = { watched: [], wishlist: [], watching: [] };
+  const out = { watched: [], wishlist: [], watching: [], skipped: [], reviews: new Map() };
   try{
-    const [sw, wl, wa] = await Promise.all([
+    const [sw, wl, wa, rv] = await Promise.all([
       sb.from('swipes').select('movie_id,action').eq('telegram_id', id),
       sb.from('wishlist').select('movie_id').eq('telegram_id', id),
       sb.from('watching').select('movie_id').eq('telegram_id', id),
+      sb.from('reviews').select('movie_id,total').eq('telegram_id', id),
     ]);
-    (sw.data || []).forEach(r => { if (r.action === 'watched') out.watched.push(r.movie_id); else if (r.action === 'skipped') out.skipped = (out.skipped || []).concat(r.movie_id); });
+    (sw.data || []).forEach(r => { if (r.action === 'watched') out.watched.push(r.movie_id); else if (r.action === 'skipped') out.skipped.push(r.movie_id); });
     (wl.data || []).forEach(r => out.wishlist.push(r.movie_id));
     (wa.data || []).forEach(r => out.watching.push(r.movie_id));
+    (rv.data || []).forEach(r => out.reviews.set(r.movie_id, Number(r.total) || 0));
   }catch(e){}
   return out;
 }
-/* Мэтч двух профилей: пересечение просмотренного, желаний и оценок + совпадение вкусов */
+/* «Наш мэтч в кино»: пересечение списков, похожесть вкусов по жанрам и совпадение
+   оценок (в пределах 8 баллов из 68). Каждый пункт — в процентах, итог — средний. */
 function computeMatch(mine, theirs, myRatings, theirRatings){
   const setMine = new Set(mine), setTheirs = new Set(theirs);
   const common = [...setMine].filter(k => setTheirs.has(k));
@@ -1546,7 +1622,7 @@ function computeMatch(mine, theirs, myRatings, theirRatings){
   myRatings.forEach((val, movieId) => {
     if (theirRatings.has(movieId)){
       compared++;
-      if (Math.abs(val - theirRatings.get(movieId)) <= 8) closeScores++;   // в пределах 8 баллов из 68
+      if (Math.abs(val - theirRatings.get(movieId)) <= 8) closeScores++;
     }
   });
   const taste = compared ? closeScores / compared : null;
@@ -1554,7 +1630,7 @@ function computeMatch(mine, theirs, myRatings, theirRatings){
   const score = Math.round((parts.reduce((a,b)=>a+b,0) / parts.length) * 100);
   return {
     score: Math.max(0, Math.min(100, score)),
-    common: common.map(keyToMovie).filter(Boolean).slice(0, 24),
+    common: common.map(keyToMovie).filter(Boolean),
     overlap: Math.round(overlap*100),
     genreMatch: Math.round(genreMatch*100),
     taste: taste === null ? null : Math.round(taste*100),
@@ -1569,57 +1645,103 @@ async function myRatingMap(){
   }catch(e){}
   return map;
 }
-async function theirRatingMap(id){
-  const map = new Map();
-  try{
-    const { data } = await sb.from('reviews').select('movie_id,total').eq('telegram_id', id);
-    (data || []).forEach(r => map.set(r.movie_id, Number(r.total) || 0));
-  }catch(e){}
-  return map;
+/* Плитка-постер: обложка, а поверх — название. Используется во всех сетках профиля. */
+function friendTile(m){
+  const art = hasArt(m)
+    ? `background-image:url('${esc(posterUrl(m,'w185'))}')`
+    : `background:${posterBG(m)}`;
+  return `<div class="common-item" data-movie="${m.id}" data-type="${m.type}" style="${art}"><span>${esc(m.title)}</span></div>`;
+}
+function friendRows(list){
+  return list.map(m => `
+    <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
+      <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
+      <div class="fw-mid">
+        <div class="fw-title">${esc(m.title)}</div>
+        <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')} · ${esc(m.rating)}<span class="star">★</span></div>
+      </div>
+    </div>`).join('');
+}
+/* Секция профиля: заголовок со счётчиком, сетка и кнопка «Показать все» (по требованию
+   список раскрывается целиком — это и есть полный список совпадений). */
+function friendSection(key, title, hint, list, st, tileView){
+  if (!list.length) return '';
+  const expanded = !!st[key];
+  const LIMIT = 12;
+  const shown = expanded ? list : list.slice(0, LIMIT);
+  const body = tileView ? `<div class="common-grid">${shown.map(friendTile).join('')}</div>`
+                        : `<div class="friend-watched">${friendRows(shown)}</div>`;
+  return `<div class="fp-sec">
+    <div class="fp-head"><span>${title}<b class="fp-count">${list.length}</b></span></div>
+    ${hint ? `<div class="fp-hint">${hint}</div>` : ''}
+    ${body}
+    ${list.length > LIMIT ? `<button class="fp-more" data-more="${key}">${expanded ? 'Свернуть' : 'Показать все ' + list.length}</button>` : ''}
+  </div>`;
 }
 async function openFriendProfile(id){
   document.getElementById('friendProfileScreen').classList.add('open');
   const body = document.getElementById('friendProfileBody');
   body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Собираю статистику…</div>`;
-  const [profile, lists, mine, myRatings, theirRatings] = await Promise.all([
-    getProfile(id), getFriendLists(id), getFriendLists(TG_ID), myRatingMap(), theirRatingMap(id),
+  const [profile, lists, mine, myRatings] = await Promise.all([
+    getProfile(id), getFriendLists(id), getFriendLists(TG_ID), myRatingMap(),
   ]);
+  const theirRatings = lists.reviews;
+  // Если свои списки почему-то не прочитались из базы (нет сети или прав) —
+  // считаем мэтч по локальному состоянию, чтобы процент не обнулялся.
+  const myWatchedKeys = mine.watched.length ? mine.watched : state.watched.slice();
+  const match = computeMatch(myWatchedKeys, lists.watched, myRatings, theirRatings);
   const name = friendDisplayName(profile);
   const watchedTheir = lists.watched.map(keyToMovie).filter(Boolean);
-  const watchedMine = mine.watched;
-  const match = computeMatch(watchedMine, lists.watched, myRatings, theirRatings);
-  // Топ-жанры друга считаем по его просмотренному
+  const wishTheir = lists.wishlist.map(keyToMovie).filter(Boolean);
+  const watchingTheir = lists.watching.map(keyToMovie).filter(Boolean);
+  // Общее в «Хочу чекнуть» — то, что оба отложили посмотреть
+  const myWish = new Set(state.wishlist);
+  const wishCommon = lists.wishlist.filter(k => myWish.has(k)).map(keyToMovie).filter(Boolean);
+  // Любимые жанры друга — по его просмотренному
   const genreMap = new Map();
   watchedTheir.forEach(m => (m.genres||[]).forEach(g => genreMap.set(g, (genreMap.get(g)||0)+1)));
-  const topGenres = [...genreMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const topGenres = [...genreMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const genreTotal = watchedTheir.length || 1;
   const avg = theirRatings.size
     ? Math.round([...theirRatings.values()].reduce((a,b)=>a+b,0) / theirRatings.size)
     : null;
+  // Раскрытые секции: нажатие «Показать все» перерисовывает профиль целиком
+  const expandedState = openFriendProfile._expanded && openFriendProfile._id === id ? openFriendProfile._expanded : {};
+  openFriendProfile._id = id;
+  openFriendProfile._expanded = expandedState;
+
+  const statTiles = [
+    { num: lists.watched.length, lbl: 'смотрел' },
+    { num: wishTheir.length, lbl: 'хочет' },
+    { num: watchingTheir.length, lbl: 'смотрит' },
+    { num: theirRatings.size, lbl: 'оценок' },
+    { num: avg === null ? '—' : avg, lbl: 'средний балл' },
+  ];
 
   body.innerHTML = `
-    <div style="text-align:center; padding-top:10px;">
-      ${avatarBlockHTML(name, profile?.photo_url, 84)}
-      <div style="font-size:18px; font-weight:700;">${esc(name)}</div>
-      ${profile?.username ? `<div class="set-sub">@${esc(profile.username)}</div>` : ''}
+    <div class="fp-hero">
+      ${avatarBlockHTML(name, profile?.photo_url, 76)}
+      <div class="fp-hero-text">
+        <div class="fp-name">${esc(name)}</div>
+        <div class="fp-sub">${profile?.username ? '@' + esc(profile.username) : 'зритель SMOTRA'}</div>
+      </div>
     </div>
 
     <div class="match-card">
-      <div class="match-ring" style="--p:${match.score}">
-        <div class="match-num">${match.score}<small>%</small></div>
-      </div>
+      <div class="match-ring" style="--p:${match.score}"><div class="match-num">${match.score}<small>%</small></div></div>
       <div class="match-text">
         <div class="match-title">Ваш мэтч в кино</div>
-        <div class="match-sub">${match.compared ? `Совпало по оценкам: ${match.taste}% · общих тайтлов: ${match.common.length}` : `Общих тайтлов: ${match.common.length}`}</div>
+        <div class="match-sub">${match.compared
+          ? `оценки совпали в ${match.taste}% случаев · совпало тайтлов: ${match.common.length}`
+          : `совпало тайтлов: ${match.common.length} · оцените общие фильмы, чтобы уточнить мэтч`}</div>
       </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-num">${lists.watched.length}</div><div class="stat-label">смотрел</div></div>
-      <div class="stat-card"><div class="stat-num">${lists.wishlist.length}</div><div class="stat-label">хочет</div></div>
-      <div class="stat-card"><div class="stat-num">${avg === null ? '—' : avg}</div><div class="stat-label">средний балл</div></div>
+    <div class="fp-tiles">
+      ${statTiles.map(t => `<div class="fp-tile"><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
     </div>
 
-    <div class="friend-bars">
+    <div class="fp-bars">
       <div class="fb-row"><span>Совпадение списков</span><b>${match.overlap}%</b></div>
       <div class="fb-bar"><i style="width:${match.overlap}%"></i></div>
       <div class="fb-row"><span>Похожесть вкусов</span><b>${match.genreMatch}%</b></div>
@@ -1628,29 +1750,47 @@ async function openFriendProfile(id){
       <div class="fb-bar"><i style="width:${match.taste}%"></i></div>`}
     </div>
 
-    ${topGenres.length ? `<div class="set-title" style="margin-top:18px;">Любимые жанры</div>
-      <div class="genre-tags">${topGenres.map(([g,n])=>`<span class="genre-tag">${esc(g)} · ${n}</span>`).join('')}</div>` : ''}
+    ${topGenres.length ? `<div class="fp-sec">
+      <div class="fp-head"><span>Любимые жанры</span></div>
+      ${topGenres.map(([g,n]) => `<div class="ms-genre"><div class="msg-top"><span>${esc(g)}</span><b>${Math.round(n/genreTotal*100)}%</b></div>
+        <div class="msg-bar"><i style="width:${Math.round(n/genreTotal*100)}%"></i></div></div>`).join('')}
+    </div>` : ''}
 
-    ${match.common.length ? `<div class="set-title" style="margin-top:18px;">Смотрели оба (${match.common.length})</div>
-      <div class="common-grid">${match.common.slice(0,12).map(m => `
-        <div class="common-item" data-movie="${m.id}" data-type="${m.type}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}">
-          <span>${esc(m.title)}</span>
-        </div>`).join('')}</div>` : ''}
+    ${friendSection('wishCommon', 'Общее в «Хочу чекнуть»', 'Эти тайтлы вы оба отложили посмотреть', wishCommon, expandedState, true)}
 
-    ${watchedTheir.length ? `<div class="set-title" style="margin-top:18px;">Что смотрел (${watchedTheir.length})</div>
-      <div class="friend-watched">${watchedTheir.slice(0,30).map(m => `
-        <div class="fw-row" data-movie="${m.id}">
-          <div class="fw-poster" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}"></div>
-          <div class="fw-mid"><div class="fw-title">${esc(m.title)}</div><div class="fw-sub">${esc(m.year)} · ${esc(m.genres && m.genres[0] || TYPE_LABEL[m.type] || 'Тайтл')}</div></div>
-        </div>`).join('')}</div>`
+    ${wishTheir.length ? `<div class="fp-sec">
+      <div class="fp-head"><span>Хочет посмотреть<b class="fp-count">${wishTheir.length}</b></span></div>
+      <div class="fp-hint">Нажми рулетку — выберет случайный тайтл из его списка</div>
+      <button class="fp-roulette" id="fpRoulette"><span class="rl-ico">🎲</span> Рандомайзер по его списку</button>
+      <div class="${expandedState.wish ? 'friend-watched' : 'friend-watched'}">${friendRows(expandedState.wish ? wishTheir : wishTheir.slice(0, 12))}</div>
+      ${wishTheir.length > 12 ? `<button class="fp-more" data-more="wish">${expandedState.wish ? 'Свернуть' : 'Показать все ' + wishTheir.length}</button>` : ''}
+    </div>` : ''}
+
+    ${friendSection('common', 'Смотрели оба', 'Полный список совпадений по просмотренному', match.common, expandedState, true)}
+
+    ${watchingTheir.length ? friendSection('watching', 'Смотрит сейчас', '', watchingTheir, expandedState, true) : ''}
+
+    ${watchedTheir.length ? friendSection('watched', 'Что смотрел', '', watchedTheir, expandedState, false)
       : `<div class="empty-note" style="padding:20px 4px;">Пока не видно, что ${esc(name)} смотрел: список появится, когда он свайпнет карточки</div>`}
   `;
+
+  // Клики: раскрытие секций, тайтлы → карточка фильма, рулетка по списку друга
+  [...body.querySelectorAll('[data-more]')].forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.more;
+      expandedState[key] = !expandedState[key];
+      haptic('selection');
+      openFriendProfile(id);
+    };
+  });
   [...body.querySelectorAll('[data-movie]')].forEach(el => {
     el.onclick = () => {
       const movie = movieById(+el.dataset.movie, el.dataset.type);
       if (movie) openSheet(movie);
     };
   });
+  const rouletteBtn = document.getElementById('fpRoulette');
+  if (rouletteBtn) rouletteBtn.onclick = () => { haptic('impact','medium'); Roulette.open(wishTheir, 'Что посмотреть · ' + name); };
 }
 document.getElementById('closeFriendProfile').onclick = () => document.getElementById('friendProfileScreen').classList.remove('open');
 
@@ -1721,10 +1861,8 @@ async function loadState(){
 /* ============ SPLASH ============ */
 const word = 'SMOTRA';
 /* Заголовок заставки: настоящий текст, по буквам — своя задержка въезда
-   и свой сдвиг блика, поэтому надпись «оживает» слева направо.
-   Рядом собираем точную копию для отражения — она перевёрнута и растворяется. */
+   и свой сдвиг блика, поэтому надпись «оживает» слева направо. */
 const sTitle = document.getElementById('sTitle');
-const sRefl = document.getElementById('sRefl');
 [...'SMOTRA'].forEach((ch, i) => {
   const delay = (0.15 + i * 0.11).toFixed(3);
   const sp = document.createElement('span');
@@ -1732,17 +1870,17 @@ const sRefl = document.getElementById('sRefl');
   if (ch === 'O') sp.classList.add('o');
   sp.style.animationDelay = `${delay}s, ${(2.1 + i * 0.16).toFixed(2)}s`;
   sTitle.appendChild(sp);
-  const rf = document.createElement('span');
-  rf.textContent = ch;
-  if (ch === 'O') rf.classList.add('o');
-  sRefl.appendChild(rf);
 });
-/* Сцена заставки длиннее: буквы въезжают до ~1.2с, отражение — к 1.9с,
-   слоган — к 2.2с, подпись автора — к 3.1с. Держим заставку 4.8с, чтобы всё
-   это успели увидеть (параметр ?splash оставляет её на экране для проверки). */
+/* Сцена заставки длинная: буквы въезжают до ~1.2с, слоган — к 2.2с,
+   подпись автора — к 3.1с. Держим заставку 4.8с, чтобы всё это успели
+   увидеть (параметр ?splash оставляет её на экране для проверки). */
 const SPLASH_PREVIEW = /[?&]splash/.test(location.search);   // ?splash — оставить заставку для проверки
 if (!SPLASH_PREVIEW) setTimeout(()=>{
-  document.getElementById('splash').classList.add('hide');
+  const splashEl = document.getElementById('splash');
+  splashEl.classList.add('hide');
+  // Совсем выключаем слой: пока он в дереве, его анимации продолжают считаться
+  // (а на слабом телефоне это лишние кадры на каждом экране).
+  setTimeout(() => { splashEl.style.display = 'none'; }, 600);
   if (!localStorage.getItem('smotra_onboarded')) {
     document.getElementById('onboarding').classList.add('show');
   } else {
@@ -2077,6 +2215,23 @@ function tutApplyScale(demo, k){
 }
 
 let tutStep = 0;
+/* Шрифты грузятся асинхронно: после их подстановки подписи становятся выше и
+   кнопка могла уехать вниз. Поэтому пересобираем раскладку, когда шрифты готовы. */
+if (document.fonts && document.fonts.ready && !window.__tutFontsHooked){
+  window.__tutFontsHooked = true;
+  document.fonts.ready.then(() => {
+    const t = document.getElementById('tutorial');
+    if (t && t.classList.contains('show')) fitTutorial();
+  }).catch(() => {});
+}
+let tutResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(tutResizeTimer);
+  tutResizeTimer = setTimeout(() => {
+    const t = document.getElementById('tutorial');
+    if (t && t.classList.contains('show')) fitTutorial();
+  }, 120);
+});
 function renderTutStep(){
   tutClearTimers();
   const steps = TUTORIAL_STEPS;
@@ -2730,16 +2885,23 @@ const Roulette = (function(){
   const resultEl = document.getElementById('rlResult');
   const TILE = 86, GAP = 10;
   let spinning = false, winner = null, spinTimer = null;
+  let customPool = null;          // список для прокрутки: по умолчанию — свой «Хочу чекнуть»
 
   function pool(){
+    if (customPool) return customPool.slice();
     return state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
   }
   function close(){
     overlay.classList.remove('show');
     spinning = false;
+    customPool = null;
     clearTimeout(spinTimer);
   }
-  function open(){
+  /* list — необязательный массив тайтлов (например, список друга), title — заголовок окна */
+  function open(list, title){
+    customPool = (Array.isArray(list) && list.length) ? list.slice() : null;
+    const head = overlay.querySelector('.rl-card h3');
+    if (head) head.textContent = title || 'Что посмотреть?';
     const items = pool();
     if (!items.length){ showToast('Сначала добавь тайтлы в «Хочу чекнуть»', 'star'); return; }
     overlay.classList.add('show');
@@ -3102,20 +3264,17 @@ function makeDraggable(card, movie){
       Radial.open(movie, startX, startY, thumbStyle);
     }, 360);
   });
-  card.addEventListener('pointermove', e=>{
-    if (radialOn){ Radial.update(e.clientX, e.clientY); return; }
+  /* Позицию карточки пересчитываем не на каждое событие пальца, а раз в кадр:
+     на слабых телефонах лишние перерисовки съедали всю плавность. */
+  let dragFrame = 0;
+  function applyDrag(){
+    dragFrame = 0;
     if (!dragging) return;
-    // Палец «держится» почти на месте — ждём радиальное меню и НЕ двигаем карточку.
-    if (holdTimer && Math.abs(e.clientX-startX) <= 12 && Math.abs(e.clientY-startY) <= 12) return;
-    if (holdTimer) clearHold();
-    dx = e.clientX - startX; dy = e.clientY - startY;
     const dist = Math.max(Math.abs(dx), Math.abs(dy));
     if (dist > 3){
-      if (!moved) card.classList.add('card-dragging');
-      moved = true;
+      if (!moved){ card.classList.add('card-dragging'); moved = true; }
     }
-    const rot = dx/18;
-    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx/18}deg)`;
     const vertical = Math.abs(dy) > Math.abs(dx);
     // Плавность: и затемнение, и штамп растут вместе с ходом пальца, а не включаются рывком
     const t = Math.min(Math.max((dist - 8) / 108, 0), 1);
@@ -3124,9 +3283,20 @@ function makeDraggable(card, movie){
     sS.style.opacity = (!vertical && dx < 0) ? t : 0;
     wiS.style.opacity = (vertical && dy < 0) ? t : 0;
     wchS.style.opacity = (vertical && dy > 0) ? t : 0;
+  }
+  card.addEventListener('pointermove', e=>{
+    if (radialOn){ Radial.update(e.clientX, e.clientY); return; }
+    if (!dragging) return;
+    // Палец «держится» почти на месте — ждём радиальное меню и НЕ двигаем карточку.
+    if (holdTimer && Math.abs(e.clientX-startX) <= 12 && Math.abs(e.clientY-startY) <= 12) return;
+    if (holdTimer) clearHold();
+    dx = e.clientX - startX;
+    dy = e.clientY - startY;
+    if (!dragFrame) dragFrame = requestAnimationFrame(applyDrag);
   });
   function release(){
     clearHold();
+    if (dragFrame){ cancelAnimationFrame(dragFrame); dragFrame = 0; applyDrag(); }
     if (radialOn){ Radial.close(true); radialOn = false; dx = 0; dy = 0; card.classList.remove('card-dragging'); if (veil) veil.style.opacity = 0; return; }
     if (!dragging) return;
     dragging = false; card.classList.remove('swiping', 'card-dragging');
@@ -3467,26 +3637,46 @@ function refreshVisibleScreens(){
    за один свайп updateStats() вызывается несколько раз, и каталог (до 60 карточек)
    перерисовывался столько же раз. */
 let statsFramePending = false;
-/* Статистика в моём профиле: средний балл, темп, любимые жанры */
+/* Статистика в моём профиле: герой-число, плитки и полосы любимых жанров.
+   Считается на лету из состояния — ничего не грузим из сети. */
 function renderMyStats(){
   const el = document.getElementById('myStats');
   if (!el) return;
   const watched = state.watched.map(keyToMovie).filter(Boolean);
   const genreMap = new Map();
   watched.forEach(m => (m.genres||[]).forEach(g => genreMap.set(g, (genreMap.get(g)||0)+1)));
+  const genreTotal = watched.length || 1;
   const topGenres = [...genreMap.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const days = (() => { try{ const d = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]'); return d.length; }catch(e){ return 0; } })();
+  let days = 0;
+  try{ days = JSON.parse(localStorage.getItem(STREAK_KEY) || '[]').length; }catch(e){}
+  const tiles = [
+    { icon: 'clapper', num: state.reviews || 0, lbl: 'оценок' },
+    { icon: 'cross', num: state.skipped.length, lbl: 'мимо' },
+    { icon: 'play', num: state.watching.length, lbl: 'смотрю' },
+    { icon: 'check', num: state.unlocked.length, lbl: 'ачивок' },
+  ];
   el.innerHTML = `
-    <div class="ms-title">Твоя статистика</div>
-    <div class="ms-grid">
-      <div class="ms-cell"><div class="ms-num">${state.watched.length}</div><div class="ms-lbl">смотрел</div></div>
-      <div class="ms-cell"><div class="ms-num">${state.wishlist.length}</div><div class="ms-lbl">хочет</div></div>
-      <div class="ms-cell"><div class="ms-num">${state.reviews || 0}</div><div class="ms-lbl">оценок</div></div>
-      <div class="ms-cell"><div class="ms-num">${state.skipped.length}</div><div class="ms-lbl">мимо</div></div>
-      <div class="ms-cell"><div class="ms-num">${state.unlocked.length}</div><div class="ms-lbl">ачивок</div></div>
-      <div class="ms-cell"><div class="ms-num">${days}</div><div class="ms-lbl">дней в приложении</div></div>
+    <div class="ms-hero">
+      <div class="ms-hero-main"><b>${state.watched.length}</b><span>просмотрено тобой</span></div>
+      <div class="ms-hero-side">
+        <div><b>${state.wishlist.length}</b><span>в «Хочу чекнуть»</span></div>
+        <div><b>${currentStreak}</b><span>дней подряд</span></div>
+      </div>
     </div>
-    ${topGenres.length ? `<div class="ms-genres">${topGenres.map(([g,n])=>`<span class="genre-tag">${esc(g)} · ${n}</span>`).join('')}</div>` : ''}`;
+    <div class="ms-tiles">
+      ${tiles.map(t => `<div class="ms-tile"><div class="ms-ico">${ICON(t.icon, 15)}</div><b>${t.num}</b><span>${t.lbl}</span></div>`).join('')}
+    </div>
+    ${topGenres.length ? `<div class="ms-subtitle">Любимые жанры</div>
+      ${topGenres.map(([g,n]) => { const pct = Math.round(n/genreTotal*100); return `
+        <div class="ms-genre"><div class="msg-top"><span>${esc(g)}</span><b>${pct}%</b></div>
+          <div class="msg-bar"><i style="width:${pct}%"></i></div></div>`; }).join('')}` : ''}
+    <div class="ms-foot">В приложении ${days} ${daysWord(days)} · стрик ${currentStreak}</div>`;
+}
+/* «1 день / 2 дня / 5 дней» — чтобы подпись не выглядела машинной */
+function daysWord(n){
+  const t = n % 100;
+  if (t >= 11 && t <= 14) return 'дней';
+  switch (n % 10){ case 1: return 'день'; case 2: case 3: case 4: return 'дня'; default: return 'дней'; }
 }
 function updateStats(){
   document.getElementById('statWatched').textContent = state.watched.length;
@@ -4087,27 +4277,58 @@ function updateReviewTotal(){
   document.getElementById('reviewTotalBadge').textContent = `${total}/${SCORE_MAX}`;
   const val = document.getElementById('reviewTotalValue');
   if (val) val.innerHTML = `${total}<b>/${SCORE_MAX}</b>`;
+  const bar = document.getElementById('reviewTotalBar');
+  if (bar) bar.style.width = Math.round(total / SCORE_MAX * 100) + '%';
+  const verdict = document.getElementById('reviewVerdict');
+  if (verdict) verdict.textContent = scoreVerdict(total);
   const row = document.getElementById('reviewTotalRow');
   if (row){ row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse'); }
+}
+/* Словесный вердикт к сумме смотриметров — по той же шкале 68 баллов */
+function scoreVerdict(total){
+  const p = total / SCORE_MAX;
+  if (p >= 0.88) return 'Шедевр';
+  if (p >= 0.74) return 'Очень круто';
+  if (p >= 0.58) return 'Хорошее кино';
+  if (p >= 0.42) return 'Средне';
+  if (p >= 0.26) return 'Слабо';
+  return 'Мимо';
 }
 /* Заливка шкалы до бегунка — чтобы ползунок «читался» как объёмный */
 function paintSlider(input, max){
   const v = (+input.value || 0) / max * 100;
   input.style.setProperty('--pct', v + '%');
 }
+function paintDots(row, value, max){
+  const dots = row.querySelector('.cat-dots');
+  if (!dots) return;
+  [...dots.children].forEach((dot, i) => {
+    dot.classList.toggle('on', i < value);
+    dot.classList.toggle('top', i === value - 1);
+  });
+}
 function renderSliders(containerId, cats, store, max){
   const el = document.getElementById(containerId);
   el.innerHTML = cats.map(c => `
     <div class="cat-row" data-key="${c.key}">
-      <div class="cat-top"><span>${c.label}</span><span class="cat-val" id="val-${c.key}">${store[c.key]}</span></div>
-      <input type="range" class="cat-slider" min="1" max="${max}" value="${store[c.key]}" data-key="${c.key}">
+      <div class="cat-card">
+        <div class="cat-top">
+          <span class="cat-name">${c.label}</span>
+          <span class="cat-val" id="val-${c.key}">${store[c.key]}<small>/${max}</small></span>
+        </div>
+        <div class="cat-dots">${Array.from({ length: max }, () => '<i></i>').join('')}</div>
+        <input type="range" class="cat-slider" min="1" max="${max}" value="${store[c.key]}" data-key="${c.key}">
+      </div>
     </div>`).join('');
   el.querySelectorAll('.cat-slider').forEach(input => {
+    const row = input.closest('.cat-row');
     paintSlider(input, max);
+    paintDots(row, +input.value, max);
     input.addEventListener('input', () => {
       store[input.dataset.key] = +input.value;
-      document.getElementById('val-'+input.dataset.key).textContent = input.value;
+      document.getElementById('val-'+input.dataset.key).innerHTML = `${input.value}<small>/${max}</small>`;
       paintSlider(input, max);
+      paintDots(row, +input.value, max);
       updateReviewTotal();
     });
     input.addEventListener('change', () => haptic('selection'));
@@ -4419,7 +4640,7 @@ switchTab = function(id){
 };
 
 (function initGestures(){
-  let sx = 0, sy = 0, tracking = false, fromNav = false;
+  let sx = 0, sy = 0, tracking = false, fromNav = false, lastDx = 0;
   const isOverlayOpen = () => !!document.querySelector('.overlay-screen.open, .sheet.open, #tutorial.show, .roulette.show, #onboarding.show, #splash:not(.hide), #radialMenu.show');
   const blocked = (el) => !!(el && el.closest('.card, .chips, input, textarea, .rl-card, .tut-demo, [data-no-swipe]'));
   document.addEventListener('touchstart', (e) => {
@@ -4434,23 +4655,16 @@ switchTab = function(id){
     if (!tracking || !fromNav) return;
     const t = e.touches[0];
     if (!t) return;
-    const dx = t.clientX - sx, dy = t.clientY - sy;
-    if (Math.abs(dy) > Math.abs(dx) + 10){ return; }
-    const nav = document.querySelector('nav');
-    nav.style.transform = `translateX(${dx * 0.32}px)`;
-    const i = TAB_ORDER.indexOf((document.querySelector('nav button.active') || {}).dataset?.tab || 'home');
-    const ni = Math.min(TAB_ORDER.length - 1, Math.max(0, i + (dx < 0 ? 1 : -1)));
-    document.querySelectorAll('nav button').forEach(b => b.classList.toggle('peek', b.dataset.tab === TAB_ORDER[ni] && b.dataset.tab !== TAB_ORDER[i]));
+    // Панель вкладок не двигаем: раньше она уезжала за пальцем и это выглядело
+    // как «таб туда-сюда свайпается». Свайп по панели просто переключает раздел.
+    lastDx = t.clientX - sx;
   }, { passive: true });
   document.addEventListener('touchend', (e) => {
     if (!tracking) return;
     tracking = false;
-    const nav = document.querySelector('nav');
     const t = e.changedTouches[0];
-    const dx = t ? t.clientX - sx : 0;
+    const dx = t ? t.clientX - sx : lastDx;
     const dy = t ? t.clientY - sy : 0;
-    nav.style.transform = '';
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('peek'));
     const wasNav = fromNav;
     fromNav = false;
     if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 45) return;
