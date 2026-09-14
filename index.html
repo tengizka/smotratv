@@ -208,6 +208,11 @@
   .ach-chip{ width:38px; height:38px; border-radius:12px; margin-left:auto; display:flex; align-items:center; justify-content:center;
     background:var(--surface); border:1px solid var(--border); color:var(--accent); flex:0 0 auto; }
   .ach-chip svg{ width:20px; height:20px; }
+  .badge-progress{ margin-top:14px; font-size:12.5px; color:var(--text-dim); display:none; }
+  .badge-progress.show{ display:block; }
+  .badge-progress b{ color:var(--text); font-weight:700; }
+  .badge-progress .bp-bar{ height:6px; border-radius:6px; background:var(--surface-2); overflow:hidden; margin-top:8px; }
+  .badge-progress .bp-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
   .badge-where{ display:none; margin-top:16px; width:100%; padding:12px; border-radius:14px;
     border:1px solid var(--accent-border); background:var(--accent-soft); color:var(--accent); font-weight:700; font-size:13px; }
   .badge-where.show{ display:block; }
@@ -1470,6 +1475,7 @@
     <div id="badgeDetailIcon" style="width:64px; height:64px; border-radius:20px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; color:var(--accent);"></div>
     <div id="badgeDetailName" style="font-size:18px; font-weight:700;"></div>
     <div id="badgeDetailDesc" style="font-size:13.5px; color:var(--text-dim); line-height:1.5; margin-top:6px;"></div>
+    <div id="badgeProgress" class="badge-progress"></div>
     <div id="badgeDetailDate" style="font-size:12px; color:var(--text-dim); margin-top:16px;"></div>
     <button id="badgeWhere" class="badge-where"></button>
   </div>
@@ -4427,6 +4433,16 @@ function openBadgeDetail(badgeId){
   document.getElementById('badgeDetailIcon').classList.toggle('locked', !unlocked);
   document.getElementById('badgeDetailName').textContent = b.name;
   document.getElementById('badgeDetailDesc').textContent = b.desc;
+  /* Сколько уже сделано: без этого ачивка говорит «что», но не «сколько осталось». */
+  const prEl = document.getElementById('badgeProgress');
+  if (prEl){
+    const cur = badgeCounters()[b.kind || 'watched'] || 0;
+    const pct = Math.max(0, Math.min(100, Math.round(cur / b.min * 100)));
+    prEl.classList.add('show');
+    prEl.innerHTML = unlocked
+      ? `Готово · <b>${b.min}</b> из ${b.min}`
+      : `<b>${cur}</b> из ${b.min} · ${cur >= b.min ? 'готово' : 'осталось ' + (b.min - cur)}<div class="bp-bar"><i style="width:${pct}%"></i></div>`;
+  }
   const dateEl = document.getElementById('badgeDetailDate');
   if (unlocked){
     const d = state.badgeDates[b.id];
