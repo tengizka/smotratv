@@ -459,7 +459,7 @@ const onWinErr = (e) => clickErrors.push(String((e && e.error && e.error.message
 win.addEventListener('error', onWinErr);
 const SMOKE = ['openSettings','closeSettings','setThemeRow','closeThemes','openFaq','closeFaq','openXpRules',
   'openRoulette','rlClose','openHistory','closeHistory','openWatchingRow','openAchievements','closeAchievements',
-  'openFilters','filterBackdrop','catShowMoreBtn','openWishFilters'];
+  'openFilters','filterBackdrop','catShowMoreBtn','openWishFilters','closeFilters','filtersApply'];
 const missing = SMOKE.filter(id => !doc.getElementById(id));
 for (const id of SMOKE){
   const el = doc.getElementById(id);
@@ -1057,7 +1057,6 @@ const devD = await bootDevice(seedDb, { platform: 'android', storage: { smotra_t
 await sleep(200);
 /* меняем настройки на телефоне как обычный человек */
 devA.ev('pickTheme("amber"); pickTheme("rose")');   // тот же путь, что по тапу по карточке темы
-devA.doc.getElementById('switchAdult').click();
 devA.doc.querySelector('.view-toggle[data-section="catalog"] button[data-v="list"]').click();
 devA.doc.querySelector('#wishSort .chip[data-s="rating"]').click();
 devA.ev('catFilters.genres = ["Драма"]; saveCatFilters();');
@@ -1065,7 +1064,7 @@ devA.ev('closeTutorial()');
 await sleep(220);
 ok(syncDb.cfgValue('theme') === 'rose', 'тема доехала до базы: ' + syncDb.cfgValue('theme'));
 ok(syncDb.cfgRows().filter(r => String(r.badge_id).startsWith('cfg.theme=')).length === 1, 'на ключ остаётся одна строка, а не история переключений');
-ok(syncDb.cfgValue('adult') === false, '18+ синхронизирован: ' + syncDb.cfgValue('adult'));
+ok(syncDb.cfgValue('adult') === undefined, 'взрослого режима в настройках нет — и в базу он не уезжает');
 ok(syncDb.cfgValue('views') && syncDb.cfgValue('views').catalog === 'list', 'вид раздела синхронизирован');
 ok(syncDb.cfgValue('wishSort') === 'rating', 'сортировка «Хочу чекнуть» синхронизирована');
 ok(syncDb.cfgValue('catFilters') && syncDb.cfgValue('catFilters').genres[0] === 'Драма', 'фильтры каталога синхронизированы');
@@ -1073,13 +1072,12 @@ ok(syncDb.cfgValue('tutorial') === true, 'пройденное обучение 
 /* второе устройство: тот же аккаунт, чистая память */
 const devB = await bootDevice(syncDb, { platform: 'tdesktop' });
 const cfgKeys = [...new Set(syncDb.cfgRows().map(r => String(r.badge_id).split('=')[0]))];
-ok(['cfg.theme','cfg.adult','cfg.views','cfg.catFilters','cfg.wishSort','cfg.since'].every(k => cfgKeys.indexOf(k) > -1),
+ok(['cfg.theme','cfg.views','cfg.catFilters','cfg.wishSort','cfg.since'].every(k => cfgKeys.indexOf(k) > -1),
   'выбранные настройки уезжают в базу (' + cfgKeys.length + ' ключей)');
 ok(devB.errors.length === 0, 'десктоп запускается без ошибок' + (devB.errors.length ? ': ' + devB.errors[0] : ''));
 ok(devB.ev('themeId()') === 'rose', 'тема с телефона приехала на десктоп: ' + devB.ev('themeId()'));
 ok(devB.ev('localStorage.getItem("smotra_theme")') === 'rose', 'и записалась в память устройства');
-ok(devB.ev('getFlag("smotra_adult", true)') === false, '18+ приехал на десктоп');
-ok(devB.ev('document.getElementById("switchAdult").classList.contains("on")') === false, 'и тумблер в настройках показывает то же');
+ok(devB.ev('!!document.getElementById("switchAdult")') === false, 'тумблера «Показывать 18+» в настройках больше нет');
 ok(devB.ev('wishSort') === 'rating', 'сортировка чек-листа приехала');
 ok(devB.ev('localStorage.getItem("smotra_view_catalog")') === 'list', 'вид каталога приехал');
 ok(devB.ev('catFilters.genres.length') === 1 && devB.ev('catFilters.genres[0]') === 'Драма', 'фильтры каталога приехали');
@@ -1095,7 +1093,7 @@ await sleep(140);
 ok(devB.ev('cfgPending.has("theme")') === true, 'неотправленная настройка помечена как «своя»');
 syncDb.offline = false;
 const writesBefore = syncDb.writes;
-devB.ev('applyRemoteSettings({ theme: "rose", adult: true })');
+devB.ev('applyRemoteSettings({ theme: "rose", adult: true })');   // строка из старой версии не должна ничего включать
 await sleep(80);
 ok(devB.ev('themeId()') === 'emerald', 'чужая настройка не перебивает неотправленную свою');
 ok(syncDb.writes === writesBefore, 'применение чужих настроек не пишет их обратно в базу');
@@ -1106,7 +1104,7 @@ ok(devD.ev('themeId()') === 'emerald', 'устройство с выбранно
 ok(devD.ev('getView("catalog", "grid")') === 'list', 'и выбранный вид каталога');
 ok(seedDb.cfgValue('theme') === 'emerald' && seedDb.cfgValue('views') && seedDb.cfgValue('views').catalog === 'list',
   'выбранные настройки уезжают в базу при первом входе');
-ok(seedDb.cfgValue('adult') === undefined && seedDb.cfgValue('tutorial') === undefined && seedDb.cfgValue('wishSort') === undefined,
+ok(seedDb.cfgValue('tutorial') === undefined && seedDb.cfgValue('wishSort') === undefined,
   'а нетронутые настройки — нет');
 devD.close();
 devA.close();
@@ -1153,14 +1151,16 @@ ok(/function pruneUnlockedBadges\(\)\{/.test(js) && /function knownBadgeIds\(\)\
 ok(/smotra_wish_sort/.test(js), 'сортировка «Хочу чекнуть» запоминается на устройстве');
 ok(/localStorage\.setItem\('smotra_view_' \+ section, val\)/.test(js) === false || /function setView/.test(js), 'вид разделов по-прежнему в памяти устройства');
 ok(/const local = localStorage\.getItem\('smotra_since'\);[\s\S]{0,160}?earlier/.test(js), 'дата «в SMOTRA с» берётся самой ранней');
-ok(/syncSetting\('tutorial', true\)/.test(js) && /syncSetting\('adult', val\)/.test(js) && /syncSetting\('catFilters', catFilters\)/.test(js), 'тема, 18+, обучение и фильтры уезжают на другое устройство');
+ok(/syncSetting\('tutorial', true\)/.test(js) && /syncSetting\('catFilters', catFilters\)/.test(js), 'обучение и фильтры уезжают на другое устройство');
 ok(/try\{ pickTheme\(t\); \}catch\(e\)\{ try\{ applyTheme\(t\); \}catch\(e2\)\{\} \}/.test(js), 'тема из базы и применяется, и сохраняется на устройстве');
 ok(/function applyRemoteSettings\(remote\)\{\s*if \(!remote \|\| applyingRemote\) return;/.test(js), 'применение чужих настроек не зацикливается');
 ok(!/window\.__/.test(js), 'отладочных проб в коде не осталось');
 
 /* ================== [20] Пустые обложки и «где смотреть» ================== */
 section('[20] Пустые обложки догружаются, фильм можно смотреть');
-ok(/function movieFromTmdb\(data, kind\)\{/.test(js) && /rememberMovie\(movieFromTmdb\(data, kind\)\);/.test(js),
+ok(/function movieFromTmdb\(data, kind\)\{/.test(js)
+  && /const fresh = data \? movieFromTmdb\(data, kind\) : null;/.test(js)
+  && /const fresh = movieFromTmdb\(data, kind\);/.test(js),
   'разбор ответа TMDB живёт в одном месте, а не копией в каждой догрузке');
 ok(/function movieNeedsDetails\(m\)\{/.test(js) && /function ensureMovieDetails\(movie\)\{/.test(js) &&
    /const DETAILS_IN_FLIGHT = new Map\(\);/.test(js), 'карточка тайтла догружается один раз, без дублей');
@@ -1401,6 +1401,79 @@ ok(/keys\.add\('wishFilters'\)/.test(js), 'условия чек-листа по
 ok(/let wf = take\('wishFilters'\)/.test(js), 'и приезжают на другое устройство');
 ok(/id="openWishFilters"/.test(src) && /id="wishFilterBadge"/.test(src), 'кнопка фильтров и счётчик есть в разметке');
 devX.close();
+
+/* ================= [22] Ни порно, ни хентая ================= */
+section('[22] Ни порно, ни хентая');
+/* статика: взрослое не запрашиваем, не описываем и не запоминаем (проверки без
+   регулярных выражений — так отчёт читается, а экранирование не мешает) */
+ok(js.indexOf('include_adult=${') === -1 && js.indexOf('include_adult=true') === -1,
+  'запросы к TMDB больше не просят взрослое ни при каких настройках');
+ok((js.match(/include_adult=false/g) || []).length >= 4, 'и все четыре подборки просят только обычное');
+ok(src.indexOf('switchAdult') === -1 && src.indexOf('<div class="set-label">Показывать 18+</div>') === -1,
+  'тумблера «Показывать 18+» в настройках нет');
+ok(js.indexOf("getFlag('smotra_adult'") === -1 && js.indexOf("syncSetting('adult'") === -1,
+  'взрослый режим убран и из настроек, и из синхронизации');
+ok(js.indexOf('const ADULT_TITLE_RE = /(^|[^a-zа-яё])(hentai|porn|хентай|порн)/i;') > -1,
+  'есть строгая проверка названия: hentai / porn / хентай / порн');
+ok(js.indexOf('if (item.adult === true) return true;') > -1, 'флаг adult из TMDB отбрасывает карточку сразу');
+ok(js.indexOf('filter(item => !isAdultItem(item))') > -1, 'подборка фильтруется на входе');
+ok(js.indexOf('if (isAdultItem(data)) return null;') > -1, 'подробности по id тоже проверяются');
+ok(js.indexOf('if (!m || !m.id || isAdultItem(m)) return;') > -1, 'в память телефона взрослое не запоминается');
+ok(js.indexOf('smotra_tmdb_cache_v5_safe') > -1, 'ключ кэша подборки сменился — старый кэш со взрослым больше не читается');
+ok(js.indexOf('if (!isAdultItem(stored[k])) movieStubs[k] = stored[k];') > -1,
+  'копии тайтлов в памяти телефона просеиваются при загрузке');
+/* живой прогон: мусор в ответе TMDB не доходит до экрана */
+const adultDb = makeFakeDb();
+const ADULT_FIX = [
+  { id: 9101, title: 'Обычный фильм', name: 'Обычный фильм', original_title: 'Normal Film', media_type: 'movie',
+    poster_path: '/ok1.jpg', vote_average: 7.4, vote_count: 900, popularity: 900, release_date: '2020-05-05', genre_ids: [28], overview: 'Описание' },
+  { id: 9102, title: 'Porn Test Movie', name: 'Porn Test Movie', media_type: 'movie', adult: true,
+    poster_path: '/bad1.jpg', vote_average: 6.1, vote_count: 300, popularity: 999, release_date: '2021-05-05', genre_ids: [28], overview: 'Описание' },
+  { id: 9103, title: 'Хентайная история', name: 'Хентайная история', media_type: 'movie',
+    poster_path: '/bad2.jpg', vote_average: 6.6, vote_count: 300, popularity: 998, release_date: '2022-05-05', genre_ids: [16], overview: 'Описание' },
+  { id: 9104, title: 'Тихий омут', name: 'Тихий омут', original_title: 'Hentai Angels', media_type: 'tv',
+    poster_path: '/bad3.jpg', vote_average: 6.9, vote_count: 300, popularity: 997, first_air_date: '2023-05-05', genre_ids: [16], overview: 'Описание' },
+  { id: 9105, title: 'Второй нормальный', name: 'Второй нормальный', media_type: 'movie',
+    poster_path: '/ok2.jpg', vote_average: 8.0, vote_count: 800, popularity: 890, release_date: '2019-05-05', genre_ids: [35], overview: 'Описание' },
+];
+const devY = await bootDevice(adultDb, { platform: 'android', storage: { smotra_adult: 'true' }, fetch: async (url) => {
+  const u = String(url);
+  if (/\/genre\/(movie|tv)\/list/.test(u)) return { ok: true, json: async () => ({ genres: [{ id: 28, name: 'Боевик' }, { id: 35, name: 'Комедия' }, { id: 16, name: 'Анимация' }] }) };
+  return { ok: true, json: async () => ({ page: 1, total_pages: 1, results: ADULT_FIX, genres: [] }) };
+} });
+ok(devY.errors.length === 0, 'устройство со взрослым в ответе TMDB стартует без ошибок' + (devY.errors.length ? ': ' + devY.errors[0] : ''));
+const adultTitles = () => devY.ev('[...new Set(MOVIES.map(m => m.title))].sort()');
+ok(JSON.stringify(adultTitles()) === JSON.stringify(['Второй нормальный', 'Обычный фильм']),
+  'в каталог попали только обычные тайтлы: ' + adultTitles().join(', '));
+ok(!/Porn|Хентай|Hentai/.test(devY.ev('MOVIES.map(m => m.title + " " + m.originalTitle).join(" | ")')), 'взрослых названий в каталоге нет');
+ok(devY.ev('isAdultItem({ adult: true })') === true && devY.ev('isAdultItem({ title: "Porn" })') === true
+  && devY.ev('isAdultItem({ originalTitle: "Hentai Club" })') === true && devY.ev('isAdultItem({ title: "Хентайный принц" })') === true,
+  'проверка ловит и флаг, и название в любом языке');
+ok(devY.ev('isAdultItem({ title: "Обычный фильм", originalTitle: "Normal Film" })') === false, 'обычный тайтл проверку проходит');
+ok(devY.ev('movieFromTmdb({ id: 9102, title: "Porn Test", adult: true }, "movie")') === null, 'описание взрослого тайтла не собирается вообще');
+devY.ev('rememberMovie({ id: 9103, type: "movie", title: "Хентайная история", posterPath: "/x.jpg" })');
+ok(devY.ev('keyToMovie(9103) === null'), 'взрослый тайтл не оседает в памяти телефона');
+ok(devY.ev('!!localStorage.getItem("smotra_adult")') === false, 'ключ тумблера из прошлых версий вычищен');
+/* на экране: ни в ленте, ни в каталоге, ни в поиске */
+devY.ev('renderStack(); renderCatalog();');
+await sleep(60);
+const seenTitles = devY.ev('[...document.querySelectorAll(".pc-title, .rl-name, .card-title, .deck-title")].map(e => e.textContent).join(" | ")');
+ok(!/Porn|Хентай|Hentai/.test(seenTitles), 'на экране нет ни одного взрослого тайтла: ' + seenTitles.slice(0, 80));
+devY.doc.getElementById('catSearch').value = 'хентай';
+devY.doc.getElementById('catSearch').dispatchEvent(new devY.win.Event('input', { bubbles: true }));
+await sleep(60);
+ok(devY.ev('[...document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card")].length') === 0, 'поиск по слову «хентай» ничего не находит');
+devY.doc.getElementById('catSearch').value = 'обычный';
+devY.doc.getElementById('catSearch').dispatchEvent(new devY.win.Event('input', { bubbles: true }));
+await sleep(60);
+ok(devY.ev('[...document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card")].length') >= 1, 'а обычные тайтлы поиск находит как раньше');
+/* подробности по id: ответ со взрослым не заполняет карточку */
+devY.ev('(function(){ const bare = { id: 9102, type: "movie", title: "", posterPath: null, overview: "", genres: [], year: "", rating: 0 }; rememberMovie(bare); return true; })()');
+devY.ev('loadMovieDetails({ movie: { id: 9102, type: "movie" }, key: 9102 }).then(() => { window.__adultDone = true; })');
+await sleep(300);
+ok(devY.ev('String(!!window.__adultDone)') === 'true', 'ответ по взрослому id обработан');
+ok(devY.ev('!!keyToMovie(9102) === false || !keyToMovie(9102).title'), 'и карточка осталась пустой — название не подставилось');
+devY.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

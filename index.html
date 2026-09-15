@@ -2091,11 +2091,6 @@
         <div class="set-text"><div class="set-label">Вибро-отклик</div><div class="set-sub">Лёгкая вибрация на действия</div></div>
         <div class="switch" id="switchHaptic" data-key="smotra_haptic"></div>
       </div>
-      <div class="set-row" style="cursor:pointer;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 4.4-3.2 7.4-8 8-4.8-.6-8-3.6-8-8V7z"/></svg></div>
-        <div class="set-text"><div class="set-label">Показывать 18+</div><div class="set-sub">Взрослые тайтлы в подборке</div></div>
-        <div class="switch" id="switchAdult" data-key="smotra_adult"></div>
-      </div>
     </div>
 
     <div class="set-group">
@@ -2220,6 +2215,17 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.36 — ни порно, ни хентая:
+         • взрослого контента в приложении нет вообще: ни в подборке на главной,
+           ни в каталоге, ни в поиске, ни в чек-листе, ни в списках друзей;
+         • запросы к TMDB больше не просят взрослые тайтлы (include_adult=false
+           жёстко), а помеченные флагом adult отбрасываются сразу;
+         • вторая, строгая проверка по названию (hentai / porn / хентай / порн)
+           ловит непомеченное — лучше убрать спорный тайтл, чем показать его;
+         • тумблер «Показывать 18+» из настроек убран: настройки, включающей
+           взрослое, в приложении больше нет;
+         • память устройства и кэш подборки просеиваются при загрузке, поэтому
+           после обновления старые карточки исчезают сразу.
    0.35 — удобный чек-лист и большая рулетка:
          • у «Хочу чекнуть» появились свои фильтры: тип, жанры, годы и пять
            сортировок — окно то же, что у каталога, но считает по чек-листу;
@@ -2505,7 +2511,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.35';
+const APP_VERSION = '0.36';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2712,7 +2718,7 @@ function haptic(type, style){
 /* ===== Синхронизация настроек между устройствами =====
    Списки (смотрел/чекнуть/смотрю/оценки/серии/ачивки/серия дней) живут в своих
    таблицах и потому одинаковы на всех устройствах. Настройки же хранились только
-   в памяти устройства: тему, выбранные жанры, 18+, вид разделов и фильтры каталога
+   в памяти устройства: тему, выбранные жанры, вид разделов и фильтры каталога
    телефон и десктоп видели по-разному.
    Отдельной таблицы для настроек в базе нет, поэтому используем таблицу badges:
    строка с badge_id вида «cfg.theme="amber"» — обычная строка, которую не жалко.
@@ -2784,12 +2790,6 @@ function applyRemoteSettingsInner(remote){
     try{ localStorage.setItem('smotra_genres', JSON.stringify(selectedGenres)); }catch(e){}
     try{ updateObCount(); }catch(e){}
   }
-  let a = take('adult');
-  if (typeof a === 'boolean'){
-    setFlag('smotra_adult', a);
-    const sw = document.getElementById('switchAdult');
-    if (sw) sw.classList.toggle('on', a);
-  }
   let tut = take('tutorial');
   if (tut === true){
     try{ localStorage.setItem('smotra_tutorial_done', '1'); }catch(e){}
@@ -2840,7 +2840,6 @@ function savedSettingKeys(){
   try{
     if (localStorage.getItem('smotra_theme')) keys.add('theme');
     if (localStorage.getItem('smotra_genres')) keys.add('genres');
-    if (localStorage.getItem('smotra_adult') !== null) keys.add('adult');
     if (localStorage.getItem('smotra_tutorial_done')) keys.add('tutorial');
     if (localStorage.getItem(CAT_FILTER_KEY)) keys.add('catFilters');
     if (localStorage.getItem('smotra_wish_sort')) keys.add('wishSort');
@@ -2864,7 +2863,6 @@ function currentSyncedSettings(){
   return {
     theme: themeId(),
     genres: selectedGenres,
-    adult: getFlag('smotra_adult', true),
     tutorial: getFlag('smotra_tutorial_done', false),
     views: {
       catalog: getView('catalog', 'grid'),
@@ -4635,15 +4633,10 @@ function initSwitch(el, def, onChange){
 }
 // Тумблер уведомлений убран: он ничего не делал (пушей нет) — лучше не врать пользователю.
 initSwitch(document.getElementById('switchHaptic'), true);
-initSwitch(document.getElementById('switchAdult'), true, async (val) => {
-  showToast('Обновляю каталог…');
-  try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
-  await loadMovies();
-  deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
-  renderStack(); renderCatalog(); updateStats();
-  showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
-  syncSetting('adult', val);
-});
+/* Тумблера «Показывать 18+» больше нет: взрослого контента в приложении нет ни для
+   кого и ни при каких настройках. Ключ прошлых версий вычищаем, чтобы он не
+   тянулся ни в память устройства, ни в синхронизацию. */
+try{ localStorage.removeItem('smotra_adult'); }catch(e){}
 
 function onTypeFilterChange(){
   deck = deck.filter(m => typeEnabledFor(m));
@@ -4715,9 +4708,22 @@ async function loadGenres(){
 }
 // Кириллица в строке = у тайтла есть русское название (а не англ. фолбэк от TMDB).
 function hasCyrillic(s){ return /[а-яё]/i.test(s || ''); }
+/* ===== Порно и хентай в приложении не показываем =====
+   Ни в подборке, ни в каталоге, ни в поиске, ни в чек-листе, ни у друзей, ни при
+   первом запуске. TMDB помечает такое флагом adult — карточки с ним не берём вовсе.
+   Пометки в базе неполные (часть взрослого не помечена), поэтому есть вторая,
+   намеренно строгая проверка по названию: лучше убрать спорный тайтл, чем показать
+   его человеку. */
+const ADULT_TITLE_RE = /(^|[^a-zа-яё])(hentai|porn|хентай|порн)/i;
+function isAdultItem(item){
+  if (!item) return false;
+  if (item.adult === true) return true;
+  return [item.title, item.originalTitle, item.original_title, item.original_name, item.name]
+    .some(n => n && ADULT_TITLE_RE.test(String(n)));
+}
 async function fetchList(url, type, genreMap){
   const data = await fetch(url).then(r=>r.json());
-  return (data.results||[]).map(item => ({
+  return (data.results||[]).filter(item => !isAdultItem(item)).map(item => ({
     id: item.id,
     type,
     title: item.title || item.name,
@@ -4725,6 +4731,7 @@ async function fetchList(url, type, genreMap){
     year: (item.release_date || item.first_air_date || '').slice(0,4),
     rating: item.vote_average ? Math.round(item.vote_average*10)/10 : 0,
     popularity: item.popularity || 0,
+    adult: !!item.adult,
     genres: (item.genre_ids||[]).map(id => genreMap[id]).filter(Boolean),
     overview: item.overview || 'Описание пока не переведено.',
     posterPath: item.poster_path || null,
@@ -4747,6 +4754,7 @@ let titleFillBudget = 260;            // за сессию не больше 260
 /* Ответ TMDB → объект тайтла. Одним местом на весь файл: раньше это жило только
    внутри fillMissingTitles, и любая другая догрузка повторяла ту же логику. */
 function movieFromTmdb(data, kind){
+  if (isAdultItem(data)) return null;          // взрослое не описываем вообще
   return {
     id: data.id, type: kind === 'tv' ? 'series' : 'movie',
     title: data.title || data.name, originalTitle: data.original_title || data.original_name || '',
@@ -4781,10 +4789,11 @@ async function fillMissingTitles(keys){
       const id = k >= SERIES_ID_OFFSET ? k - SERIES_ID_OFFSET : k;
       try{
         const data = await fetch(`https://api.themoviedb.org/3/${kind}/${id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
-        if (data && (data.title || data.name)){
-        rememberMovie(movieFromTmdb(data, kind));
-        changed = true;
-      } else {
+        const fresh = data ? movieFromTmdb(data, kind) : null;
+        if (fresh){
+          rememberMovie(fresh);
+          changed = true;
+        } else {
           stubFailed.add(k);
         }
       }catch(e){ stubFailed.add(k); }
@@ -4843,7 +4852,9 @@ async function loadMovieDetails(item){
   try{
     const data = await fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r => r.json());
     if (!data || (!data.title && !data.name)){ DETAILS_FAILED.add(key); return false; }
-    applyMovieData(movie, movieFromTmdb(data, kind));
+    const fresh = movieFromTmdb(data, kind);
+    if (!fresh){ DETAILS_FAILED.add(key); return false; }
+    applyMovieData(movie, fresh);
     DETAILS_DONE.add(key);
     return true;
   }catch(e){ DETAILS_FAILED.add(key); return false; }
@@ -4915,7 +4926,9 @@ function combineLists(parts){
   return dedupeMovies(keepRussian([...parts.films, ...parts.series, ...parts.anime, ...parts.cartoons]));
 }
 
-const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v4_dedupe';
+/* v5: ключ сменился, потому что в кэш прошлых версий взрослое могло попасть и лежать
+   бы там до конца срока — со сменой ключа старый кэш просто не читается. */
+const TMDB_CACHE_KEY = 'smotra_tmdb_cache_v5_safe';
 const TMDB_CACHE_TTL = 90 * 60 * 1000; // 1.5 часа: подборка должна обновляться, но не на каждый тап
 /* Каталог больше не «одни и те же фильмы»: у TMDB популярное разложено по страницам,
    поэтому на каждый запуск берём случайное окно страниц (1..5) — набор остаётся
@@ -4985,16 +4998,18 @@ function writeTmdbCache(movies){
 let tmdbPage = 1;
 function discoverUrls(page){
   const K = TMDB_KEY;
-  const adult = getFlag('smotra_adult', true) ? 'true' : 'false';   // 18+ включён по умолчанию
+  // include_adult=false жёстко: взрослое не запрашиваем ни при каких настройках —
+  // ни в первом запуске, ни потом. Раньше параметр зависел от тумблера 18+, и по
+  // умолчанию (тумблер был включён) в подборку попадало порно.
   // language=ru-RU — TMDB отдаёт русские названия и описания, где они есть. Мусорные тайтлы
   // без перевода/постера мы потом отфильтруем сами (keepRussian). vote_count.gte отсекает
   // совсем безвестные записи, чтобы в ленте было узнаваемое кино.
-  const base = `language=ru-RU&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=40`;
+  const base = `language=ru-RU&sort_by=popularity.desc&include_adult=false&vote_count.gte=40`;
   return {
     film:    `https://api.themoviedb.org/3/discover/movie?${base}&page=${page}&api_key=${K}`,
     series:  `https://api.themoviedb.org/3/discover/tv?${base}&page=${page}&api_key=${K}`,
-    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=10&page=${page}&api_key=${K}`,
-    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=${adult}&vote_count.gte=20&page=${page}&api_key=${K}`,
+    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false&vote_count.gte=10&page=${page}&api_key=${K}`,
+    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=false&vote_count.gte=20&page=${page}&api_key=${K}`,
   };
 }
 /* Каталог из кэша применяем синхронно: от этого зависит первый кадр приложения. */
@@ -5002,7 +5017,7 @@ function applyCatalog(cache){
   if (!cache) return false;
   // Даже в кэше на всякий случай прогоняем дедупликацию: раньше в нём могли
   // остаться двойники из разных discover-списков.
-  MOVIES = dedupeMovies(cache.movies || []);
+  MOVIES = dedupeMovies((cache.movies || []).filter(m => !isAdultItem(m)));
   rebuildMovieIndex(); tutMoviesCache = null;
   Object.assign(GENRE_MOVIE, cache.genreMovie || {});
   Object.assign(GENRE_TV, cache.genreTv || {});
@@ -5367,7 +5382,12 @@ const STUBS_KEY = 'smotra_movie_stubs';
 /* Лёгкие копии тайтлов: каталог подгружается частями, и без них «мимо 675»
    в профиле превращалось в 507 в истории — часть ключей не находила фильм. */
 let movieStubs = {};
-try{ movieStubs = JSON.parse(localStorage.getItem(STUBS_KEY) || '{}') || {}; }catch(e){ movieStubs = {}; }
+try{
+  const stored = JSON.parse(localStorage.getItem(STUBS_KEY) || '{}') || {};
+  /* Копии из памяти телефона просеиваем: в прошлых версиях взрослое туда попадало. */
+  Object.keys(stored).forEach(k => { if (!isAdultItem(stored[k])) movieStubs[k] = stored[k]; });
+  if (Object.keys(stored).length !== Object.keys(movieStubs).length) saveStubsSoon();
+}catch(e){ movieStubs = {}; }
 /* Память телефона сохраняем с задержкой: запись туда — самая дорогая операция, а
    меняется она пачками (догрузка обложек, описаний, сезонов). */
 function saveStubsSoon(){
@@ -5375,7 +5395,7 @@ function saveStubsSoon(){
   saveStubsSoon._t = setTimeout(() => { try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }, 400);
 }
 function rememberMovie(m){
-  if (!m || !m.id) return;
+  if (!m || !m.id || isAdultItem(m)) return;      // взрослое не запоминаем вообще
   const k = mid(m);
   if (movieStubs[k]) return;
   movieStubs[k] = { id: m.id, type: m.type, title: m.title, originalTitle: m.originalTitle, year: m.year,
