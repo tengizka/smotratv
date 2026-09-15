@@ -739,15 +739,20 @@ const lvName = ldoc.getElementById('homeLevelName').textContent;
 ok(/^LVL \d+ · /.test(lvName), 'шкала вверху показывает уровень: ' + lvName);
 ok(/^\d+\/\d+$/.test(ldoc.getElementById('homeLevelXP').textContent), 'и опыт со порогом уровня: ' + ldoc.getElementById('homeLevelXP').textContent);
 ok(!ldoc.querySelector('.topbar [data-ach-open]'), 'в шапке нет иконки достижений');
-ok(!ldoc.getElementById('themeArt') && !ldoc.querySelector('.theme-art'), 'фоновых анимированных SVG в дереве нет');
+ok(!!ldoc.getElementById('themeArt') && ldoc.querySelectorAll('#themeArt svg').length >= 2, 'фон темы нарисован: два слоя SVG');
+ok(ldoc.querySelectorAll('#themeArt .ta-layer').length >= 2, 'у фона есть дальний и ближний слои');
+ok(!ldoc.getElementById('homeToy') && !ldoc.querySelector('.home-toy'), 'игрушки над карточкой нет');
 lwin.close();
 
 
 /* ============================ [17] Убрано и приведено в порядок ============================ */
-section('[17] Убрано: фоновые svg, кубок в шапке, анимации превью тем');
-ok(!/class="theme-art"/.test(src) && !/id="themeArt"/.test(src), 'слоя с фоновыми SVG нет в разметке');
-ok(!/function applyThemeArt/.test(js) && !/applyThemeArt\(\);/.test(js), 'и код, который его рисовал, тоже убран');
-ok(!/\.theme-art\{/.test(cssClean) && !/\.theme-art /.test(cssClean), 'правил для него не осталось');
+section('[17] Убрано и возвращено: игрушка, кубок, фон темы, превью тем');
+ok(/class="theme-art" id="themeArt"/.test(src), 'фон темы на месте (рисунок темы в SVG)');
+ok(/function applyThemeArt\(\)\{/.test(js) && /applyThemeArt\(\);            \/\/ у каждой темы свой рисунок фона/.test(js), 'и рисуется при смене темы');
+ok(/\.theme-art\{ position:fixed; inset:0; pointer-events:none; z-index:0;/.test(dflat), 'фон лежит под интерфейсом, во весь экран');
+ok(!/class="home-toy/.test(src) && !/id="homeToy"/.test(src) && !/HOME_TOYS/.test(js), 'игрушки-пасхалки нет ни в разметке, ни в коде');
+ok(!/\.home-toy/.test(cssClean) && !/@keyframes toy/.test(cssClean), 'и её стилей с анимациями тоже не осталось');
+ok(!/Что за игрушка вверху главной/.test(src), 'и пункта FAQ про игрушку нет');
 ok(/\.theme-swatch \.sw-art svg, \.theme-swatch \.sw-art svg \*\{ animation:none !important; \}/.test(dflat), 'превью тем в окне выбора — статичные');
 ok(/const THEME_ART = \{/.test(js) && /THEME_ART\[t\.id\]/.test(js), 'рисунок темы остался только как картинка превью');
 ok(!/ach-chip-top/.test(cssClean) && !/ach-chip-top/.test(src), 'кубка достижений в шапке больше нет');
