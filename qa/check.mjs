@@ -535,7 +535,31 @@ dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'Escape', b
 await sleep(40);
 ok(!dev('document.getElementById("settingsScreen").classList.contains("open")'), 'Esc закрывает окно настроек');
 ok(dErrors.length === 0, 'ошибок консоли на десктопном прогоне: ' + dErrors.length + (dErrors.length ? ' — ' + dErrors.slice(0, 2).join(' | ') : ''));
+/* --- пилюля «Вернуться»: место считается по кнопке «Перемешать» --- */
+const undoStyle = dev('document.getElementById("undoBtn").style.getPropertyValue("--undo-bottom")');
+ok(dev('document.getElementById("undoBtn").classList.contains("show")'), 'после свайпа пилюля «Вернуться» показана');
+ok(/^\d+px$/.test(undoStyle) && parseFloat(undoStyle) > 60, 'пилюля поднята над панелью вкладок: ' + undoStyle);
+ok(dev('getComputedStyle(document.getElementById("undoBtn")).position') === 'absolute', 'пилюля позиционируется абсолютно');
+
 dwin.close();
+
+/* ============================ [13] «Вернуться» поверх «Перемешать» ============================ */
+section('[13] «Вернуться» поверх «Перемешать»');
+const cssFlat = cssClean.replace(/\s+/g, ' ');
+ok(/\.undo-pill\{[^}]*bottom:var\(--undo-bottom, calc\(76px \+ var\(--safe-bottom\)\)\)/.test(cssFlat), 'низ пилюли задаётся переменной с запасом');
+ok(!/\.undo-pill\{[^}]*bottom:calc\(14px/.test(cssFlat), 'старого значения, прижатого к низу экрана, больше нет');
+ok(/background:linear-gradient\(180deg, var\(--accent\) 0%, var\(--accent-2\) 100%\)/.test(cssFlat), 'пилюля залита градиентом темы');
+ok(/box-shadow:0 16px 34px -12px var\(--accent-glow\), 0 1px 0 rgba\(255,255,255,0\.24\) inset/.test(cssFlat), 'и получила мягкое свечение');
+ok(/border:1px solid rgba\(255,255,255,0\.18\)/.test(cssFlat), 'по краю — светлая кромка');
+ok(/\.undo-pill\{ z-index:45/.test(cssFlat), 'пилюля выше панели вкладок');
+ok(/function positionUndoPill\(\)\{/.test(js), 'место пилюли считает скрипт');
+ok(/const row = document\.querySelector\('#home \.home-bottom'\)/.test(js), 'целимся в строку с «Перемешать»');
+ok(/const bottom = Math\.round\(bodyH - center - pillH \/ 2\)/.test(js), 'центр пилюли совпадает с центром кнопки');
+ok(/center = Math\.max\(pillH \/ 2 \+ 8, navTop - 38\)/.test(js), 'если кнопку не видно — поднимаем над панелью вкладок');
+ok(/positionUndoPill\(\);\s+\/\/ сначала место, потом показ/.test(js), 'место считается ДО показа — без прыжка');
+ok(/requestAnimationFrame\(positionUndoPill\);\s+\/\/ раскладка могла поменяться/.test(js), 'и уточняется в следующем кадре');
+ok(/window\.addEventListener\('resize', \(\) => \{ if \(document\.getElementById\('undoBtn'\)\?\.classList\.contains\('show'\)\) positionUndoPill\(\); \}\)/.test(js), 'смена размера окна пересчитывает место');
+ok(/window\.addEventListener\('orientationchange', \(\) => setTimeout\(positionUndoPill, 300\)\)/.test(js), 'поворот телефона тоже');
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

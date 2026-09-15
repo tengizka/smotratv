@@ -1162,9 +1162,17 @@
   #toast{ position:absolute; top:calc(14px + var(--safe-top)); left:50%; transform:translate(-50%,-140%); background:var(--surface-2); border:1px solid var(--accent-border); color:var(--text); padding:11px 18px; border-radius:14px; font-size:13px; z-index:60; transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px; }
   .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
 
-  /* «Вернуться» стоит прямо над «Перемешать» и слегка перекрывает её — так нижний
-     блок выглядит собранным, а не разъехавшимся по углам. */
-  .undo-pill{ z-index:22; position:absolute; left:50%; bottom:calc(14px + var(--safe-bottom)); touch-action:none; transform:translate(-50%, 20px); opacity:0; pointer-events:none; background:var(--accent); border:none; color:var(--on-accent); padding:12px 24px; border-radius:30px; font-size:13.5px; font-weight:700; font-family:'Inter'; display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease; z-index:45; box-shadow:0 14px 34px -12px var(--accent-glow); }
+  /* «Вернуться» ложится ПОВЕРХ «Перемешать»: центр пилюли совпадает с центром
+     кнопки. Низ считает скрипт (positionUndoPill) по самой кнопке — раньше здесь
+     стояло число, и на разных экранах пилюля уезжала вниз, на панель вкладок.
+     Значение ниже — запас, если размеры ещё не посчитаны. */
+  .undo-pill{ z-index:45; position:absolute; left:50%; bottom:var(--undo-bottom, calc(76px + var(--safe-bottom)));
+    touch-action:none; transform:translate(-50%, 20px); opacity:0; pointer-events:none;
+    background:linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
+    border:1px solid rgba(255,255,255,0.18); color:var(--on-accent); padding:12px 26px; border-radius:30px;
+    font-size:13.5px; font-weight:700; font-family:'Inter'; letter-spacing:.2px;
+    display:flex; align-items:center; gap:7px; transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+    box-shadow:0 16px 34px -12px var(--accent-glow), 0 1px 0 rgba(255,255,255,0.24) inset; }
   .undo-pill.show{ transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
   @keyframes cardUndoIn{ 0%{ transform:scale(.85) translateY(50px) rotate(-4deg); opacity:.3; } 100%{ transform:scale(1) translateY(0) rotate(0); opacity:1; } }
   .card-undo-in{ animation:cardUndoIn .42s cubic-bezier(.2,.8,.2,1); }
@@ -1776,6 +1784,9 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.26 — «Вернуться» ложится ровно на «Перемешать»: пилюля стала заметнее
+         (градиент темы, мягкое свечение), а её место скрипт считает по самой кнопке,
+         поэтому на любом экране она стоит на ней, а не уезжает на панель вкладок.
    0.25 — десктопная версия Telegram и починка загрузки данных:
          • ГЛАВНОЕ: списки просмотренного, пропущенного и «хочу чекнуть» заполнялись
            ДО ответа базы — то есть всегда оставались пустыми. На телефоне это
@@ -1949,7 +1960,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.25';
+const APP_VERSION = '0.26';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -5475,14 +5486,45 @@ function syncDeckAfterExternalChange(){
 /* ============ ОТМЕНА СВАЙПА ============ */
 let swipeHistory = [];
 let undoTimer;
+/* «Вернуться» ставим ровно на кнопку «Перемешать»: центр пилюли — центр кнопки.
+   Так нижний блок выглядит собранным, а пилюля не висит на панели вкладок.
+   Если строку с кнопкой измерить нельзя (мы не на главной), заходим чуть выше
+   панели вкладок — там же, где живёт «Перемешать». */
+function positionUndoPill(){
+  const btn = document.getElementById('undoBtn');
+  if (!btn) return;
+  const bodyRect = document.body.getBoundingClientRect();
+  const bodyH = bodyRect.height || window.innerHeight || 0;
+  if (!bodyH) return;
+  const pillH = btn.offsetHeight || 44;
+  const row = document.querySelector('#home .home-bottom');
+  const rowRect = row ? row.getBoundingClientRect() : null;
+  let center;                                   // центр цели по вертикали, в координатах оболочки
+  if (rowRect && rowRect.height > 0 && rowRect.width > 0){
+    center = (rowRect.top - bodyRect.top) + rowRect.height / 2;
+  } else {
+    const nav = document.querySelector('nav');
+    const navRect = nav ? nav.getBoundingClientRect() : null;
+    const navTop = (navRect && navRect.height > 0) ? (navRect.top - bodyRect.top) : (bodyH - 74);
+    center = Math.max(pillH / 2 + 8, navTop - 38);   // столько же места над панелью, сколько занимает «Перемешать»
+  }
+  const bottom = Math.round(bodyH - center - pillH / 2);
+  if (Number.isFinite(bottom) && bottom > 0) btn.style.setProperty('--undo-bottom', bottom + 'px');
+}
 function pushSwipeHistory(entry){
   swipeHistory.push(entry);
   if (swipeHistory.length > 15) swipeHistory.shift();
   const btn = document.getElementById('undoBtn');
+  positionUndoPill();                       // сначала место, потом показ — без прыжка
   btn.classList.add('show');
+  requestAnimationFrame(positionUndoPill);  // раскладка могла поменяться (высота колоды)
   clearTimeout(undoTimer);
   undoTimer = setTimeout(()=> btn.classList.remove('show'), 4000);
 }
+/* Кнопка живёт поверх «Перемешать», поэтому при смене размера окна её надо
+   переставить: поворот телефона, клавиатура, полноэкранный режим. */
+window.addEventListener('resize', () => { if (document.getElementById('undoBtn')?.classList.contains('show')) positionUndoPill(); });
+window.addEventListener('orientationchange', () => setTimeout(positionUndoPill, 300));
 function undoLastSwipe(){
   const entry = swipeHistory.pop();
   document.getElementById('undoBtn').classList.remove('show');
