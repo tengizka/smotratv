@@ -881,6 +881,9 @@
 
   /* ===== Bottom nav ===== */
   /* align-items:center — иконки и подписи стоят посередине полосы, а не липнут к низу */
+  /* Логотип SMOTRA живёт в панели разделов ТОЛЬКО на десктопе (см. медиазапрос ниже):
+     на телефоне это нижняя панель вкладок, и надпись слева от иконок была лишней. */
+  .side-head{ display:none; }
   nav{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center;
     padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); z-index:10;
     /* В горизонтальной ориентации содержимое панели держим в безопасной зоне, а фон
@@ -1166,14 +1169,16 @@
   }
 
   /* ===== Toast ===== */
-  /* Всплывающие сообщения показываем СНИЗУ, над панелью вкладок: вверху по центру
-     они висели ровно там, где Telegram рисует свои элементы, и выглядели чужими. */
-  #toast{ position:absolute; top:auto; bottom:calc(96px + var(--safe-bottom)); left:50%;
-    transform:translate(-50%, 140%); background:var(--surface-2); border:1px solid var(--accent-border);
-    color:var(--text); padding:11px 18px; border-radius:16px; font-size:13px; z-index:60;
-    transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; align-items:center; gap:8px;
-    box-shadow:0 18px 40px -22px rgba(0,0,0,.9); }
-  .toast-icon{ color:var(--accent); display:flex; align-items:center; flex:0 0 auto; }
+  /* Сообщение — узкая лента у САМОГО ВЕРХА экрана: она выезжает из-за края и уезжает
+     обратно, ничего не «висит» посреди экрана. Никаких отдельных квадратиков-иконок:
+     лента без рамки по бокам, текст по центру, углы скруглены только снизу. */
+  #toast{ position:absolute; top:0; left:0; right:0; bottom:auto;
+    transform:translateY(-115%); background:linear-gradient(180deg, var(--surface-2), var(--surface));
+    border:0; border-bottom:1px solid var(--accent-border); color:var(--text);
+    padding:calc(11px + var(--safe-top)) 22px 13px;
+    text-align:center; font-size:13px; z-index:60; overflow:hidden;
+    transition:transform .32s cubic-bezier(.2,.8,.2,1);
+    border-radius:0 0 20px 20px; box-shadow:0 20px 44px -28px rgba(0,0,0,.95); }
 
   /* «Вернуться» ложится ПОВЕРХ «Перемешать»: центр пилюли совпадает с центром
      кнопки. Низ считает скрипт (positionUndoPill) по самой кнопке — раньше здесь
@@ -1211,7 +1216,7 @@
   .rad-item.hot{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); transform:var(--rad-pos) scale(1.18) !important; box-shadow:0 12px 30px -6px var(--accent-glow); }
   .rad-item.danger.hot{ background:var(--skip); border-color:var(--skip); color:#fff; box-shadow:0 12px 30px -6px rgba(193,73,63,0.6); }
 
-  #toast.show{ transform:translate(-50%, 0); }
+  #toast.show{ transform:translateY(0); }
 
   /* ===== Десктоп: Telegram Desktop и браузер =====
      Телефонная вёрстка занимает всю ширину окна, поэтому на большом экране
@@ -1306,15 +1311,16 @@
       margin:auto 0 0; padding:0; background:none; }
     .topbar.topbar-in-nav .topbar-icons{ flex-direction:column; align-items:stretch; gap:8px; width:100%; }
     .topbar-icons{ gap:10px; }
-    .topbar-in-nav .icon-btn, .topbar-in-nav .streak{ width:100%; height:max(44px, 44px);
-      display:flex; align-items:center; border-radius:14px;
-      justify-content:flex-start; gap:10px; padding:0 14px; font-size:13.5px; }
-    .topbar-in-nav .icon-btn svg{ width:19px; height:19px; }
-    /* Подписи к иконкам — чтобы низ панели читался как меню, а не как ряд значков */
-    .topbar-in-nav .icon-btn::after, .topbar-in-nav .streak::after{ font-family:'Inter'; font-weight:600; font-size:13.5px; color:inherit; }
-    .topbar-in-nav #openSettings::after{ content:'Настройки'; }
-    .topbar-in-nav .streak{ background:var(--surface); border:1px solid var(--border); border-radius:14px; }
-    .topbar-in-nav .streak::after{ content:'дней подряд'; color:var(--text-dim); }
+    /* Только иконка, без подписи: внизу панели остаётся аккуратная кнопка. */
+    .topbar-in-nav .icon-btn{ width:46px; height:46px; border-radius:15px; padding:0;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--surface); border:1px solid var(--border); }
+    .topbar-in-nav .icon-btn:hover{ background:var(--surface-2); border-color:var(--accent-border); }
+    .topbar-in-nav .icon-btn svg{ width:21px; height:21px; }
+    /* Огонёк серии переезжает НАВЕРХ — в строку уровня (переставляет скрипт). */
+    .lvl-strip #streakBadge{ margin-left:auto; padding:6px 12px; border-radius:12px;
+      background:var(--surface-2); border:1px solid var(--accent-border); font-size:13px; }
+    .lvl-strip #streakBadge svg{ width:15px; height:15px; }
     .lvl-strip{ grid-area:1 / 2 / 2 / 3; align-self:start; justify-self:start; margin:16px 0 0 28px;
       max-width:560px; padding:9px 16px; gap:12px;
       background:var(--surface); border:1px solid var(--border); border-radius:14px;
@@ -1325,8 +1331,10 @@
     .lvl-strip-xp{ font-size:11px; }
     .screens{ grid-area:2 / 2 / 3 / 4; }
     .screen{ padding:0 28px 22px; }
-    #home{ max-width:430px; margin:0 auto; }
-    #home .stack-filter{ right:-56px; top:14px; }
+    /* Карточка на десктопе крупнее и стоит ниже: у верхнего края был воздух, а сама
+       колода упиралась в строку уровня. Отступ сверху отдан именно колоде. */
+    #home{ max-width:520px; margin:0 auto; padding-top:34px; }
+    #home .stack-filter{ right:-58px; top:16px; }
     #home .actions, #home .home-bottom{ max-width:100%; margin:0; }
     #profile, #feed{ max-width:900px; margin:0 auto; }
     .grid2{ grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); }
@@ -1373,8 +1381,10 @@
     /* Содержимое живёт справа от панели, поэтому центрированные плавающие штуки
        (пилюля «Вернуться», всплывающее сообщение) тоже смещаем к центру СОДЕРЖИМОГО,
        иначе они висят левее колоды на пол-панели. */
-    .undo-pill, #toast{ left:calc(50% + var(--side) / 2); }
-    #toast{ bottom:26px; }
+    /* Пилюля «Вернуться» — по центру колоды, а лента сообщения — во всю ширину
+       области содержимого, от панели до правого края. */
+    .undo-pill{ left:calc(50% + var(--side) / 2); }
+    #toast{ left:var(--side); right:0; border-radius:0 0 20px 20px; }
   }
 
   /* ===== Окно «Уровни» =====
@@ -1991,6 +2001,17 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.31 — по замечаниям к 0.30:
+         • на телефоне из нижней панели убрана надпись SMOTRA: логотип в панели
+           существует только на десктопе, а на телефоне это панель вкладок;
+         • на десктопе настройки — просто иконка без подписи, а огонёк серии
+           переехал НАВЕРХ, в строку уровня (тап по нему показывает серию, окно
+           уровней при этом не открывается);
+         • сообщения снова появляются СВЕРХУ, но уже узкой лентой у самого края,
+           без квадратика-иконки, и так же уезжают обратно — ничего не висит
+           посреди экрана;
+         • карточка на главной на десктопе стала крупнее (520 вместо 430) и стоит
+           ниже — под строкой уровня больше воздуха.
    0.30 — по десктопному скриншоту и списку замечаний:
          • логотип больше не ложится на кнопку «Каталог» — он снова обычная строка
            в панели, а не слой поверх неё;
@@ -2202,7 +2223,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.30';
+const APP_VERSION = '0.31';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2414,16 +2435,23 @@ function haptic(type, style){
 function deskTopbarInNav(){
   const bar = document.querySelector('.topbar');
   const nav = document.querySelector('nav');
+  const strip = document.getElementById('homeLevelStrip');
   if (!bar || !nav) return;
   const desk = () => !!(window.matchMedia && window.matchMedia('(min-width: 1024px)').matches);
   const apply = () => {
+    const streak = document.getElementById('streakBadge');
+    const icons = bar.querySelector('.topbar-icons');
     if (desk()){
       if (bar.parentElement !== nav) nav.appendChild(bar);
       bar.classList.add('topbar-in-nav');
+      // Огонёк серии — в строку уровня наверху: в панели ему делать нечего.
+      if (streak && strip && streak.parentElement !== strip) strip.appendChild(streak);
     } else {
       const anchor = document.querySelector('.screens') || document.body.firstChild;
       if (bar.parentElement === nav) document.body.insertBefore(bar, anchor);
       bar.classList.remove('topbar-in-nav');
+      // На телефоне всё как было: огонёк первым в правой группе шапки.
+      if (streak && icons && streak.parentElement !== icons) icons.insertBefore(streak, icons.firstChild);
     }
   };
   apply();
@@ -3335,7 +3363,10 @@ const currentStreak = recordVisitAndGetStreak();
 })();
 document.getElementById('streakNum').textContent = currentStreak;
 document.getElementById('statStreak').textContent = currentStreak;
-document.getElementById('streakBadge').onclick = () => {
+document.getElementById('streakBadge').onclick = (e) => {
+  /* Огонёк на десктопе стоит ВНУТРИ строки уровня, а она открывает окно уровней.
+     Гасим всплытие: тап по огоньку показывает серию, а не открывает окно. */
+  if (e && e.stopPropagation) e.stopPropagation();
   haptic('selection');
   const days = currentStreak % 10 === 1 && currentStreak % 100 !== 11 ? 'день' : 'дней';
   showToast(currentStreak > 0 ? `${currentStreak} ${days} подряд — не разрывай серию` : 'Заходи каждый день, чтобы рос стрик', 'fire');
@@ -5101,9 +5132,11 @@ function shareApp(){
 
 /* ============ TOAST ============ */
 let toastTimer;
-function showToast(text, iconName){
+function showToast(text){
   const t = document.getElementById('toast');
-  t.innerHTML = (iconName ? `<span class="toast-icon">${ICON(iconName, 16)}</span>` : '') + esc(text);
+  /* Кидаем подсказку как текст: раньше рядом рисовался квадратик-иконка, и лента
+     читалась как «квадратик сверху». Теперь это просто строка по центру. */
+  t.textContent = String(text == null ? '' : text);
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);

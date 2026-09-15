@@ -211,8 +211,11 @@ ok(/let pressLock = false/.test(js) && /document\.addEventListener\('touchmove'/
 ok(/const blocked = \(el\) => !!\s*\(el && el\.closest\('\.card, \.chips, input, textarea, \.rl-card, \.tut-demo, #undoBtn, \.undo-pill, \.sheet, \[data-no-swipe\]'\)\)/.test(js.replace(/\s+/g, ' ')), 'свайп раздела не срабатывает на карточке и на «Вернуться»');
 ok(/\.card \.veil\{[^}]*z-index:20/.test(cssClean.replace(/\n/g, ' ')), 'затемнение карточки лежит на 20-м слое');
 ok(/\.stamp\{ position:absolute; z-index:24;/.test(cssClean.replace(/\n\s+/g, ' ')), 'штампы ВЫШЕ затемнения — надписи «смотрел/мимо/чекнуть/смотрю» видно');
-ok(/#toast\{ position:absolute; top:auto; bottom:calc\(96px \+ var\(--safe-bottom\)\);/.test(cssClean.replace(/\n\s+/g, ' ')), 'подсказки выезжают снизу, «квадратика» сверху больше нет');
-ok(/#toast\.show\{ transform:translate\(-50%, 0\); \}/.test(cssClean), 'видимая подсказка поднимается на своё место');
+ok(/#toast\{ position:absolute; top:0; left:0; right:0; bottom:auto;/.test(cssClean.replace(/\n\s+/g, ' ')), 'подсказка — узкая лента у самого верха экрана');
+ok(/transform:translateY\(-115%\);/.test(cssClean.replace(/\n\s+/g, ' ')) && /#toast\.show\{ transform:translateY\(0\); \}/.test(cssClean), 'лента выезжает из-за верхнего края и уезжает обратно');
+ok(/border-radius:0 0 20px 20px/.test(cssClean.replace(/\n\s+/g, ' ')), 'скруглены только нижние углы — это лента, а не квадратик');
+ok(!/\.toast-icon/.test(cssClean), 'иконки-квадратика рядом с текстом больше нет');
+ok(/t\.textContent = String\(text == null \? '' : text\);/.test(js), 'подсказка выводится просто строкой по центру');
 ok(/\.stamp\{[^}]*background:rgba\(9,10,18,\.9\)/.test(cssClean.replace(/\n\s+/g, ' ')), 'штамп идёт плотной плашкой, а не только обводкой');
 
 /* ============================ [11] Живое приложение ============================ */
@@ -578,9 +581,12 @@ const mqStub = (matches) => (q) => ({ matches, media: q, onchange: null,
 dwin.window.matchMedia = mqStub(true);
 dwin.window.deskTopbarInNav();
 ok(dbar.parentElement && dbar.parentElement.tagName === 'NAV' && dbar.classList.contains('topbar-in-nav'), 'на широком экране шапка стоит в панели, а не под кнопками Telegram');
+const dstreak = dwin.document.getElementById('streakBadge');
+ok(!!dstreak && dstreak.parentElement.id === 'homeLevelStrip', 'огонёк серии стоит наверху, в строке уровня');
 dwin.window.matchMedia = mqStub(false);
 dwin.window.deskTopbarInNav();
 ok(dbar.parentElement && dbar.parentElement.tagName !== 'NAV' && !dbar.classList.contains('topbar-in-nav'), 'на телефоне шапка возвращается на своё место');
+ok(dstreak.parentElement && dstreak.parentElement.classList.contains('topbar-icons'), 'и огонёк возвращается в шапку, первым в правой группе');
 
 dwin.close();
 
@@ -614,20 +620,22 @@ ok(/body\{ display:grid; padding-left:0; padding-right:0;\s*grid-template-column
 ok(/nav\{ grid-area:1 \/ 1 \/ 3 \/ 2; position:relative; width:auto;/.test(dflat), 'разделы занимают первый столбец сетки во всю высоту');
 ok(/\.topbar\.topbar-in-nav\{ grid-area:auto; align-self:stretch; justify-content:flex-start;/.test(dflat), 'шапка прижата к низу панели (класс ставит скрипт)');
 ok(/function deskTopbarInNav\(\)\{/.test(js), 'переносом шапки в панель занимается отдельная функция');
+ok(/document\.getElementById\('streakBadge'\)\.onclick = \(e\) => \{/.test(js) && /if \(e && e\.stopPropagation\) e\.stopPropagation\(\);/.test(js), 'тап по огоньку не открывает окно уровней (всплытие погашено)');
 ok(/if \(bar\.parentElement !== nav\) nav\.appendChild\(bar\);/.test(js) && /bar\.classList\.add\('topbar-in-nav'\)/.test(js), 'на широком экране шапка переезжает в панель');
 ok(/if \(bar\.parentElement === nav\) document\.body\.insertBefore\(bar, anchor\);/.test(js), 'на узком — возвращается на место');
 ok(/deskTopbarInNav\(\);        \/\/ на десктопе шапка уезжает в боковую панель/.test(js), 'перенос выполняется при запуске');
 ok(/\.topbar\.topbar-in-nav \.topbar-icons\{ flex-direction:column; align-items:stretch; gap:8px; width:100%; \}/.test(dflat), 'иконки в панели идут колонкой');
-ok(/\.topbar-icons\{ flex-direction:column; align-items:stretch; gap:8px; width:100%; \}/.test(dflat) && /#openSettings::after\{ content:'Настройки'; \}/.test(dflat), 'настройки переехали вниз боковой панели и подписаны');
+ok(/\.topbar-in-nav \.icon-btn\{ width:46px; height:46px; border-radius:15px; padding:0;/.test(dflat), 'внизу панели — кнопка настроек ровно по иконке');
 ok(/\.topbar\.topbar-in-nav\{/.test(cssClean.replace(/\s+/g, ' ')), 'в десктопном блоке есть правило для шапки внутри панели (а не в правом верхнем углу)');
-ok(/\.side-head\{ display:block; margin:0 10px 18px; padding-bottom:16px; border-bottom:1px solid var\(--border\);/.test(dflat), 'логотип лежит в потоке панели и не может наложиться на кнопку «Каталог»');
+ok(!/content:'Настройки'/.test(dflat) && !/content:'дней подряд'/.test(dflat), 'подписей рядом с иконками больше нет');
+ok(/\.lvl-strip #streakBadge\{ margin-left:auto;/.test(dflat), 'огонёк серии стоит в строке уровня наверху');
 ok(!/\.side-head\{ display:block; position:absolute/.test(dflat), 'абсолютного логотипа больше нет — он и ложился на «Каталог»');
 ok(/\.topbar \.wordmark\{ display:none; \}/.test(dflat), 'в шапке логотип на десктопе скрыт');
 ok(/nav button\{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;/.test(dflat), 'кнопки разделов стали строками с подписями');
 ok(/nav button\.active\{ color:var\(--text\); background:var\(--accent-soft\); \}/.test(dflat), 'активный раздел подсвечен');
 ok(!/\.topbar \.wordmark\{ position:fixed/.test(dflat), 'никаких fixed-логотипов внутри анимированной шапки (из-за них он и вставал криво)');
 ok(/\.lvl-strip\{ grid-area:1 \/ 2 \/ 2 \/ 3; align-self:start; justify-self:start; margin:16px 0 0 28px;\s*max-width:560px; padding:9px 16px;/.test(dflat), 'строка уровня стала компактной карточкой, а не полосой во всю ширину');
-ok(/#home\{ max-width:430px; margin:0 auto; \}/.test(dflat) && /#home \.stack-filter\{ right:-56px; top:14px; \}/.test(dflat), 'колода по центру и фильтр у её верхнего правого угла');
+ok(/#home\{ max-width:520px; margin:0 auto; padding-top:34px; \}/.test(dflat) && /#home \.stack-filter\{ right:-58px; top:16px; \}/.test(dflat), 'карточка на десктопе крупнее, стоит ниже, фильтр у её верхнего угла');
 ok(/#sheet\{ position:fixed; top:0; right:0; bottom:0; left:auto; width:min\(470px, 44vw\);/.test(dflat), 'карточка фильма — панель справа');
 ok(/#sheet\.open\{ transform:translateX\(0\); \}/.test(dflat), 'панель выезжает слева направо, а не снизу');
 ok(/#askSheet, #badgeSheet\{ position:fixed; left:50%; top:50%; right:auto; bottom:auto;\s*width:min\(440px, 92vw\);/.test(dflat), 'небольшие шторки стали окошками по центру');
@@ -638,10 +646,12 @@ ok(/body\.ov-open \.ov-scrim\{ opacity:1; pointer-events:auto; \}/.test(dflat), 
 ok(/\.ov-scrim\{ display:none; \}/.test(dflat), 'на телефоне затемнение не показывается (там окна полноэкранные)');
 ok(/#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'профиль и лента держатся колонкой по центру');
 ok(/<div class="side-head" aria-hidden="true">SM<b>O<\/b>TRA<\/div>/.test(src), 'логотип есть в разметке панели');
+ok(/\.side-head\{ display:none; \}/.test(cssClean), 'на телефоне надписи SMOTRA в нижней панели нет');
+ok(/\.side-head\{ display:block; margin:0 10px 18px; padding-bottom:16px; border-bottom:1px solid var\(--border\);/.test(dflat), 'на десктопе логотип — обычная строка панели, поверх «Каталога» не ляжет');
 ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(168px, 1fr\)\); \}/.test(dflat), 'каталог занимает всю ширину: обложек помещается больше');
 ok(/#splash, #onboarding, #tutorial\{ position:fixed; inset:0; left:0; right:0; width:auto; max-width:none; margin:0; \}/.test(dflat), 'заставка, онбординг и обучение прибиты к окну — центрируются ровно, без сдвига от padding оболочки');
-ok(/#toast\{ bottom:26px; \}/.test(dflat), 'на большом экране подсказка садится чуть выше нижнего края');
-ok(/\.undo-pill, #toast\{ left:calc\(50% \+ var\(--side\) \/ 2\); \}/.test(dflat), 'пилюля и сообщение центрируются по содержимому, а не по окну');
+ok(/#toast\{ left:var\(--side\); right:0; border-radius:0 0 20px 20px; \}/.test(dflat), 'на большом экране лента идёт от панели до правого края');
+ok(/\.undo-pill\{ left:calc\(50% \+ var\(--side\) \/ 2\); \}/.test(dflat), 'пилюля «Вернуться» центрируется по содержимому, а не по окну');
 ok(/#askSheet, #badgeSheet\{ position:fixed/.test(deskBlock.replace(/\s+/g, ' ')), 'правила шторок лежат именно в десктопном блоке');
 /* код под раскладку */
 ok(/document\.body\.classList\.add\('ov-open'\);   \/\/ показываем затемнение под окнами \(десктоп\)/.test(js), 'openOverlay включает затемнение');
@@ -693,9 +703,11 @@ section('[15] Каскад десктопных правил (вычисленн
   ok(g('.overlay-screen', 'position') === 'fixed' && px(g('.overlay-screen', 'width')) > 800 && px(g('.overlay-screen', 'width')) <= 1024, 'окна приложения — окно по центру, а не во всю ширину (' + g('.overlay-screen', 'width') + ')');
   ok(g('.overlay-screen', 'visibility') === 'hidden', 'закрытое окно не мешает нажимать');
   ok(g('.ov-scrim', 'display') === 'block' && g('.ov-scrim', 'position') === 'fixed', 'затемнение под окнами включено');
-  ok(px(g('#home', 'maxWidth')) === 430 && px(g('#profile', 'maxWidth')) === 900, 'колода ровно по ширине карточки, профиль — шире');
+  ok(px(g('#home', 'maxWidth')) === 520 && px(g('#profile', 'maxWidth')) === 900, 'карточка на десктопе крупнее, профиль — ещё шире');
+  ok(px(g('#home', 'paddingTop')) >= 30, 'колода стоит ниже: ' + g('#home', 'paddingTop'));
   ok(px(g('#splash', 'maxWidth')) === 0 && px(g('#tutorial', 'maxWidth')) === 0 && px(g('.screens', 'maxWidth')) === 0, 'полноэкранные слои и ленты не зажаты в колонку');
-  ok(/calc\(50% \+ var\(--side\) \/ 2\)/.test(g('.undo-pill', 'left')) && /calc\(50% \+ var\(--side\) \/ 2\)/.test(g('#toast', 'left')), 'пилюля и сообщение смещены к центру содержимого');
+  ok(/calc\(50% \+ var\(--side\) \/ 2\)/.test(g('.undo-pill', 'left')), 'пилюля «Вернуться» центрируется по содержимому');
+  ok(/var\(--side\)/.test(g('#toast', 'left')) && px(g('#toast', 'top')) === 0, 'лента сообщения прижата к верху и к панели');
   ok(g('.grain', 'position') === 'fixed', 'зерно кроет и боковую панель');
   cdom.window.close();
 }
