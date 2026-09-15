@@ -212,6 +212,7 @@ ok(/const blocked = \(el\) => !!\s*\(el && el\.closest\('\.card, \.chips, input,
 ok(/\.card \.veil\{[^}]*z-index:20/.test(cssClean.replace(/\n/g, ' ')), 'затемнение карточки лежит на 20-м слое');
 ok(/\.stamp\{ position:absolute; z-index:24;/.test(cssClean.replace(/\n\s+/g, ' ')), 'штампы ВЫШЕ затемнения — надписи «смотрел/мимо/чекнуть/смотрю» видно');
 ok(/#toast\{ position:absolute; top:0; left:0; right:0; bottom:auto;/.test(cssClean.replace(/\n\s+/g, ' ')), 'подсказка — узкая лента у самого верха экрана');
+ok(/\.undo-pill\{ max-width:calc\(var\(--col\) - 24px\); \}/.test(cssClean.replace(/\n\s+/g, ' ')), 'лента сообщения не зажата колонкой — она во всю ширину окна');
 ok(/transform:translateY\(-115%\);/.test(cssClean.replace(/\n\s+/g, ' ')) && /#toast\.show\{ transform:translateY\(0\); \}/.test(cssClean), 'лента выезжает из-за верхнего края и уезжает обратно');
 ok(/border-radius:0 0 20px 20px/.test(cssClean.replace(/\n\s+/g, ' ')), 'скруглены только нижние углы — это лента, а не квадратик');
 ok(!/\.toast-icon/.test(cssClean), 'иконки-квадратика рядом с текстом больше нет');
