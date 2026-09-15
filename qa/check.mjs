@@ -605,6 +605,48 @@ ok(/<div class="ov-scrim" id="ovScrim" aria-hidden="true"><\/div>/.test(src), '�
 ok(/\.overlay-screen\{ position:absolute; inset:0; background:var\(--bg\); z-index:25; transform:translateX\(100%\)/.test(dflat), 'на телефоне окна по-прежнему выезжают справа во весь экран');
 ok(/nav\{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center;/.test(dflat), 'на телефоне панель осталась внизу');
 
+
+/* ============================ [15] Каскад десктопных правил ============================ */
+/* jsdom не понимает медиазапросы, поэтому разворачиваем десктопный блок в обычные
+   правила и смотрим ВЫЧИСЛЕННЫЕ значения: так видно, что новые правила действительно
+   побеждают телефонные и планшетные, а не тихо проигрывают им по порядку. */
+section('[15] Каскад десктопных правил (вычисленные значения)');
+{
+  const dStart = css.indexOf('@media (min-width: 1024px){');
+  let dInner = '';
+  if (dStart !== -1){
+    const rest = css.slice(dStart + '@media (min-width: 1024px){'.length);
+    let depth = 1, i = 0;
+    while (i < rest.length && depth > 0){
+      if (rest[i] === '{') depth++;
+      else if (rest[i] === '}') depth--;
+      i++;
+    }
+    dInner = rest.slice(0, i - 1);
+  }
+  ok(dInner.length > 800, 'десктопный блок найден и разобран');
+  const patched = src.replace('</style>', dInner + '\n</style>');
+  const cdom = new JSDOM(patched, { url: 'https://smotra.test/' });
+  const g = (sel, prop) => { const el = cdom.window.document.querySelector(sel); return el ? cdom.window.getComputedStyle(el)[prop] : 'НЕТ'; };
+  const px = (v) => parseFloat(v) || 0;
+  ok(g('nav', 'position') === 'fixed' && g('nav', 'flexDirection') === 'column', 'панель разделов стала боковой колонкой');
+  ok(g('nav', 'zIndex') === '20', 'панель под окнами и затемнением (z-index 20)');
+  ok(g('body', 'paddingLeft') === 'var(--side)', 'содержимое сдвинуто от панели');
+  ok(g('.topbar .wordmark', 'position') === 'fixed' && g('.topbar .wordmark', 'left') === '24px', 'логотип закреплён в панели');
+  ok(g('.topbar', 'justifyContent') === 'flex-end', 'иконки в шапке уходят вправо (логотип вышел из потока)');
+  ok(g('#sheet', 'position') === 'fixed' && px(g('#sheet', 'right')) === 0 && px(g('#sheet', 'width')) > 400, 'карточка фильма — панель справа (' + g('#sheet', 'width') + ')');
+  ok(/translateX\(100%\)/.test(g('#sheet', 'transform')), 'и прячется за правым краем, а не под низом');
+  ok(g('#askSheet', 'position') === 'fixed' && g('#askSheet', 'left') === '50%' && /translate\(-50%,-50%\)/.test(g('#askSheet', 'transform')), 'малая шторка стала окошком по центру');
+  ok(g('.overlay-screen', 'position') === 'fixed' && px(g('.overlay-screen', 'width')) > 800 && px(g('.overlay-screen', 'width')) <= 1024, 'окна приложения — окно по центру, а не во всю ширину (' + g('.overlay-screen', 'width') + ')');
+  ok(g('.overlay-screen', 'visibility') === 'hidden', 'закрытое окно не мешает нажимать');
+  ok(g('.ov-scrim', 'display') === 'block' && g('.ov-scrim', 'position') === 'fixed', 'затемнение под окнами включено');
+  ok(px(g('#home', 'maxWidth')) === 780 && px(g('#profile', 'maxWidth')) === 900, 'колода и профиль держатся колонкой');
+  ok(px(g('#splash', 'maxWidth')) === 0 && px(g('#tutorial', 'maxWidth')) === 0 && px(g('.screens', 'maxWidth')) === 0, 'полноэкранные слои и ленты не зажаты в колонку');
+  ok(/calc\(50% \+ var\(--side\) \/ 2\)/.test(g('.undo-pill', 'left')) && /calc\(50% \+ var\(--side\) \/ 2\)/.test(g('#toast', 'left')), 'пилюля и сообщение смещены к центру содержимого');
+  ok(g('.grain', 'position') === 'fixed', 'зерно кроет и боковую панель');
+  cdom.window.close();
+}
+
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
 process.exit(fail ? 1 : 0);
