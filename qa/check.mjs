@@ -1030,7 +1030,7 @@ async function bootDevice(fake, opts){
         disableVerticalSwipes(){}, requestFullscreen(){ return Promise.resolve(); }, setHeaderColor(){}, setBackgroundColor(){},
         setBottomBarColor(){}, HapticFeedback: { impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} }, openTelegramLink(){} } };
       w.supabase = fake;
-      w.fetch = async () => ({ ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX.slice(0, 6), genres: [] }) });
+      w.fetch = o.fetch || (async () => ({ ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX.slice(0, 6), genres: [] }) }));
       w.IntersectionObserver = class { constructor(cb){ this.cb = cb; } observe(el){ io.push({ el, cb: this.cb }); } unobserve(){} disconnect(){} takeRecords(){ return []; } };
       w.__flushIO = () => io.splice(0).forEach(({ el, cb }) => { try{ cb([{ target: el, isIntersecting: true, intersectionRatio: 1 }], {}); } catch(e){} });
     },
@@ -1157,6 +1157,107 @@ ok(/syncSetting\('tutorial', true\)/.test(js) && /syncSetting\('adult', val\)/.t
 ok(/try\{ pickTheme\(t\); \}catch\(e\)\{ try\{ applyTheme\(t\); \}catch\(e2\)\{\} \}/.test(js), 'тема из базы и применяется, и сохраняется на устройстве');
 ok(/function applyRemoteSettings\(remote\)\{\s*if \(!remote \|\| applyingRemote\) return;/.test(js), 'применение чужих настроек не зацикливается');
 ok(!/window\.__/.test(js), 'отладочных проб в коде не осталось');
+
+/* ================== [20] Пустые обложки и «где смотреть» ================== */
+section('[20] Пустые обложки догружаются, фильм можно смотреть');
+ok(/function movieFromTmdb\(data, kind\)\{/.test(js) && /rememberMovie\(movieFromTmdb\(data, kind\)\);/.test(js),
+  'разбор ответа TMDB живёт в одном месте, а не копией в каждой догрузке');
+ok(/function movieNeedsDetails\(m\)\{/.test(js) && /function ensureMovieDetails\(movie\)\{/.test(js) &&
+   /const DETAILS_IN_FLIGHT = new Map\(\);/.test(js), 'карточка тайтла догружается один раз, без дублей');
+ok(/async function loadMovieDetails\(item\)\{/.test(js) && /function applyMovieData\(target, fresh\)\{/.test(js) &&
+   /function saveStubsSoon\(\)\{/.test(js), 'данные встают в ту же запись и сохраняются в память телефона');
+ok(/if \(dest === target\)\{\s*rememberMovie\(dest\)/.test(js), 'тайтл, которого приложение не знало, тоже запоминается — иначе постер терялся');
+/* открытие карточки */
+ok(/ensureMovieDetails\(movie\)\.then\(ok => \{ if \(ok\) fillSheetFromMovie\(movie\); \}\)/.test(js),
+  'открытие карточки сразу тянет всё, чего в ней не хватает');
+ok(/function fillSheetFromMovie\(movie\)\{[\s\S]{0,320}?sheetMovie !== movie/.test(js), 'и не трогает уже закрытую карточку');
+ok(/function paintSheetPoster\(movie\)\{/.test(js) && /function sheetMetaHTML\(movie\)\{/.test(js) &&
+   /paintSheetPoster\(movie\);\n  document\.getElementById\('sheetTitle'\)/.test(js), 'обложка и строка под названием рисуются общей функцией');
+/* пустые обложки на экране */
+ok((src.match(/data-need="\$\{mid\(/g) || []).length >= 6, 'пустые обложки во всех списках помечены как «нужно догрузить»');
+ok(!/data-need="\$\{hasArt/.test(src), 'а там, где обложка уже есть, лишнего атрибута нет');
+ok(/querySelectorAll\('\.pc-art\[data-bg\], \[data-need\]'\)/.test(js), 'наблюдатель следит и за пустыми карточками, а не только за готовыми');
+ok(!/requestPosters\([^)]*\.slice\(0, 12\)\)/.test(js), 'догрузка списка больше не обрезается двенадцатью тайтлами');
+ok(/requestPosters\(visible\.slice\(0, 3\)\);/.test(js) && /applyLazyArt\(stackEl\);/.test(js), 'верхние карточки ленты догружаются сразу при показе');
+ok(/badges-row\[data-nogenres="1"\]/.test(js) && /function clearArtPlaceholder\(el\)\{/.test(js),
+  'вместе с постером появляются жанры, а иконка-заглушка уходит');
+/* где смотреть */
+ok(/id="watchScreen"/.test(src) && /id="sheetWatchBtn"/.test(src) && /Смотреть<\/button>/.test(src),
+  'в карточке фильма есть кнопка «Смотреть» и своё окно');
+ok(/function openWatchScreen\(movie\)\{/.test(js) && /openOverlay\('watchScreen'\)/.test(js), 'окно открывается как остальные окна приложения');
+ok(/function ensureTrailer\(movie\)\{/.test(js) && /youtube-nocookie\.com\/embed\//.test(js), 'трейлер играет прямо в приложении');
+ok(/language=ru-RU/.test(js) && /\/videos\?api_key=/.test(js), 'сначала ищем русский трейлер, потом общий');
+ok(/function ensureWatchProviders\(movie\)\{/.test(js) && /watch\/providers\?api_key=/.test(js) && /results\.RU/.test(js),
+  'сервисы берём у TMDB по России');
+ok(/WATCH_KIND_LABEL = \{ flatrate:'по подписке'/.test(js) && /rent:'аренда', buy:'покупка'/.test(js), 'у каждого сервиса видно, как там смотрят');
+ok(/function openExternal\(url\)\{[\s\S]{0,240}?tg\.openLink/.test(js) && /data-url="\$\{esc\(providers\.link\)\}"/.test(js),
+  'переход в сервис открывается системным способом Telegram');
+ok(!/(rutracker|rutor|lordfilm|hdrezka|kinogo|torrent|magnet:)/i.test(src), 'пиратских источников в приложении нет');
+ok(/приложение не хранит и не раздаёт фильмы/.test(js), 'и в окне прямо сказано, что фильмы не раздаются');
+
+/* живой прогон: пустая обложка на экране и открытие карточки */
+const wCalls = [];
+const wDb = makeFakeDb();
+const wFetch = async (url) => {
+  const u = String(url);
+  wCalls.push(u);
+  const json = (o) => ({ ok: true, json: async () => o });
+  if (/\/genre\/(movie|tv)\/list/.test(u)) return json({ genres: [] });
+  if (/watch\/providers/.test(u)){
+    const id = (u.match(/\/(\d+)\/watch\/providers/) || [])[1] || '7009';
+    return json({ results: { RU: { link: 'https://www.themoviedb.org/movie/' + id + '/watch?locale=RU',
+      flatrate: [{ provider_id: 505, provider_name: 'Кинопоиск', logo_path: '/kp.jpg' }] } } });
+  }
+  if (/\/videos/.test(u)) return json({ results: [{ site: 'YouTube', type: 'Trailer', key: 'TRAILER9', name: 'Русский трейлер' }] });
+  if (/\/credits/.test(u)) return json({ cast: [] });
+  const m = u.match(/\/(movie|tv)\/(\d+)\?/);
+  if (m) return json({ id: +m[2], title: 'Подробный тайтл', name: 'Подробный тайтл', poster_path: '/fresh' + m[2] + '.jpg',
+    overview: 'Описание из базы', genres: [{ name: 'Драма' }], release_date: '2020-05-01', vote_average: 7.5,
+    vote_count: 120, runtime: 104, number_of_episodes: 0 });
+  return json({ page: 1, total_pages: 1, results: FIX.slice(0, 6), genres: [] });
+};
+const devW = await bootDevice(wDb, { platform: 'android', fetch: wFetch });
+const evW = (code) => { try{ return devW.ev(code); }catch(e){ return 'ERR: ' + (e && e.message); } };
+await sleep(300);
+ok(devW.errors.length === 0, 'приложение запускается без ошибок' + (devW.errors.length ? ': ' + devW.errors[0] : ''));
+/* пустая обложка, которая уже на экране: рисуем карточку тем же кодом приложения */
+const bareCard = (id) => `(function(){ const m = { id: ${id}, type: "movie", title: "Тайтл #${id}", posterPath: null, poster: null,
+  overview: "", genres: [], year: "", rating: 0 }; rememberMovie(m); const el = document.createElement("div"); el.className = "grid2"; el.id = "probe${id}";
+  el.innerHTML = posterCardHTML(m); document.body.appendChild(el); applyLazyArt(el); return el.querySelectorAll("[data-need]").length; })()`;
+ok(evW(bareCard(7009)) === 1, 'пустая обложка помечена как «нужно догрузить»');
+devW.win.__flushIO();
+await sleep(400);
+ok(wCalls.some(u => /\/movie\/7009\?/.test(u)), 'пустая обложка на экране сразу запросила карточку тайтла');
+ok(String(evW('String(document.querySelector("#probe7009 .pc-art").dataset.art || "")')).length > 0, 'и вместо заглушки встал постер');
+ok(evW('document.querySelectorAll("#probe7009 .pc-icon").length') === 0, 'иконка-заглушка убрана');
+ok(/Подробный тайтл/.test(evW('String(document.querySelector("#probe7009 .pc-title").textContent)')), 'заголовок «Тайтл #…» заменился настоящим');
+/* открытие карточки, которой приложение ещё не знает */
+evW('(function(){ const bare = { id: 7011, type: "movie", title: "Тайтл #7011", posterPath: null, poster: null, overview: "", genres: [], year: "", rating: 0 }; openSheet(bare); return true; })()');
+await sleep(450);
+const detailsCalls = () => wCalls.filter(u => /\/movie\/7011\?/.test(u)).length;
+ok(detailsCalls() >= 1, 'открытие карточки сразу запросило данные: запросов ' + detailsCalls());
+ok(evW('String(sheetMovie && sheetMovie.title)') === 'Подробный тайтл', '«Тайтл #…» заменился настоящим названием');
+ok(/pl-full/.test(evW('String((document.getElementById("sheetPoster")||{}).innerHTML)')), 'постер встал прямо в открытую карточку');
+ok(/Драма/.test(evW('String((document.getElementById("sheetMeta")||{}).innerHTML)')), 'жанры доехали в строку под названием');
+ok(evW('String((document.getElementById("sheetOverview")||{}).textContent)') === 'Описание из базы', 'и описание заполнилось');
+ok(evW('(function(){ try{ return Object.keys(movieStubs).length; }catch(e){ return -1; } })()') > 0,
+  'тайтл запомнился приложению, а не потерялся вместе с окном');
+/* окно «где смотреть» */
+const beforeWatch = detailsCalls();
+evW('openWatchScreen(sheetMovie)');
+await sleep(450);
+const wBody = () => evW('String((document.getElementById("watchBody")||{}).innerHTML)');
+ok(evW('String(document.getElementById("watchScreen").classList.contains("open"))') === 'true', 'окно «где смотреть» открылось');
+ok(/youtube-nocookie\.com\/embed\/TRAILER9/.test(wBody()), 'трейлер играет в самом приложении');
+ok(/Кинопоиск/.test(wBody()) && /по подписке/.test(wBody()), 'видно сервис и то, что он по подписке');
+ok(detailsCalls() === beforeWatch, 'повторно данные тайтла не запрашиваются');
+let openedUrl = '';
+devW.win.Telegram.WebApp.openLink = (u) => { openedUrl = u; };
+const row = devW.doc.querySelector('.wp-row');
+if (row) row.click();
+await sleep(80);
+ok(/themoviedb\.org\/movie\/7011\/watch/.test(openedUrl), 'кнопка сервиса открывает страницу со ссылками: ' + openedUrl);
+devW.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

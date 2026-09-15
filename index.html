@@ -353,6 +353,22 @@
   /* Окно фильтров на телефоне было с пустой полосой сверху: шапка отступала
      на 16px под safe-area, а тело окна добавляло ещё 6px, плюс 18px поля блока.
      Поджимаем только это окно — остальные окна не трогаем. */
+  /* Окно «где смотреть»: плеер трейлера и сервисы, где тайтл лежит легально. */
+  #watchBody{ padding-top:0; }
+  .wt-frame{ position:relative; aspect-ratio:16 / 9; border-radius:18px; overflow:hidden; background:var(--surface); border:1px solid var(--border); }
+  .wt-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+  .wt-empty{ display:flex; align-items:center; justify-content:center; height:100%; padding:0 22px; text-align:center; font-size:12.5px; line-height:1.5; color:var(--text-dim); }
+  .wt-open{ margin-top:10px; width:100%; padding:12px; border-radius:14px; border:1px solid var(--accent-border); background:var(--surface-2); color:var(--text); font-size:14px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .wt-open:active{ background:var(--surface); }
+  .wp-list{ display:flex; flex-direction:column; gap:10px; }
+  .wp-row{ display:flex; align-items:center; gap:12px; width:100%; padding:11px 14px; border-radius:16px; border:1px solid var(--border); background:var(--surface); color:var(--text); text-align:left; }
+  .wp-row:active{ background:var(--surface-2); }
+  .wp-logo{ width:42px; height:42px; border-radius:12px; flex:0 0 auto; background:var(--surface-2) center/cover no-repeat; }
+  .wp-mid{ flex:1; min-width:0; }
+  .wp-name{ font-size:14.5px; font-weight:600; }
+  .wp-kind{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+  .wp-go{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--accent); flex:0 0 auto; }
+  .wt-note{ margin-top:16px; font-size:12px; line-height:1.6; color:var(--text-dim); }
   #filtersScreen .ov-head{ padding:calc(12px + var(--safe-top)) 20px 6px; }
   #filtersScreen .ov-body{ padding-top:0; padding-bottom:20px; }
   #filtersScreen .f-block{ margin-bottom:16px; }
@@ -1983,6 +1999,15 @@
   <div class="ov-body" id="levelsBody"></div>
 </div>
 
+<!-- ГДЕ СМОТРЕТЬ: трейлер играет здесь, сам фильм открывается в сервисе -->
+<div class="overlay-screen" id="watchScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeWatch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="ov-title" id="watchTitle">Где смотреть</div>
+  </div>
+  <div class="ov-body" id="watchBody"></div>
+</div>
+
 <!-- ПОЛНЫЙ СПИСОК (открывается по «Показать все» из профилей и статистики) -->
 <div class="overlay-screen" id="titleListScreen">
   <div class="ov-head">
@@ -2145,6 +2170,7 @@
     <div class="sheet-actions">
       <button id="sheetWish"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 3 1-6.1-4.4-4.3 6.1-.9z"/></svg>Чекнуть</button>
       <button id="sheetWatching"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none" style="vertical-align:-2px; margin-right:4px;"><path d="M7 4.5l14 7.5-14 7.5v-15z"/></svg>Смотрю</button>
+      <button id="sheetWatchBtn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><rect x="2.5" y="6.5" width="19" height="12.5" rx="2.5"/><path d="M10 10.5l4.5 2.5L10 15.5z" fill="currentColor" stroke="none"/></svg>Смотреть</button>
       <button id="sheetShare"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M7 17L17 7M9 7h8v8"/></svg>Поделиться</button>
       <button id="sheetWatched"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M20 6L9 17l-5-5"/></svg>Смотрел</button>
       <button id="sheetReviewBtn" style="flex-basis:100%; background:var(--surface-2);"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Смотриметры</button>
@@ -2185,6 +2211,16 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.34 — пустых обложек больше нет, и фильм можно смотреть:
+         • открытие карточки сразу тянет всё, чего в ней не хватает: обложку,
+           описание, жанры, число серий — окно открывается мгновенно, а данные
+           доезжают следом и встают на свои места без перерисовки;
+         • пустая обложка на экране (в ленте, каталоге, чек-листе, у друга)
+           догружается сама, как только её видно, — вместо «Тайтл #12345»
+           появляются настоящее название, жанры и постер;
+         • в карточке фильма появилась кнопка «Смотреть»: трейлер играет прямо
+           в приложении, а рядом — сервисы, где тайтл лежит легально (берём из
+           TMDB по России), с переходом в сервис одной кнопкой.
    0.33 — полная синхронизация и большая уборка:
          • телефон и десктоп теперь совпадают во всём: тема, 18+, жанры, вид
            разделов, сортировка и фильтры чек-листа, пройденное обучение и дата
@@ -2446,7 +2482,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.33';
+const APP_VERSION = '0.34';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3253,7 +3289,7 @@ function openTitleList(title, movies, opts){
     const scoreOf = o.scoreOf, extraOf = o.extraOf;
     body.innerHTML = `<div class="friend-watched">${movies.map(m => `
       <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
-        <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}" style="background:${posterBG(m)};"></div>
+        <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}"${hasArt(m) ? '' : ` data-need="${mid(m)}"`} style="background:${posterBG(m)};"></div>
         <div class="fw-mid">
           <div class="fw-title">${esc(m.title)}</div>
           <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')}</div>
@@ -3263,7 +3299,8 @@ function openTitleList(title, movies, opts){
       </div>`).join('')}</div>`;
   }
   paintArtIn(body);
-  requestPosters(movies.slice(0, 12));
+  applyLazyArt(body);
+  requestPosters(movies);
   bindMovieTaps(body);
   openOverlay('titleListScreen');
 }
@@ -3280,7 +3317,7 @@ function moviesFromKeys(keys){ return keys.map(keyToMovie).filter(Boolean); }
 function friendRows(list){
   return list.map(m => `
     <div class="fw-row" data-movie="${m.id}" data-type="${m.type}">
-      <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}" style="background:${posterBG(m)};"></div>
+      <div class="fw-poster ${hasArt(m) ? 'art-loading' : ''}" data-art="${hasArt(m) ? esc(posterUrl(m,'w154')) : ''}"${hasArt(m) ? '' : ` data-need="${mid(m)}"`} style="background:${posterBG(m)};"></div>
       <div class="fw-mid">
         <div class="fw-title">${esc(m.title)}</div>
         <div class="fw-sub">${esc(m.year)} · ${esc((m.genres && m.genres[0]) || TYPE_LABEL[m.type] || 'Тайтл')} · ${esc(m.rating)}<span class="star">${ICON('starFill', 10)}</span></div>
@@ -3437,7 +3474,7 @@ async function openFriendProfile(id){
       <div class="fp-hint">Сверху — где вы расходитесь сильнее всего: там интереснее сравнивать</div>
       ${ratedBoth.slice(0, 6).map(r => `
         <div class="fpr-row" data-movie="${r.movie.id}" data-type="${r.movie.type}" role="button">
-          <div class="fpr-poster ${hasArt(r.movie) ? 'art-loading' : ''}" data-art="${hasArt(r.movie) ? esc(posterUrl(r.movie,'w154')) : ''}" style="background:${posterBG(r.movie)};"></div>
+          <div class="fpr-poster ${hasArt(r.movie) ? 'art-loading' : ''}" data-art="${hasArt(r.movie) ? esc(posterUrl(r.movie,'w154')) : ''}"${hasArt(r.movie) ? '' : ` data-need="${mid(r.movie)}"`} style="background:${posterBG(r.movie)};"></div>
           <div class="fpr-mid">
             <div class="fpr-title">${esc(r.movie.title)}</div>
             <div class="fpr-sub">ты ${r.mine} · ${esc(name)} ${r.theirs}</div>
@@ -3476,7 +3513,8 @@ async function openFriendProfile(id){
     };
   });
   paintArtIn(body);
-  requestPosters([...theirRatings.keys()].map(keyToMovie).filter(Boolean).slice(0, 12));
+  applyLazyArt(body);
+  requestPosters([...theirRatings.keys()].map(keyToMovie).filter(Boolean));
   bindMovieTaps(body);
   // Пилюли друга: тап открывает окно с его тайтлами
   const hisTiles = {
@@ -4675,6 +4713,25 @@ async function fetchList(url, type, genreMap){
 const stubFailed = new Set();
 const titleFillInFlight = new Set();
 let titleFillBudget = 260;            // за сессию не больше 260 догрузок — предохранитель
+/* Ответ TMDB → объект тайтла. Одним местом на весь файл: раньше это жило только
+   внутри fillMissingTitles, и любая другая догрузка повторяла ту же логику. */
+function movieFromTmdb(data, kind){
+  return {
+    id: data.id, type: kind === 'tv' ? 'series' : 'movie',
+    title: data.title || data.name, originalTitle: data.original_title || data.original_name || '',
+    year: (data.release_date || data.first_air_date || '').slice(0,4),
+    rating: data.vote_average ? Math.round(data.vote_average*10)/10 : 0,
+    poster: data.poster_path || null, posterPath: data.poster_path || null,
+    genres: (data.genres || []).map(g => g.name),
+    overview: data.overview || '', voteCount: data.vote_count || 0,
+    runtime: data.runtime || (data.episode_run_time && data.episode_run_time[0]) || 0,
+    episodesTotal: data.number_of_episodes || 0,
+    seasons: kind === 'tv'
+      ? (data.seasons || []).filter(x => x.season_number > 0 && x.episode_count > 0)
+          .map(x => ({ number: x.season_number, name: x.name || ('Сезон ' + x.season_number), total: x.episode_count }))
+      : [],
+  };
+}
 async function fillMissingTitles(keys){
   const missing = [...new Set(keys)]
     .filter(k => k && !keyToMovie(k) && !stubFailed.has(k) && !titleFillInFlight.has(k));
@@ -4694,21 +4751,7 @@ async function fillMissingTitles(keys){
       try{
         const data = await fetch(`https://api.themoviedb.org/3/${kind}/${id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
         if (data && (data.title || data.name)){
-        rememberMovie({
-          id: data.id, type: kind === 'tv' ? 'series' : 'movie',
-          title: data.title || data.name, originalTitle: data.original_title || data.original_name || '',
-          year: (data.release_date || data.first_air_date || '').slice(0,4),
-          rating: data.vote_average ? Math.round(data.vote_average*10)/10 : 0,
-          poster: data.poster_path || null, posterPath: data.poster_path || null,
-          genres: (data.genres || []).map(g => g.name),
-          overview: data.overview || '', voteCount: data.vote_count || 0,
-          runtime: data.runtime || data.episode_run_time?.[0] || 0,
-          episodesTotal: data.number_of_episodes || 0,
-          seasons: kind === 'tv'
-            ? (data.seasons || []).filter(x => x.season_number > 0 && x.episode_count > 0)
-                .map(x => ({ number: x.season_number, name: x.name || ('Сезон ' + x.season_number), total: x.episode_count }))
-            : [],
-        });
+        rememberMovie(movieFromTmdb(data, kind));
         changed = true;
       } else {
           stubFailed.add(k);
@@ -4718,8 +4761,89 @@ async function fillMissingTitles(keys){
   };
   await Promise.all(Array.from({ length: 6 }, worker));
   batch.forEach(k => titleFillInFlight.delete(k));
-  if (changed){ try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }
+  if (changed){ saveStubsSoon(); }
   return changed;
+}
+/* ===== Полная карточка тайтла: обложка, описание, жанры, сезоны =====
+   Тайтл может приехать «полупустым»: из базы по одному id, из чужого профиля, из
+   списка, где TMDB отдал запись без постера. Тогда по открытию карточки фильма и
+   по появлению пустой обложки на экране сразу тянем полные данные и дорисовываем
+   то, что уже показано, — без полной перерисовки экрана. */
+const DETAILS_FAILED = new Set();          // уже пробовали и не вышло — больше не дёргаем
+const DETAILS_DONE = new Set();            // подробности уже приехали
+const DETAILS_IN_FLIGHT = new Map();       // ключ → промис: дважды один тайтл не грузим
+const detailsQueue = [];
+let detailsRunning = 0;
+const DETAILS_PARALLEL = 4;                // одновременно не больше четырёх запросов
+function movieNeedsDetails(m){
+  if (!m || !m.id) return false;
+  return !hasArt(m) || !m.overview || !(m.genres || []).length;
+}
+function ensureMovieDetails(movie){
+  if (!movie || !movie.id) return Promise.resolve(false);
+  const key = mid(movie);
+  const running = DETAILS_IN_FLIGHT.get(key);
+  if (running) return running;
+  if (!movieNeedsDetails(movie)) return Promise.resolve(false);
+  if (DETAILS_FAILED.has(key) || DETAILS_DONE.has(key)) return Promise.resolve(false);
+  const job = new Promise(resolve => {
+    detailsQueue.push({ movie, key, resolve });
+    detailsPump();
+  });
+  const tracked = job.then(ok => { DETAILS_IN_FLIGHT.delete(key); return ok; },
+                           () => { DETAILS_IN_FLIGHT.delete(key); return false; });
+  DETAILS_IN_FLIGHT.set(key, tracked);
+  return tracked;
+}
+function detailsPump(){
+  while (detailsRunning < DETAILS_PARALLEL && detailsQueue.length){
+    const item = detailsQueue.shift();
+    detailsRunning++;
+    loadMovieDetails(item).then(ok => {
+      item.resolve(ok);
+      detailsRunning--;
+      detailsPump();
+    });
+  }
+}
+async function loadMovieDetails(item){
+  const movie = item.movie, key = item.key;
+  const kind = isTvLike(movie) ? 'tv' : 'movie';
+  try{
+    const data = await fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}?language=ru-RU&api_key=${TMDB_KEY}`).then(r => r.json());
+    if (!data || (!data.title && !data.name)){ DETAILS_FAILED.add(key); return false; }
+    applyMovieData(movie, movieFromTmdb(data, kind));
+    DETAILS_DONE.add(key);
+    return true;
+  }catch(e){ DETAILS_FAILED.add(key); return false; }
+}
+/* Свежие данные кладём в ту же запись (каталог или память телефона), иначе в
+   приложении окажутся две копии тайтла — одна с обложкой, другая пустая.
+   Пустые значения ничего не затирают: сбойный ответ не должен портить карточку. */
+function applyMovieData(target, fresh){
+  if (!target || !fresh) return target;
+  const dest = keyToMovie(mid(target)) || target;
+  const keep = (v, cur) => (v === undefined || v === null || v === '' || v === 0 ? cur : v);
+  dest.title = keep(fresh.title, dest.title);
+  dest.originalTitle = keep(fresh.originalTitle, dest.originalTitle);
+  dest.year = keep(fresh.year, dest.year);
+  dest.rating = keep(fresh.rating, dest.rating);
+  dest.voteCount = keep(fresh.voteCount, dest.voteCount);
+  dest.runtime = keep(fresh.runtime, dest.runtime);
+  dest.episodesTotal = keep(fresh.episodesTotal, dest.episodesTotal);
+  dest.overview = keep(fresh.overview, dest.overview);
+  if (fresh.posterPath){ dest.posterPath = fresh.posterPath; dest.poster = fresh.posterPath; }
+  if ((fresh.genres || []).length) dest.genres = fresh.genres;
+  if ((fresh.seasons || []).length) dest.seasons = fresh.seasons;
+  /* Тайтл из памяти телефона сохраняем: иначе обложка потеряется при перезапуске. */
+  if (dest === target){
+    rememberMovie(dest);      // тайтл приложению вообще не знаком — запоминаем
+  } else {
+    const stub = movieStubs[mid(dest)];
+    if (stub && stub !== dest) Object.assign(stub, dest);
+    saveStubsSoon();
+  }
+  return dest;
 }
 // Оставляем только карточки с русским названием и постером — чтобы в ленте не было
 // англоязычного мусора без перевода и без обложки. Аниме исключаем из строгой проверки
@@ -5213,6 +5337,12 @@ const STUBS_KEY = 'smotra_movie_stubs';
    в профиле превращалось в 507 в истории — часть ключей не находила фильм. */
 let movieStubs = {};
 try{ movieStubs = JSON.parse(localStorage.getItem(STUBS_KEY) || '{}') || {}; }catch(e){ movieStubs = {}; }
+/* Память телефона сохраняем с задержкой: запись туда — самая дорогая операция, а
+   меняется она пачками (догрузка обложек, описаний, сезонов). */
+function saveStubsSoon(){
+  clearTimeout(saveStubsSoon._t);
+  saveStubsSoon._t = setTimeout(() => { try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }, 400);
+}
 function rememberMovie(m){
   if (!m || !m.id) return;
   const k = mid(m);
@@ -5228,8 +5358,7 @@ function rememberMovie(m){
   if (m.seasons && m.seasons.length) movieStubs[k].seasons = m.seasons;
   const keys = Object.keys(movieStubs);
   if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(x => delete movieStubs[x]);
-  clearTimeout(rememberMovie._t);
-  rememberMovie._t = setTimeout(() => { try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }, 400);
+  saveStubsSoon();
 }
 let persistTimer = null;
 function schedulePersist(){
@@ -5898,6 +6027,121 @@ function openLevelsScreen(){
 document.getElementById('homeLevelStrip').onclick = openLevelsScreen;
 document.getElementById('closeLevels').onclick = () => closeOverlay('levelsScreen');
 
+/* ===== Где смотреть =====
+   Фильмы приложению не принадлежат, и раздавать их оно не может. Зато может
+   показать официальный трейлер прямо здесь и отвести туда, где тайтл лежит
+   легально: по подписке, бесплатно или за аренду. */
+const WATCH_KIND_LABEL = { flatrate:'по подписке', free:'бесплатно', ads:'бесплатно, с рекламой', rent:'аренда', buy:'покупка' };
+const PROVIDER_LOGO_URL = 'https://image.tmdb.org/t/p/w92';
+let watchMovie = null;
+
+/* Внешние ссылки: в Telegram открываем системным способом, вне его — вкладкой. */
+function openExternal(url){
+  if (!url) return;
+  try{
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg && typeof tg.openLink === 'function'){ tg.openLink(url); return; }
+  }catch(e){}
+  try{ window.open(url, '_blank', 'noopener'); }catch(e){ location.href = url; }
+}
+function watchTmdbPage(movie){
+  const kind = isTvLike(movie) ? 'tv' : 'movie';
+  return `https://www.themoviedb.org/${kind}/${movie.id}/watch?locale=RU`;
+}
+/* Официальный трейлер: сначала на русском, потом общий список TMDB. */
+function ensureTrailer(movie){
+  if (movie._trailer !== undefined) return Promise.resolve(movie._trailer);
+  const kind = isTvLike(movie) ? 'tv' : 'movie';
+  const url = (lang) => `https://api.themoviedb.org/3/${kind}/${movie.id}/videos?api_key=${TMDB_KEY}${lang}`;
+  const pick = (list) => (list || []).find(v => v.site === 'YouTube' && v.type === 'Trailer')
+                     || (list || []).find(v => v.site === 'YouTube' && (v.type === 'Teaser' || v.type === 'Clip'));
+  return fetch(url('&language=ru-RU')).then(r => r.json())
+    .then(d => {
+      const ru = pick(d && d.results);
+      if (ru) return ru.key;
+      return fetch(url('')).then(r => r.json()).then(d2 => {
+        const any = pick(d2 && d2.results);
+        return any ? any.key : null;
+      });
+    })
+    .then(key => { movie._trailer = key; return key; })
+    .catch(() => { movie._trailer = null; return null; });
+}
+/* Где тайтл лежит легально. Берём только Россию: приложение русское. */
+function ensureWatchProviders(movie){
+  if (movie._providers !== undefined) return Promise.resolve(movie._providers);
+  const kind = isTvLike(movie) ? 'tv' : 'movie';
+  return fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/watch/providers?api_key=${TMDB_KEY}`)
+    .then(r => r.json())
+    .then(d => {
+      const ru = (d && d.results && d.results.RU) || null;
+      const rows = [];
+      ['flatrate', 'free', 'ads', 'rent', 'buy'].forEach(k => {
+        (ru && ru[k] || []).forEach(pr => {
+          if (rows.some(x => x.id === pr.provider_id)) return;
+          rows.push({ id: pr.provider_id, name: pr.provider_name, logo: pr.logo_path, kind: k });
+        });
+      });
+      movie._providers = { rows, link: (ru && ru.link) || watchTmdbPage(movie) };
+      return movie._providers;
+    })
+    .catch(() => { movie._providers = { rows: [], link: watchTmdbPage(movie) }; return movie._providers; });
+}
+function watchSkeletonHTML(){
+  return `<div class="eyebrow">Трейлер</div>
+    <div class="wt-frame"><div class="wt-empty">Ищу ролик…</div></div>
+    <div class="eyebrow" style="margin-top:20px;">Сервисы</div>
+    <div class="wp-list"><div class="wp-row"><div class="wp-logo"></div><div class="wp-mid"><div class="wp-name">Ищу, где смотреть…</div></div></div></div>`;
+}
+function watchBodyHTML(movie, trailerKey, providers){
+  const frame = trailerKey
+    ? `<div class="wt-frame"><iframe src="https://www.youtube-nocookie.com/embed/${esc(trailerKey)}?rel=0&modestbranding=1&playsinline=1" title="Трейлер" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>
+       <button class="wt-open" data-url="https://www.youtube.com/watch?v=${esc(trailerKey)}">${ICON('play', 14)} Смотреть трейлер в YouTube</button>`
+    : `<div class="wt-frame"><div class="wt-empty">Официального трейлера к этому тайтлу в базе пока нет</div></div>`;
+  const list = providers.rows.length
+    ? providers.rows.map(pr => `<button class="wp-row" data-url="${esc(providers.link)}">
+        <div class="wp-logo"${pr.logo ? ` style="background-image:url('${esc(PROVIDER_LOGO_URL + pr.logo)}')"` : ''}></div>
+        <div class="wp-mid"><div class="wp-name">${esc(pr.name)}</div><div class="wp-kind">${WATCH_KIND_LABEL[pr.kind] || 'доступно'}</div></div>
+        <span class="wp-go">открыть ${ICON('share', 13)}</span>
+      </button>`).join('')
+    : `<button class="wp-row" data-url="${esc(providers.link)}"><div class="wp-logo"></div><div class="wp-mid"><div class="wp-name">Подборка сервисов на TMDB</div><div class="wp-kind">по твоему региону</div></div><span class="wp-go">открыть ${ICON('share', 13)}</span></button>`;
+  return `<div class="eyebrow">Трейлер</div>${frame}
+    <div class="eyebrow" style="margin-top:20px;">Где смотреть целиком</div>
+    <div class="wp-list">${list}</div>
+    <div class="wt-note">Ролик играет прямо здесь. Полный фильм откроется в сервисе, где он лежит легально, — приложение не хранит и не раздаёт фильмы, только показывает дорогу.</div>`;
+}
+function openWatchScreen(movie){
+  if (!movie) return;
+  watchMovie = movie;
+  haptic('selection');
+  const title = document.getElementById('watchTitle');
+  if (title) title.textContent = movie.title;
+  const body = document.getElementById('watchBody');
+  if (body) body.innerHTML = watchSkeletonHTML();
+  openOverlay('watchScreen');
+  /* Название могло быть «Тайтл #12345» — открытие карточки доводит данные. */
+  ensureMovieDetails(movie).then(ok => {
+    if (ok && watchMovie === movie && title) title.textContent = movie.title;
+  });
+  Promise.all([ensureTrailer(movie), ensureWatchProviders(movie)]).then(([key, providers]) => {
+    if (watchMovie !== movie) return;      // успели открыть другую карточку
+    const host = document.getElementById('watchBody');
+    if (host) host.innerHTML = watchBodyHTML(movie, key, providers);
+  });
+}
+(function initWatchScreen(){
+  const closeBtn = document.getElementById('closeWatch');
+  if (closeBtn) closeBtn.onclick = () => closeOverlay('watchScreen');
+  const body = document.getElementById('watchBody');
+  if (!body) return;
+  body.addEventListener('click', (ev) => {
+    const el = ev.target && ev.target.closest ? ev.target.closest('[data-url]') : null;
+    if (!el) return;
+    haptic('selection');
+    openExternal(el.dataset.url);
+  });
+})();
+
 /* Из чего складывается опыт: тот же XP_RULES, что и в myXP(), но по полочкам.
    Так в окне уровней видно не только «сколько», но и «откуда». */
 function myXPBreakdown(){
@@ -6146,16 +6390,22 @@ const DECK_REFILL_TRIES_MAX = 2;
 /* Колода V2: карточки не пересобираются целиком, а плавно «поднимаются» после
    свайпа — верхняя уезжает, следующая красиво вырастает на её место. */
 const DECK_DEPTH_Y = 12, DECK_DEPTH_SCALE = 0.05;
+/* Тип и жанры карточки — отдельной строкой: тем же кодом пользуется и догрузка,
+   когда жанры приезжают вместе с обложкой. */
+function genreTagsHTML(m){
+  return (m.type !== 'film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[m.type] || ''}</div>` : '')
+    + (m.genres || []).slice(0, 2).map(g => `<div class="genre-tag">${esc(g)}</div>`).join('');
+}
 function cardHTML(movie){
   return `
-      <div class="poster ${hasArt(movie) ? 'art-loading' : ''}" data-art="${hasArt(movie) ? esc(posterUrl(movie, 'w342')) : ''}" style="background:${posterBG(movie)};">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
+      <div class="poster ${hasArt(movie) ? 'art-loading' : ''}" data-art="${hasArt(movie) ? esc(posterUrl(movie, 'w342')) : ''}"${hasArt(movie) ? '' : ` data-need="${mid(movie)}"`} style="background:${posterBG(movie)};">${hasArt(movie) ? '' : `<div class="poster-icon">${ICON(posterIcon(movie), 56)}</div>`}</div>
       <div class="shade"></div>
       <div class="veil"></div>
       <div class="stamp watched">СМОТРЕЛ</div>
       <div class="stamp skip">МИМО</div>
       <div class="stamp wish">ЧЕКНУТЬ</div>
       <div class="stamp watching">СМОТРЮ</div>
-      <div class="badges-row">${movie.type!=='film' ? `<div class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[movie.type]}</div>` : ''}${(movie.genres||[]).slice(0,2).map(g=>`<div class="genre-tag">${esc(g)}</div>`).join('')}</div>
+      <div class="badges-row"${(movie.genres || []).length ? '' : ' data-nogenres="1"'}>${genreTagsHTML(movie)}</div>
       <div class="info">
         <div class="title">${esc(movie.title)}</div>
         <div class="meta">${esc(movie.year)} <span class="star">${ICON('starFill', 12)} ${esc(movie.rating)}</span></div>
@@ -6238,6 +6488,9 @@ function renderStack(){
     for (let depth = visible.length - 1; depth >= 0; depth--){
       stackEl.appendChild(makeCard(visible[depth], depth));
     }
+    /* Пустая обложка верхней карточки догружается сама: ждать прокрутки тут нечего. */
+    requestPosters(visible.slice(0, 3));
+    applyLazyArt(stackEl);
   }catch(e){
     console.error('renderStack failed', e);
     if (!stackEl.querySelector('.card')){
@@ -7197,7 +7450,7 @@ function renderWatching(){
     el.innerHTML = items.map(posterCardHTML).join('');
     applyLazyArt(el);
     paintArtIn(el);
-    requestPosters(items.slice(0, 12));
+    requestPosters(items);
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
       card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
@@ -7509,14 +7762,29 @@ if ('IntersectionObserver' in window){
       const el = en.target;
       if (el.dataset.bg) paintArt(el, el.dataset.bg);   // с бликом во время загрузки
       delete el.dataset.bg;
+      loadNeededArt(el);
       posterObserver.unobserve(el);
     });
   }, { rootMargin:'400px 0px' });
 }
+/* Пустая обложка: тянем карточку тайтла и дорисовываем то, что уже на экране. */
+function loadNeededArt(el){
+  const need = el.dataset.need;
+  if (!need) return;
+  delete el.dataset.need;
+  const m = keyToMovie(Number(need));
+  if (m && movieNeedsDetails(m)) ensureMovieDetails(m).then(ok => { if (ok) patchFilledArt(); });
+}
 function applyLazyArt(root){
-  [...root.querySelectorAll('.pc-art[data-bg]')].forEach(el => {
-    if (!el.dataset.bg) return;
-    if (!posterObserver){ paintArt(el, el.dataset.bg); delete el.dataset.bg; return; }
+  if (!root || !root.querySelectorAll) return;
+  [...root.querySelectorAll('.pc-art[data-bg], [data-need]')].forEach(el => {
+    if (!el.dataset.bg && !el.dataset.need) return;
+    if (!posterObserver){
+      /* Без IntersectionObserver грузим сразу: пустых обложек в приложении быть не должно. */
+      if (el.dataset.bg){ paintArt(el, el.dataset.bg); delete el.dataset.bg; }
+      loadNeededArt(el);
+      return;
+    }
     posterObserver.observe(el);
   });
 }
@@ -7526,23 +7794,39 @@ const posterTopUp = new Set();
 /* Тайтл догрузился из TMDB — дорисовываем его на месте: обложку и название в уже
    отрисованных карточках. Полная перерисовка экрана тут не нужна, а именно она
    давала «бесконечную загрузку» в ленте и в профиле друга. */
+/* Пустая обложка — это градиент с иконкой. Когда картинка пришла, иконку и
+   подпись «загружаю» нужно убрать, иначе они останутся поверх постера. */
+function clearArtPlaceholder(el){
+  if (!el) return;
+  [...el.querySelectorAll('.poster-icon, .pc-icon, .sheet-poster-icon, .pl-loading')].forEach(x => x.remove());
+  [...el.children].forEach(ch => { if (ch.tagName && ch.tagName.toLowerCase() === 'svg') ch.remove(); });
+}
 function patchFilledArt(host){
   const root = host || document;
   [...root.querySelectorAll('[data-movie], [data-id]')].forEach(el => {
-    const id = +((el.dataset.movie != null ? el.dataset.movie : el.dataset.id) || 0);
+    const raw = el.dataset.movie != null ? el.dataset.movie : (el.dataset.type ? el.dataset.id : null);
+    if (raw == null || raw === '') return;
+    const id = +raw;
     if (!id) return;
     const m = movieById(id, el.dataset.type);
     if (!m) return;
-    const art = el.querySelector('.pc-art, .fw-poster, .thumb, .review-poster, .fpr-poster');
+    const art = el.querySelector('.pc-art, .fw-poster, .thumb, .review-poster, .fpr-poster, .poster');
     if (art && hasArt(m)){
       art.dataset.art = posterUrl(m, 'w185');
-      if (!art.style.backgroundImage){
+      clearArtPlaceholder(art);
+      if (!art.style.backgroundImage || art.style.backgroundImage === 'none'){
         art.style.backgroundImage = `url('${posterUrl(m, 'w185')}')`;
         art.style.backgroundSize = 'cover'; art.style.backgroundPosition = 'center';
         art.classList.remove('art-loading');
       }
     }
-    const t = el.querySelector('.fw-title, .review-movie');
+    /* Жанры и тип тайтла могли приехать вместе с обложкой. */
+    const badges = el.querySelector('.badges-row[data-nogenres="1"]');
+    if (badges && (m.genres || []).length){
+      badges.innerHTML = genreTagsHTML(m);
+      badges.removeAttribute('data-nogenres');
+    }
+    const t = el.querySelector('.fw-title, .review-movie, .pc-title, .rc-title, .title');
     if (t && /^Тайтл #/.test(t.textContent.trim())){
       const at = t.textContent.indexOf(' · ');
       t.textContent = m.title + (at > -1 ? t.textContent.slice(at) : '');
@@ -7551,13 +7835,24 @@ function patchFilledArt(host){
   paintArtIn(root);
 }
 function requestPosters(list){
-  const missing = (list || []).filter(m => m && !hasArt(m)).map(mid).filter(k => k && !posterTopUp.has(k) && !stubFailed.has(k));
-  if (!missing.length) return;
-  const batch = missing.slice(0, 8);
-  batch.forEach(k => posterTopUp.add(k));
-  fillMissingTitles(batch).then(changed => {
-    batch.forEach(k => posterTopUp.delete(k));
-    if (changed) refreshVisibleScreens();
+  const items = (list || []).filter(Boolean);
+  if (!items.length) return;
+  /* Тайтлов, которых нет даже в памяти телефона, догружаем пачкой — как раньше. */
+  const missing = items.map(mid).filter(k => k && !posterTopUp.has(k) && !stubFailed.has(k) && !keyToMovie(k));
+  if (missing.length){
+    const batch = missing.slice(0, 12);
+    batch.forEach(k => posterTopUp.add(k));
+    fillMissingTitles(batch).then(changed => {
+      batch.forEach(k => posterTopUp.delete(k));
+      if (changed) refreshVisibleScreens();
+    });
+  }
+  /* А если тайтл известен, но без обложки и описания — тянем подробности и
+     дорисовываем уже показанные карточки, не перерисовывая экран целиком. */
+  const bare = items.filter(movieNeedsDetails).slice(0, 8);
+  if (!bare.length) return;
+  Promise.all(bare.map(m => ensureMovieDetails(m))).then(results => {
+    if (results.some(Boolean)) patchFilledArt();
   });
 }
 function posterCardHTML(m){
@@ -7565,7 +7860,7 @@ function posterCardHTML(m){
   const flag = w ? `<div class="pc-flag watched"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg></div>`
               : wi ? `<div class="pc-flag wish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12v18l-6-4-6 4V3z"/></svg></div>`
               : wa ? `<div class="pc-flag watching">${ICON('play', 10)}</div>` : '';
-  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art ${hasArt(m) ? 'art-loading' : ''}" data-bg="${hasArt(m) ? esc(posterUrl(m, 'w185')) : ''}" style="${hasArt(m) ? `background:${posterBG(m)};` : posterBG(m)}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
+  return `<div class="poster-card" data-id="${m.id}" data-type="${m.type}"><div class="pc-art ${hasArt(m) ? 'art-loading' : ''}" data-bg="${hasArt(m) ? esc(posterUrl(m, 'w185')) : ''}"${hasArt(m) ? '' : ` data-need="${mid(m)}"`} style="${hasArt(m) ? `background:${posterBG(m)};` : posterBG(m)}">${hasArt(m) ? '' : `<span class="pc-icon">${ICON(posterIcon(m), 30)}</span>`}</div>${flag}<div class="pc-shade"></div><div class="pc-title">${esc(m.title)}</div></div>`;
 }
 // Маленькая обложка для карточки рецензии. movie может быть undefined (нет в каталоге).
 function reviewPosterHTML(movie){
@@ -7576,7 +7871,7 @@ function reviewPosterHTML(movie){
 function rowCardHTML(m, showActions){
   const actions = showActions ? `<div class="rc-actions"><button class="ok" data-act="watched">${ICON('check', 15)}</button><button data-act="remove">${ICON('cross', 14)}</button></div>` : '';
   return `<div class="row-card" data-id="${m.id}" data-type="${m.type}" data-key="${mid(m)}">
-      <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
+      <div class="thumb"${hasArt(m) ? '' : ` data-need="${mid(m)}"`} style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
       <div class="rc-body"><div class="rc-title">${esc(m.title)}</div><div class="rc-meta">${esc(m.year)} · ${esc((m.genres||[]).join(', '))}</div></div>
       ${actions}
     </div>`;
@@ -7635,7 +7930,7 @@ function renderCatalog(){
     grid.innerHTML = shown.map(posterCardHTML).join('');
     applyLazyArt(grid);
     paintArtIn(grid);
-    requestPosters(shown.slice(0, 12));
+    requestPosters(shown);
     [...grid.querySelectorAll('.poster-card')].forEach((el,i) => {
       if (i < 24){ el.classList.add('card-enter'); el.style.animationDelay = (i * 0.025) + 's'; }
       el.onclick = () => openSheet(movieById(+el.dataset.id, el.dataset.type));
@@ -7692,7 +7987,7 @@ function renderWishlist(){
     el.innerHTML = items.map(posterCardHTML).join('');
     applyLazyArt(el);
     paintArtIn(el);
-    requestPosters(items.slice(0, 12));
+    requestPosters(items);
     [...el.querySelectorAll('.poster-card')].forEach((card,i) => {
       card.style.animationDelay = (Math.min(i,12)*0.03) + 's';
       card.onclick = () => openSheet(movieById(+card.dataset.id, card.dataset.type));
@@ -7734,7 +8029,7 @@ function renderHistory(){
   if (!items.length){ el.innerHTML = `<div class="empty-note">Здесь пока пусто</div>`; return; }
   el.innerHTML = items.map(m => `
     <div class="row-card" data-id="${m.id}" data-type="${m.type}">
-      <div class="thumb" style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
+      <div class="thumb"${hasArt(m) ? '' : ` data-need="${mid(m)}"`} style="${posterStyle(m, 'w154')}">${hasArt(m) ? '' : ICON(posterIcon(m), 22)}</div>
       <div class="rc-body"><div class="rc-title">${esc(m.title)}</div><div class="rc-meta">${esc(m.year)} · ${esc((m.genres||[]).join(', '))}</div></div>
     </div>`).join('');
   [...el.querySelectorAll('.row-card')].forEach(row => row.onclick = () => openSheet(movieById(+row.dataset.id, row.dataset.type)));
@@ -7949,14 +8244,11 @@ function renderCastChips(movie){
   }
 }
 
-function openSheet(movie){
-  sheetMovie = movie;
-  raiseSheet(sheet, document.getElementById('backdrop'));
-  // Новая карточка всегда открывается сверху, а не в том месте, где докрутили прошлую.
-  sheet.scrollTop = 0;
-  sheet.style.transform = '';
-  sheet.style.touchAction = '';
+/* Обложка карточки фильма: постер с бликом, а без постера — градиент с иконкой.
+   Отдельной функцией, потому что её перерисовывают, когда картинка приезжает. */
+function paintSheetPoster(movie){
   const pl = document.getElementById('sheetPoster');
+  if (!pl) return;
   if (hasArt(movie)){
     const url = posterUrl(movie, 'w780');
     pl.style.cssText = '';
@@ -7965,10 +8257,43 @@ function openSheet(movie){
     pl.style.cssText = `background:${posterBG(movie)};`;
     pl.innerHTML = `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;
   }
-  document.getElementById('sheetTitle').textContent = movie.title;
+}
+/* Год, рейтинг, тип и жанры под названием. Общая для открытия карточки и для
+   догрузки: жанры часто приезжают вместе с обложкой. */
+function sheetMetaHTML(movie){
   const typeChip = movieTypes(movie).filter(t => t !== 'film')
     .map(t => `<span class="genre-tag" style="border-color:var(--accent); color:var(--accent);">${TYPE_LABEL[t] || ''}</span>`).join('');
-  document.getElementById('sheetMeta').innerHTML = `${esc(movie.year)} · ${ICON('starFill', 12)} ${esc(movie.rating)} <span id="sheetSmotrimetry"></span> ${typeChip}${(movie.genres||[]).map(g=>`<span class="genre-tag">${esc(g)}</span>`).join('')}`;
+  return `${esc(movie.year)} · ${ICON('starFill', 12)} ${esc(movie.rating)} <span id="sheetSmotrimetry"></span> ${typeChip}${(movie.genres||[]).map(g=>`<span class="genre-tag">${esc(g)}</span>`).join('')}`;
+}
+/* Тайтл догрузился, а карточка уже открыта — правим только то, что изменилось.
+   Экран за окном не трогаем: перерисовка сбросила бы прокрутку. */
+function fillSheetFromMovie(movie){
+  if (!movie || sheetMovie !== movie) return;
+  const titleEl = document.getElementById('sheetTitle');
+  const name = movie.title || `Тайтл #${movie.id}`;
+  if (titleEl && titleEl.textContent !== name) titleEl.textContent = name;
+  const meta = document.getElementById('sheetMeta');
+  if (meta && meta.innerHTML !== sheetMetaHTML(movie)){
+    meta.innerHTML = sheetMetaHTML(movie);
+    refreshSheetReviews(movie);   // в строке заново нужна средняя оценка зрителей
+  }
+  const overview = document.getElementById('sheetOverview');
+  if (overview && movie.overview && !overview.textContent.trim()) overview.textContent = movie.overview;
+  paintSheetPoster(movie);
+  if (!movie._castFetched) ensureCast(movie).then(() => { if (sheetMovie === movie) renderCastChips(movie); });
+  updateSheetButtons(movie);
+  renderProgress(movie);
+}
+function openSheet(movie){
+  sheetMovie = movie;
+  raiseSheet(sheet, document.getElementById('backdrop'));
+  // Новая карточка всегда открывается сверху, а не в том месте, где докрутили прошлую.
+  sheet.scrollTop = 0;
+  sheet.style.transform = '';
+  sheet.style.touchAction = '';
+  paintSheetPoster(movie);
+  document.getElementById('sheetTitle').textContent = movie.title;
+  document.getElementById('sheetMeta').innerHTML = sheetMetaHTML(movie);
   document.getElementById('sheetOverview').textContent = movie.overview;
   renderCastChips(movie);
   if (!movie._castFetched) {
@@ -7982,6 +8307,9 @@ function openSheet(movie){
   document.getElementById('sheetMyReview').innerHTML = '';
   document.getElementById('sheetOtherReviews').innerHTML = '';
   refreshSheetReviews(movie);
+  /* Открыли карточку — сразу тянем всё, чего в ней не хватает: обложку, описание,
+     жанры, число серий. Открытие окна ни на миг не ждём. */
+  ensureMovieDetails(movie).then(ok => { if (ok) fillSheetFromMovie(movie); });
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
 backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
@@ -8259,6 +8587,7 @@ async function openReviewScreen(movie){
   openOverlay('reviewScreen');
 }
 document.getElementById('sheetReviewBtn').onclick = () => { if (sheetMovie) openReviewScreen(sheetMovie); };
+document.getElementById('sheetWatchBtn').onclick = function(){ pulseBtn(this); if (sheetMovie) openWatchScreen(sheetMovie); };
 document.getElementById('closeReview').onclick = () => closeOverlay('reviewScreen');
 document.getElementById('submitReview').onclick = async () => {
   if (!reviewMovie) return;
