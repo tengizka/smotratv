@@ -148,8 +148,9 @@ ok(/addEventListener\('resize', \(\) => \{ syncAppHeight\(\); applySafeArea\(\);
 
 /* ============================== [5] Уровни ============================== */
 section('[5] LVL: мягкая лестница и правила в FAQ');
-ok(/const START = \[0, 50, 250, 500, 1000, 2000\]/.test(js), 'пороги: 50 / 250 / 500 / 1000 / 2000 XP');
-ok(/Math\.pow\(2, i - START\.length \+ 1\)/.test(js), 'дальше каждый порог удваивается');
+ok(/const LEVEL_MAX = 68;/.test(js) && /function levelNeedXP\(n\)\{ return 20 \+ 3 \* \(n - 1\); \}/.test(js), '68 уровней, шаг растёт на 3 XP: 20, 23, 26 …');
+ok(/function levelStartXP\(n\)\{[\s\S]{0,140}?return 20 \* k \+ 3 \* k \* \(k - 1\) \/ 2;/.test(js), 'порог уровня считается формулой, без удвоений');
+ok(!/Math\.pow\(2, i - START/.test(js), 'удвоения порогов больше нет');
 ok(/function smotraXP/.test(js) && /function levelFor/.test(js) && /function myXP/.test(js), 'опыт и уровень считаются отдельными функциями');
 ok(/XP_RULES = \{ watched: 10, wishlist: 6, watching: 4, skipped: 1, review: 25, badge: 40, streakDay: 5 \}/.test(js), 'правила опыта на месте');
 ok(!/smotraXP\(\)/.test(js), 'нет вызова расчёта опыта без списков (на этом падали настройки)');
@@ -158,7 +159,7 @@ ok(!/СмотраLVL/.test(jsCode), 'в интерфейсе нет слова �
 ok(!/Легенда SMOTRA/.test(jsCode), 'уровни и ачивки без слова «Смотра»');
 ok(/LVL \$\{level\.level\}/.test(js) && /lvl-bar/.test(cssClean), 'уровень показывается с полосой прогресса');
 ok(/\[.Как растёт LVL\?./.test(js) && /Какие уровни есть/.test(js), 'правила и лестница объясняются в FAQ');
-ok(/32 000 XP/.test(js), 'в FAQ видно последний порог');
+ok(/7 973 XP/.test(js) && /68-м/.test(js), 'в FAQ видно, сколько стоит 68-й уровень');
 
 /* ============================== [6] Поиск ============================== */
 section('[6] Поиск: иконка, «Готово», без лишних надписей');
@@ -216,6 +217,17 @@ ok(/\.undo-pill\{ max-width:calc\(var\(--col\) - 24px\); \}/.test(cssClean.repla
 ok(/transform:translateY\(-115%\);/.test(cssClean.replace(/\n\s+/g, ' ')) && /#toast\.show\{ transform:translateY\(0\); \}/.test(cssClean), 'лента выезжает из-за верхнего края и уезжает обратно');
 ok(/border-radius:0 0 20px 20px/.test(cssClean.replace(/\n\s+/g, ' ')), 'скруглены только нижние углы — это лента, а не квадратик');
 ok(!/\.toast-icon/.test(cssClean), 'иконки-квадратика рядом с текстом больше нет');
+ok(/#toast::after\{ content:''; position:absolute; left:0; right:0; bottom:0; height:2\.5px;/.test(cssClean.replace(/\n\s+/g, ' ')), 'внизу ленты — тонкая полоска вместо квадратика');
+ok(/background:linear-gradient\(90deg, var\(--accent\), var\(--accent-2\)\);/.test(cssClean.replace(/\n\s+/g, ' ')) && /@keyframes toastDrain\{ from\{ transform:scaleX\(1\); \} to\{ transform:scaleX\(0\); \} \}/.test(cssClean), 'полоска показывает, сколько сообщение ещё повисит');
+ok(/#toast\.show::after\{ animation:toastDrain 2\.4s linear forwards; \}/.test(cssClean), 'полоска запускается вместе с показом');
+ok(/t\.classList\.remove\('show'\);\s*void t\.offsetWidth;\s*t\.classList\.add\('show'\);/.test(js), 'показ перезапускается — полоска не залипает');
+ok(/toastTimer = setTimeout\(\(\)=> t\.classList\.remove\('show'\), 2400\);/.test(js), 'сообщение убирается само');
+
+/* нижний таб: ниже ростом, «Главная» вылезает из панели */
+ok(/nav\{ position:relative; z-index:4;[^}]*padding:7px 0 calc\(5px \+ min\(var\(--safe-bottom\), 20px\)\);/.test(cssClean.replace(/\n\s+/g, ' ')), 'нижний таб стал ниже: пустой полосы под иконками нет');
+ok(/nav button\{ background:none;[^}]*justify-content:center; gap:2px; font-size:10\.5px;/.test(cssClean.replace(/\n\s+/g, ' ')), 'иконки и подписи по центру, компактнее');
+ok(/nav button\.nav-home\{ transform:translateY\(-19px\); \}/.test(cssClean), '«Главная» вылезает из нижнего таба');
+ok(/nav button\.nav-home \.nav-home-circle\{ width:54px; height:54px;/.test(cssClean.replace(/\n\s+/g, ' ')), 'кружок «Главной» крупнее остальных иконок');
 ok(/t\.textContent = String\(text == null \? '' : text\);/.test(js), 'подсказка выводится просто строкой по центру');
 ok(/\.stamp\{[^}]*background:rgba\(9,10,18,\.9\)/.test(cssClean.replace(/\n\s+/g, ' ')), 'штамп идёт плотной плашкой, а не только обводкой');
 
@@ -304,12 +316,61 @@ for (let i = 0; i < 6; i++) ev('document.getElementById("tutStage").click();');
 ok(!ev('document.getElementById("tutorial").classList.contains("show")'), 'тапом по сцене обучение тоже проходится до конца');
 ev('localStorage.removeItem("smotra_tutorial_done"); document.getElementById("tutorial").classList.remove("show"); document.body.classList.remove("tut-open");');
 /* уровни */
-ok(ev('LEVELS.map(l => l.xp).join(",")') === '0,50,250,500,1000,2000,4000,8000,16000,32000', 'пороги уровней: ' + ev('LEVELS.map(l => l.xp).join(",")'));
-ok(ev('levelFor(0).level') === 1 && ev('levelFor(50).level') === 2 && ev('levelFor(2000).level') === 6, 'уровень считается верно');
+ok(ev('LEVELS.length') === 68 && ev('LEVELS[1].xp') === 20 && ev('LEVELS[9].xp') === 288 && ev('LEVELS[67].xp') === 7973, 'пороги уровней: ' + ev('LEVELS.slice(0,4).map(l => l.xp).join(",")') + ' … ' + ev('LEVELS[67].xp'));
+/* серия дней: считается по базе, а не по памяти устройства — иначе телефон и
+   десктоп показывают разные числа */
+ok(/function streakFromDays\(days\)\{/.test(js) && /while \(days\.has\(dateKey\(cursor\)\)\)\{ n\+\+; cursor\.setDate\(cursor\.getDate\(\) - 1\); \}/.test(js), 'серия считается по дням активности');
+ok(/sb\.from\('swipes'\)\.select\('created_at'\)\.eq\('telegram_id', TG_ID\)/.test(js), 'дни активности тянутся из базы отдельным запросом');
+ok(/if \(error\) throw error;\s*applySyncedStreak\(data\);/.test(js), 'ошибка запроса оставляет локальный счёт, состояние не ломается');
+{
+  const twoDays = ev('(function(){ const d = new Date(); const y = new Date(Date.now() - 86400000); const k = x => x.toISOString().slice(0,10) + "T12:00:00Z"; return [{created_at:k(d)},{created_at:k(y)}]; })()');
+  ok(ev('JSON.stringify(applySyncedStreak(' + JSON.stringify(twoDays) + '))') === 'true', 'дни из базы применяются');
+  ok(ev('currentStreak') === 2, 'серия по двум дням подряд = 2');
+  ok(doc.getElementById('streakNum').textContent === '2' && doc.getElementById('statStreak').textContent === '2', 'число серии обновилось и в шапке, и в профиле');
+  ok(ev('applySyncedStreak([])') === false, 'пустая база не обнуляет серию — остаётся локальный счёт');
+}
+/* каталог: фильтры живут в отдельном окне и считаются одной функцией */
+ok(ev('catFilterMovies({ types:[], genres:[], year:"any", sort:"default" }).length') === ev('MOVIES.length'), 'без фильтров видно все тайтлы');
+ok(ev('catFilterMovies({ types:[], genres:[], year:"old", sort:"default" }).length') === 0, '«до 2000» отсекает тайтлы 2020 года');
+ok(ev('catFilterMovies({ types:["film"], genres:["Боевик"], year:"2020", sort:"default" }).length') > 0, 'жанр и год вместе работают');
+{
+  const sorted = ev('catFilterMovies({ types:[], genres:[], year:"any", sort:"title" }).slice(0,2).map(m => m.title)');
+  const expected = ev('MOVIES.map(m => m.title).slice().sort((a,b) => a.localeCompare(b, "ru")).slice(0,2)');
+  ok(JSON.stringify(sorted) === JSON.stringify(expected), 'сортировка по названию: ' + sorted[0]);
+}
+ev('openCatFilters();');
+ok(doc.getElementById('filtersScreen').classList.contains('open'), 'кнопка «Фильтры» открывает окно');
+ok(doc.querySelectorAll('#filtersBody .f-block').length >= 4, 'в окне есть блоки: тип, жанры, год, сортировка');
+ok(doc.querySelectorAll('#filtersBody .f-chip').length >= 6, 'чипы фильтров на месте: ' + doc.querySelectorAll('#filtersBody .f-chip').length);
+const foundBefore = doc.getElementById('filtersFound').textContent;
+doc.querySelector('#filtersBody .f-chip[data-f="year"][data-v="old"]').click();
+ok(doc.getElementById('filtersFound').textContent !== foundBefore, 'выбор года сразу пересчитывает найденное: ' + doc.getElementById('filtersFound').textContent);
+doc.querySelector('#filtersBody [data-clear]') && doc.querySelector('#filtersBody [data-clear]').click();
+doc.getElementById('filtersReset').click();
+ok(ev('catFilterMovies(filtersDraft).length') === ev('MOVIES.length'), '«Сбросить» возвращает всё');
+doc.querySelector('#filtersBody .f-chip[data-f="genre"]').click();
+const genreName = doc.querySelector('#filtersBody .f-chip[data-f="genre"]').dataset.v;
+doc.getElementById('filtersApply').click();
+await sleep(80);
+ok(!doc.getElementById('filtersScreen').classList.contains('open'), '«Показать» закрывает окно');
+ok(ev('catFilters.genres').length === 1 && ev('catFilters.genres[0]') === genreName, 'выбранный жанр применился к каталогу');
+ok(doc.querySelectorAll('#catActive .chip.removable').length === 1, 'на каталоге виден один чип активного фильтра');
+ok(doc.getElementById('catFilterBadge').style.display !== 'none', 'на кнопке видно, что фильтр включён');
+ok([...doc.querySelectorAll('#catGrid .poster-card, #catGrid .row-card')].length > 0, 'каталог перерисован с фильтром');
+doc.querySelector('#catActive .chip.removable').click();
+await sleep(40);
+ok(ev('catFilters.genres').length === 0 && doc.querySelectorAll('#catActive .chip.removable').length === 0, 'чип с крестиком снимает фильтр');
+ok(!doc.getElementById('catChips') && !doc.getElementById('typeChips'), 'ползучих строк чипов над сеткой больше нет');
+/* радиальное меню: «Мимо» вместо «Поделиться» */
+ok(!/lbl:'Поде/.test(js) && /icon:'cross', lbl: isSkipped\?'Вернуть':'Мимо'/.test(js), 'на удержании вместо «Поделиться» — «Мимо»');
+ok(/if \(kind === 'skipped'\)\{/.test(js) && /showToast\('Отмечено «Мимо»', 'cross'\)/.test(js), 'действие «Мимо» действительно работает');
+ok(/<span class="trd-lbl">Мимо<\/span>/.test(src) && !/<span class="trd-lbl">Поде/.test(src), 'в обучении тот же набор кружков');
+ok(ev('levelFor(0).level') === 1 && ev('levelFor(20).level') === 2 && ev('levelFor(288).level') === 10 && ev('levelFor(7973).level') === 68, 'уровень считается верно');
+ok(ev('levelFor(7973).next') === null && ev('levelFor(7973).pct') === 100, 'на 68-м уровне лестница заканчивается');
 ok(/LVL \d+ ·/.test(ev('document.getElementById("homeLevelName").textContent')), 'вверху главной видно уровень: ' + ev('document.getElementById("homeLevelName").textContent'));
 ok(!ev('document.getElementById("levelCard").innerHTML').includes('СмотраLVL'), 'в профиле нет слова «СмотраLVL»');
 const faq = ev('(function(){ renderFaq(); return document.getElementById("faqBody").textContent; })()');
-ok(faq.indexOf('32 000') > -1 && faq.indexOf('+10 XP') > -1, 'в FAQ есть лестница и правила опыта');
+ok(faq.indexOf('7 973') > -1 && faq.indexOf('+10 XP') > -1 && faq.indexOf('68') > -1, 'в FAQ есть лестница и правила опыта');
 ok(faq.indexOf('LVL') > -1 && faq.indexOf('СмотраLVL') === -1, 'в FAQ пишем LVL');
 /* ачивки */
 ok(ev('BADGES.length') >= 20, 'ачивок в приложении: ' + ev('BADGES.length'));
@@ -636,7 +697,10 @@ ok(/nav button\{ flex-direction:row; justify-content:flex-start; align-items:cen
 ok(/nav button\.active\{ color:var\(--text\); background:var\(--accent-soft\); \}/.test(dflat), 'активный раздел подсвечен');
 ok(!/\.topbar \.wordmark\{ position:fixed/.test(dflat), 'никаких fixed-логотипов внутри анимированной шапки (из-за них он и вставал криво)');
 ok(/\.lvl-strip\{ grid-area:1 \/ 2 \/ 2 \/ 3; align-self:start; justify-self:start; margin:16px 0 0 28px;\s*max-width:560px; padding:9px 16px;/.test(dflat), 'строка уровня стала компактной карточкой, а не полосой во всю ширину');
-ok(/#home\{ max-width:520px; margin:0 auto; padding-top:34px; \}/.test(dflat) && /#home \.stack-filter\{ right:-58px; top:16px; \}/.test(dflat), 'карточка на десктопе крупнее, стоит ниже, фильтр у её верхнего угла');
+ok(/#home\{ max-width:560px; margin:0 auto; padding-top:26px; \}/.test(dflat) && /#home \.stack-filter\{ right:-58px; top:16px; \}/.test(dflat), 'карточка на десктопе крупнее, стоит ниже, фильтр у её верхнего угла');
+ok(/#home \.actions \.no, #home \.actions \.yes\{ width:68px; height:68px; \}/.test(dflat) && /#home \.actions \.wishbtn, #home \.actions \.watchbtn\{ width:60px; height:60px; \}/.test(dflat), 'кнопки колоды на десктопе тоже крупнее');
+ok(/\.key-hint\{ display:flex; align-items:center; justify-content:center; position:absolute;/.test(dflat), 'на кнопках видны значки клавиш');
+ok(/const byKey = \{ ArrowRight:\['btnWatched','watched'\]/.test(js) && /btn\.classList\.add\('key-down'\)/.test(js), 'клавиша подсвечивает свою кнопку');
 ok(/#sheet\{ position:fixed; top:0; right:0; bottom:0; left:auto; width:min\(470px, 44vw\);/.test(dflat), 'карточка фильма — панель справа');
 ok(/#sheet\.open\{ transform:translateX\(0\); \}/.test(dflat), 'панель выезжает слева направо, а не снизу');
 ok(/#askSheet, #badgeSheet\{ position:fixed; left:50%; top:50%; right:auto; bottom:auto;\s*width:min\(440px, 92vw\);/.test(dflat), 'небольшие шторки стали окошками по центру');
@@ -704,8 +768,8 @@ section('[15] Каскад десктопных правил (вычисленн
   ok(g('.overlay-screen', 'position') === 'fixed' && px(g('.overlay-screen', 'width')) > 800 && px(g('.overlay-screen', 'width')) <= 1024, 'окна приложения — окно по центру, а не во всю ширину (' + g('.overlay-screen', 'width') + ')');
   ok(g('.overlay-screen', 'visibility') === 'hidden', 'закрытое окно не мешает нажимать');
   ok(g('.ov-scrim', 'display') === 'block' && g('.ov-scrim', 'position') === 'fixed', 'затемнение под окнами включено');
-  ok(px(g('#home', 'maxWidth')) === 520 && px(g('#profile', 'maxWidth')) === 900, 'карточка на десктопе крупнее, профиль — ещё шире');
-  ok(px(g('#home', 'paddingTop')) >= 30, 'колода стоит ниже: ' + g('#home', 'paddingTop'));
+  ok(px(g('#home', 'maxWidth')) === 560 && px(g('#profile', 'maxWidth')) === 900, 'карточка на десктопе крупнее, профиль — ещё шире');
+  ok(px(g('#home', 'paddingTop')) >= 20, 'колода стоит ниже строки уровня: ' + g('#home', 'paddingTop'));
   ok(px(g('#splash', 'maxWidth')) === 0 && px(g('#tutorial', 'maxWidth')) === 0 && px(g('.screens', 'maxWidth')) === 0, 'полноэкранные слои и ленты не зажаты в колонку');
   ok(/calc\(50% \+ var\(--side\) \/ 2\)/.test(g('.undo-pill', 'left')), 'пилюля «Вернуться» центрируется по содержимому');
   ok(/var\(--side\)/.test(g('#toast', 'left')) && px(g('#toast', 'top')) === 0, 'лента сообщения прижата к верху и к панели');
@@ -727,7 +791,9 @@ ok(/function myXPBreakdown\(\)\{/.test(js), 'опыт раскладываетс
 ok(/\{ icon:'check',    label:'Смотрел',        count: state\.watched\.length,      per: XP_RULES\.watched \}/.test(js), 'в разборе есть «смотрел» со своей ставкой');
 ok(/const total = rows\.reduce\(\(sum, r\) => sum \+ r\.count \* r\.per, 0\);/.test(js), 'сумма складывается из тех же ставок, что и myXP()');
 ok(/function renderLevelsScreen\(\)\{/.test(js) && /const lv = levelFor\(myXP\(\)\);/.test(js), 'окно считает уровень тем же levelFor()');
-ok(/LEVELS\.map\(\(L, i\) => \{/.test(js) && /const done = lv\.xp >= L\.xp && num < lv\.level;/.test(js) && /const cur = num === lv\.level;/.test(js), 'в лестнице размечены пройденные, текущий и будущие уровни');
+ok(/LEVELS\.map\(\(L, i\) => \{/.test(js) && /const done = num < lv\.level;/.test(js) && /const cur = num === lv\.level;/.test(js), 'плитки размечены: пройденные, текущий, будущие');
+ok(/const tierStart = \(lv\.level - 1\) - \(\(lv\.level - 1\) % LEVEL_STAGES\.length\)/.test(js), 'подробно показывается своя ступень из четырёх уровней');
+ok(/\.lv-tiles\{ display:grid; grid-template-columns:repeat\(auto-fill, minmax\(40px, 1fr\)\); gap:7px; \}/.test(dflat) && /\.lv-tile\.cur\{/.test(dflat), 'все уровни — сеткой плиток, текущий выделен');
 ok(/нужно ещё \$\{need\} XP/.test(js), 'у будущих уровней написано, сколько до них не хватает');
 ok(/Пройдено <b>\$\{lv\.pct\}%<\/b> уровня/.test(js), 'в шапке окна — процент пройденного уровня');
 ok(/Опыт капает сам: \$\{XP_RULES\.watched\}/.test(js), 'внизу окна — правила опыта из тех же ставок');
@@ -780,9 +846,11 @@ await sleep(80);
 ok(ldoc.getElementById('levelsScreen').classList.contains('open'), 'тап по шкале уровня открывает окно');
 const lvHtml = ldoc.getElementById('levelsBody').innerHTML;
 ok(lvHtml.length > 1200, 'окно заполнено (' + lvHtml.length + ' символов разметки)');
-ok(lev('(document.querySelectorAll("#levelsBody .lv-row") || []).length') === lev('LEVELS.length'), 'в лестнице все ' + lev('LEVELS.length') + ' уровней');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-tile") || []).length') === lev('LEVELS.length'), 'в лестнице все ' + lev('LEVELS.length') + ' уровней');
 ok(lev('(document.querySelectorAll("#levelsBody .lv-row.cur") || []).length') === 1, 'текущий уровень один');
-ok(/Зритель/.test(lvHtml) && /Живая легенда/.test(lvHtml), 'видны первый и последний уровни');
+ok(/Зритель/.test(lvHtml) && /Кинолегенда/.test(lvHtml), 'видны первая и последняя ступени лестницы');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-tile.cur") || []).length') === 1, 'текущий уровень в плитках один');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-row") || []).length') === lev('LEVEL_STAGES.length'), 'подробно — ровно своя ступень');
 ok(/Откуда опыт/.test(lvHtml), 'есть блок «Откуда опыт»');
 ok(lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') >= 2, 'источники опыта показаны (' + lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') + ')');
 ok(lev('document.getElementById("levelsTotal").textContent') === lev('myXP()') + ' XP', 'в шапке окна — тот же опыт, что считает myXP(): ' + lev('document.getElementById("levelsTotal").textContent'));

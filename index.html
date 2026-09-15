@@ -302,6 +302,50 @@
   /* ===== Genre chips ===== */
   /* Ряд фильтров: одинаковый шаг между рядами и от сетки — раньше чипсы липли
      к поиску и друг к другу без отступа */
+  /* Верх каталога — две строки по делу, без пустоты справа */
+  .cat-head-row{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:2px 0 10px; }
+  .cat-head{ display:flex; align-items:baseline; gap:8px; min-width:0; }
+  .cat-title{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; letter-spacing:-.2px; }
+  .cat-count{ font-size:12.5px; color:var(--text-dim); }
+  .cat-actions{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+  .cat-filter-btn{ position:relative; display:flex; align-items:center; gap:7px; height:36px; padding:0 14px;
+    border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text);
+    font-size:12.5px; font-weight:600; font-family:'Inter'; transition:transform .12s ease, border-color .18s ease; }
+  .cat-filter-btn:hover{ border-color:var(--accent-border); }
+  .cat-filter-btn:active{ transform:scale(.96); }
+  .cat-filter-btn.on{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
+  .cat-filter-badge{ position:absolute; top:-6px; right:-6px; min-width:18px; height:18px; padding:0 5px;
+    border-radius:9px; background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent);
+    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  /* Только выбранные фильтры — по одному чипу, с крестиком. Ничего не листается. */
+  .cat-active{ padding:0 0 10px; }
+  .cat-active:empty{ display:none; }
+  .chip .chip-x{ margin-left:7px; opacity:.75; font-size:11px; }
+  .chip.removable{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); padding-right:11px; }
+  /* Окно фильтров: блоки, чипы по сетке — ничего не нужно прокручивать в строку */
+  .f-block{ margin-bottom:18px; }
+  .f-block-title{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font-size:12px; font-weight:700; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase; margin-bottom:9px; }
+  .f-block-title button{ background:none; border:none; color:var(--accent); font-size:11.5px; font-weight:600; padding:2px 0; }
+  .f-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .f-chip{ display:flex; align-items:center; gap:6px; padding:9px 13px; border-radius:12px;
+    background:var(--surface); border:1px solid var(--border); color:var(--text-dim);
+    font-size:12.5px; font-weight:600; transition:transform .12s ease, background .18s ease, border-color .18s ease; }
+  .f-chip svg{ width:15px; height:15px; }
+  .f-chip:active{ transform:scale(.96); }
+  .f-chip.on{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
+  .ov-title{ flex:1; font-family:'Unbounded',sans-serif; font-size:17px; font-weight:700; }
+  .ov-close{ width:40px; height:40px; border-radius:13px; background:var(--surface); border:1px solid var(--border);
+    color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .filters-foot{ display:flex; gap:10px; padding:12px 24px calc(16px + var(--safe-bottom));
+    border-top:1px solid var(--border); background:var(--surface); }
+  .filters-reset{ flex:0 0 auto; padding:14px 20px; border-radius:15px; background:var(--surface-2);
+    border:1px solid var(--border); color:var(--text-dim); font-size:13.5px; font-weight:700; font-family:'Inter'; }
+  .filters-apply{ flex:1; padding:14px; border-radius:15px; border:1px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg, var(--accent), var(--accent-2)); color:var(--on-accent);
+    font-size:15px; font-weight:700; font-family:'Inter'; box-shadow:0 16px 34px -18px var(--accent-glow); }
+  .filters-apply:active{ transform:scale(.985); }
   .chips{ display:flex; gap:8px; overflow-x:auto; padding:0; margin:0 0 10px; flex-shrink:0; }
   .chips:last-of-type{ margin-bottom:14px; }
   .chip{ flex:0 0 auto; padding:8px 15px; border-radius:12px; background:var(--surface); border:1px solid var(--border); font-size:13px; color:var(--text-dim); }
@@ -497,7 +541,14 @@
   .act-item{ display:flex; flex-direction:column; align-items:center; gap:7px; }
   .act-lbl{ font-size:11.5px; color:var(--text-dim); font-weight:600; letter-spacing:.01em; }
   .actions button{ border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .actions button{ position:relative; }
   .actions button:active{ transform:scale(.92); }
+  /* Значок клавиши на кнопке: он нужен только там, где есть физическая клавиатура
+     (десктоп). На телефоне подсказки не показываем. */
+  .key-hint{ display:none; }
+  /* Нажали клавишу — кнопка отвечает так же, как на палец: видно, что именно
+     сработало, и не приходится гадать, попал ли ввод. */
+  .actions button.key-down{ transform:scale(.9); box-shadow:0 0 0 4px var(--accent-soft), 0 10px 26px -14px rgba(0,0,0,.7); }
   /* Свайп по нижнему табу: соседняя вкладка слегка подсвечивается, полоса едет за пальцем */
   .actions .no,.actions .yes{ width:62px; height:62px; box-shadow:0 10px 26px -14px rgba(0,0,0,0.7); }
   .actions .no{ color:var(--skip); background:rgba(225,91,111,0.10); border-color:rgba(225,91,111,0.35); }
@@ -884,22 +935,28 @@
   /* Логотип SMOTRA живёт в панели разделов ТОЛЬКО на десктопе (см. медиазапрос ниже):
      на телефоне это нижняя панель вкладок, и надпись слева от иконок была лишней. */
   .side-head{ display:none; }
+  /* Панель держим компактной: раньше нижний отступ складывался из 10px и полной
+     безопасной зоны, и под иконками оставалась широкая пустая полоса. Теперь
+     безопасная зона учитывается, но с потолком — панель не «раздувается». */
   nav{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center;
-    padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); z-index:10;
+    padding:7px 0 calc(5px + min(var(--safe-bottom), 20px)); border-top:1px solid var(--border); background:var(--bg-2); z-index:10;
     /* В горизонтальной ориентации содержимое панели держим в безопасной зоне, а фон
        растягиваем на всю ширину — иначе по бокам остаётся полоса другого цвета. */
     margin-left:calc(var(--safe-left) * -1); margin-right:calc(var(--safe-right) * -1);
     padding-left:var(--safe-left); padding-right:var(--safe-right); }
-  nav button{ background:none; border:none; color:var(--text-dim); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; font-family:'Inter'; position:relative; padding:4px 10px; transition:color .2s ease, transform .15s ease; }
+  nav button{ background:none; border:none; color:var(--text-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-size:10.5px; line-height:1.15; font-family:'Inter'; position:relative; padding:4px 10px; transition:color .2s ease, transform .15s ease; }
   nav button:active{ transform:scale(.9); }
   nav button.nav-home:active .nav-home-circle{ transform:scale(.92); }
   nav button.active{ color:var(--accent); }
   nav button.active::before{ content:''; position:absolute; top:-9px; width:4px; height:4px; border-radius:50%; background:var(--accent); }
-  nav svg{ width:23px; height:23px; }
-  nav button.nav-home{ transform:translateY(-14px); }
+  nav svg{ width:22px; height:22px; }
+  /* «Главная» вылезает из панели вверх — кнопка заметнее остальных и панель
+     читается как панель, а не как ряд одинаковых значков. */
+  nav button.nav-home{ transform:translateY(-19px); }
   nav button.nav-home::before{ display:none; }
-  nav button.nav-home .nav-home-circle{ width:48px; height:48px; border-radius:50%; background:linear-gradient(145deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 14px -8px rgba(0,0,0,0.5); border:3px solid var(--bg-2); transition:transform .15s ease, box-shadow .25s ease; }
-  nav button.nav-home.active .nav-home-circle{ box-shadow:0 10px 24px -6px var(--accent-glow); }
+  nav button.nav-home .nav-home-circle{ width:54px; height:54px; border-radius:50%; background:linear-gradient(145deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 14px -8px rgba(0,0,0,0.5); border:3px solid var(--bg-2); transition:transform .15s ease, box-shadow .25s ease; }
+  nav button.nav-home .nav-home-circle{ box-shadow:0 14px 28px -10px var(--accent-glow), 0 0 0 4px var(--bg-2); }
+  nav button.nav-home.active .nav-home-circle{ box-shadow:0 16px 32px -8px var(--accent-glow), 0 0 0 4px var(--bg-2); }
   nav button.nav-home .nav-home-circle svg{ width:22px; height:22px; color:var(--on-accent); }
   nav button.nav-home{ color:var(--text-dim); }
   nav button.nav-home.active{ color:var(--accent); }
@@ -1173,12 +1230,19 @@
      обратно, ничего не «висит» посреди экрана. Никаких отдельных квадратиков-иконок:
      лента без рамки по бокам, текст по центру, углы скруглены только снизу. */
   #toast{ position:absolute; top:0; left:0; right:0; bottom:auto;
-    transform:translateY(-115%); background:linear-gradient(180deg, var(--surface-2), var(--surface));
-    border:0; border-bottom:1px solid var(--accent-border); color:var(--text);
-    padding:calc(11px + var(--safe-top)) 22px 13px;
-    text-align:center; font-size:13px; z-index:60; overflow:hidden;
-    transition:transform .32s cubic-bezier(.2,.8,.2,1);
-    border-radius:0 0 20px 20px; box-shadow:0 20px 44px -28px rgba(0,0,0,.95); }
+    transform:translateY(-115%); color:var(--text);
+    background:linear-gradient(180deg, var(--surface-2), var(--surface));
+    padding:calc(13px + var(--safe-top)) 22px 15px;
+    text-align:center; font-size:13.5px; font-weight:600; letter-spacing:.15px;
+    z-index:60; overflow:hidden; display:flex; align-items:center; justify-content:center; gap:9px;
+    transition:transform .34s cubic-bezier(.2,.8,.2,1);
+    border-radius:0 0 22px 22px;
+    box-shadow:0 24px 48px -26px rgba(0,0,0,.95), 0 1px 0 rgba(255,255,255,.06) inset; }
+  /* Полоска внизу ленты: она и заменяет «квадратик» — показывает, сколько сообщение
+     ещё повисит. Пока полоска идёт, лента читается как живая, а не как зависшая. */
+  #toast::after{ content:''; position:absolute; left:0; right:0; bottom:0; height:2.5px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform-origin:left center; transform:scaleX(0); border-radius:0 2px 2px 0; }
 
   /* «Вернуться» ложится ПОВЕРХ «Перемешать»: центр пилюли совпадает с центром
      кнопки. Низ считает скрипт (positionUndoPill) по самой кнопке — раньше здесь
@@ -1217,6 +1281,8 @@
   .rad-item.danger.hot{ background:var(--skip); border-color:var(--skip); color:#fff; box-shadow:0 12px 30px -6px rgba(193,73,63,0.6); }
 
   #toast.show{ transform:translateY(0); }
+  #toast.show::after{ animation:toastDrain 2.4s linear forwards; }
+  @keyframes toastDrain{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
 
   /* ===== Десктоп: Telegram Desktop и браузер =====
      Телефонная вёрстка занимает всю ширину окна, поэтому на большом экране
@@ -1331,11 +1397,24 @@
     .lvl-strip-bar{ flex:0 0 150px; }
     .lvl-strip-name{ font-size:12px; }
     .lvl-strip-xp{ font-size:11px; }
+    /* Подсказки клавиш: на десктопе стрелки дублируют четыре кнопки колоды. */
+    .key-hint{ display:flex; align-items:center; justify-content:center; position:absolute;
+      top:-7px; right:-7px; min-width:22px; height:22px; padding:0 5px; border-radius:7px;
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim);
+      font-family:'Inter',sans-serif; font-size:12px; font-weight:700; line-height:1;
+      box-shadow:0 6px 14px -8px rgba(0,0,0,.8); pointer-events:none; }
+    .actions button.key-down .key-hint{ background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+    /* Колода и кнопки на десктопе крупнее: экран большой, карточка не должна теряться. */
     .screens{ grid-area:2 / 2 / 3 / 4; }
     .screen{ padding:0 28px 22px; }
     /* Карточка на десктопе крупнее и стоит ниже: у верхнего края был воздух, а сама
        колода упиралась в строку уровня. Отступ сверху отдан именно колоде. */
-    #home{ max-width:520px; margin:0 auto; padding-top:34px; }
+    #home{ max-width:560px; margin:0 auto; padding-top:26px; }
+    #home .actions{ padding:12px 0 6px; gap:14px; }
+    #home .act-item{ gap:9px; }
+    #home .actions .no, #home .actions .yes{ width:68px; height:68px; }
+    #home .actions .wishbtn, #home .actions .watchbtn{ width:60px; height:60px; }
+    #home .act-lbl{ font-size:12.5px; }
     #home .stack-filter{ right:-58px; top:16px; }
     #home .actions, #home .home-bottom{ max-width:100%; margin:0; }
     #profile, #feed{ max-width:900px; margin:0 auto; }
@@ -1409,7 +1488,17 @@
   .lv-hero-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .4s ease; }
   .lv-hero-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:11.5px; color:var(--text-dim); }
   .lv-hero-foot b{ color:var(--text); }
-  .lv-sect{ margin:22px 0 10px; font-size:12px; font-weight:700; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase; }
+  .lv-sect{ margin:22px 0 10px; font-size:12px; font-weight:700; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase;
+    display:flex; align-items:baseline; gap:8px; }
+  .lv-sect-note{ font-size:11px; font-weight:500; letter-spacing:0; text-transform:none; color:var(--text-dim); opacity:.75; }
+  /* Все уровни плитками: пройденные — акцентом, текущий — градиентом, дальние — тихо. */
+  .lv-tiles{ display:grid; grid-template-columns:repeat(auto-fill, minmax(40px, 1fr)); gap:7px; }
+  .lv-tile{ display:flex; align-items:center; justify-content:center; height:38px; border-radius:11px;
+    font-family:'Unbounded',sans-serif; font-size:11.5px; font-weight:700; color:var(--text-dim);
+    background:var(--surface-2); border:1px solid var(--border); transition:transform .12s ease; }
+  .lv-tile.done{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
+  .lv-tile.cur{ background:linear-gradient(150deg, var(--accent), var(--accent-2)); border-color:transparent;
+    color:var(--on-accent); box-shadow:0 14px 28px -14px var(--accent-glow); transform:scale(1.06); }
   .lv-ladder{ display:flex; flex-direction:column; }
   .lv-row{ position:relative; display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; border:1px solid transparent; }
   .lv-row .lv-dot{ position:relative; z-index:1; width:30px; height:30px; border-radius:50%; flex:0 0 auto;
@@ -1559,10 +1648,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
     </button>
     <div class="actions">
-      <div class="act-item"><button class="no" id="btnSkip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="act-lbl">Мимо</span></div>
-      <div class="act-item"><button class="wishbtn" id="btnWish"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 3 1-6.1-4.4-4.3 6.1-.9z"/></svg></button><span class="act-lbl">Чекнуть</span></div>
-      <div class="act-item"><button class="watchbtn" id="btnWatching"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5l14 8.5-14 8.5z"/></svg></button><span class="act-lbl">Смотрю</span></div>
-      <div class="act-item"><button class="yes" id="btnWatched"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button><span class="act-lbl">Смотрел</span></div>
+      <div class="act-item"><button class="no" id="btnSkip" data-key="←"><span class="key-hint">←</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="act-lbl">Мимо</span></div>
+      <div class="act-item"><button class="wishbtn" id="btnWish" data-key="↑"><span class="key-hint">↑</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 3 1-6.1-4.4-4.3 6.1-.9z"/></svg></button><span class="act-lbl">Чекнуть</span></div>
+      <div class="act-item"><button class="watchbtn" id="btnWatching" data-key="↓"><span class="key-hint">↓</span><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5l14 8.5-14 8.5z"/></svg></button><span class="act-lbl">Смотрю</span></div>
+      <div class="act-item"><button class="yes" id="btnWatched" data-key="→"><span class="key-hint">→</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button><span class="act-lbl">Смотрел</span></div>
     </div>
     <div class="home-bottom">
       <button class="surprise-btn" id="shakeBtn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:4px;"><path d="M3 7h3.5L15 17h5.5M17.5 7H21M3 17h3.5L11 12"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/></svg> Перемешать</button>
@@ -1571,21 +1660,48 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <div class="eyebrow no-label"><span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span></div>
+    <!-- Верх каталога занят по делу: слева название и счётчик тайтлов, справа —
+         кнопка фильтров со значком и переключатель вида. Раньше строка пустовала. -->
+    <div class="cat-head-row">
+      <div class="cat-head">
+        <span class="cat-title">Каталог</span>
+        <span class="cat-count" id="catCount">0</span>
+      </div>
+      <div class="cat-actions">
+        <button class="cat-filter-btn" id="openCatFilters">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span>Фильтры</span>
+          <b class="cat-filter-badge" id="catFilterBadge" style="display:none">0</b>
+        </button>
+        <span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span>
+      </div>
+    </div>
     <div class="search-wrap" id="catSearchWrap">
       <button class="search-btn" id="catSearchBtn" aria-label="Поиск по каталогу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
       <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…"
         enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="catSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="chips" id="typeChips"></div>
-    <div class="chips" id="catChips"></div>
+    <div class="chips cat-active" id="catActive"></div>
     <div class="grid2" id="catGrid"></div>
     <div id="catShowMore" style="display:none; text-align:center; padding:16px 0;">
       <button id="catShowMoreBtn" style="padding:12px 22px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-weight:600; font-size:13.5px;">Показать ещё</button>
     </div>
     <div class="empty-note" id="catLoadMore" style="display:none; padding:16px; text-align:center;">Догружаю каталог…</div>
   </section>
+
+  <!-- ФИЛЬТРЫ КАТАЛОГА -->
+  <div class="overlay-screen" id="filtersScreen">
+    <div class="ov-head">
+      <div class="ov-title">Фильтры</div>
+      <button class="ov-close" id="closeFilters" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="ov-body" id="filtersBody"></div>
+    <div class="filters-foot">
+      <button class="filters-reset" id="filtersReset">Сбросить</button>
+      <button class="filters-apply" id="filtersApply">Показать</button>
+    </div>
+  </div>
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
@@ -2003,6 +2119,21 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.32 — большая порция по замечаниям:
+         • серия дней больше не расходится между телефоном и десктопом: она считается
+           по синхронизированным дням активности из базы, а не по памяти устройства;
+         • нижний таб на телефоне стал ниже (пустой полосы под иконками больше нет),
+           а «Главная» вылезает из панели крупным кружком;
+         • уведомление переделано: та же лента сверху, но с полоской-прогрессом внизу
+           вместо квадратика — видно, что оно вот-вот уедет;
+         • уровней теперь 68, без удвоений: каждый следующий дороже на 3 XP
+           (20, 23, 26 … 221). В окне уровней — плитки всей лестницы и своя ступень;
+         • на удержании обложки вместо «Поделиться» — «Мимо» (в действиях и в обучении);
+         • каталог: фильтры переехали в отдельное окно (тип, жанры, год, сортировка),
+           наверху каталога — название, счётчик тайтлов и кнопка фильтров со значком;
+           на самой сетке остаются только выбранные фильтры, одним чипом с крестиком;
+         • десктоп: колода крупнее (560px) и кнопки под ней больше, на кнопках видны
+           значки стрелок, а нажатие клавиши подсвечивает свою кнопку.
    0.31 — по замечаниям к 0.30:
          • на телефоне из нижней панели убрана надпись SMOTRA: логотип в панели
            существует только на десктопе, а на телефоне это панель вкладок;
@@ -2225,7 +2356,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.31';
+const APP_VERSION = '0.32';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3211,6 +3342,15 @@ async function loadState(){
       state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
     }catch(e){ /* таблицы watching может ещё не быть */ stateLoadFailed.push('watching'); }
   })());
+  stateJobs.push((async () => {
+    /* Дни активности для серии. Отдельным запросом и в try/catch: если у таблицы
+       вдруг нет created_at, серия просто останется локальной — состояние загрузится. */
+    try{
+      const { data, error } = await sb.from('swipes').select('created_at').eq('telegram_id', TG_ID);
+      if (error) throw error;
+      applySyncedStreak(data);
+    }catch(e){ /* остаёмся на локальном счёте */ }
+  })());
   await Promise.all(stateJobs);
   mergeLocalAndRemote();
   if (stateLoadFailed.length){
@@ -3345,7 +3485,42 @@ function recordVisitAndGetStreak(){
   }
   return streak;
 }
-const currentStreak = recordVisitAndGetStreak();
+/* Серия дней. Считаем её по СИНХРОНИЗИРОВАННЫМ действиям (таблица swipes), а не по
+   памяти устройства: телефон и десктоп — разные WebView, и локальные «заходы» у них
+   свои, из-за чего «дней подряд» на двух устройствах расходилось (на телефоне 4,
+   на десктопе 2). Дни свайпов лежат в базе у одного и того же telegram_id, поэтому
+   число теперь одинаковое везде. Локальный счёт остаётся запасным — если базы нет
+   или у таблицы не оказалось created_at, показываем то, что знает устройство. */
+function streakFromDays(days){
+  if (!days || !days.size) return 0;
+  const cursor = new Date();
+  if (!days.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);  // сегодня ещё можно успеть
+  let n = 0;
+  while (days.has(dateKey(cursor))){ n++; cursor.setDate(cursor.getDate() - 1); }
+  return n;
+}
+function refreshStreakUI(){
+  const num = document.getElementById('streakNum');
+  if (num) num.textContent = currentStreak;
+  const st = document.getElementById('statStreak');
+  if (st) st.textContent = currentStreak;
+  /* Опыт за серию входит в общий счёт: после пересчёта обновляем строку уровня. */
+  try{ renderHomeLevel(); renderLevelCard(); }catch(e){}
+}
+function applySyncedStreak(rows){
+  let days = new Set();
+  try{
+    days = new Set((rows || []).map(r => {
+      const d = new Date(r && r.created_at);
+      return isNaN(d.getTime()) ? null : dateKey(d);
+    }).filter(Boolean));
+  }catch(e){ return false; }
+  if (!days.size) return false;              // активности в базе нет — оставляем локальный счёт
+  currentStreak = streakFromDays(days);
+  refreshStreakUI();
+  return true;
+}
+let currentStreak = recordVisitAndGetStreak();
 (function initSince(){
   const el = document.getElementById('profileSince');
   if (!el) return;
@@ -3371,7 +3546,7 @@ document.getElementById('streakBadge').onclick = (e) => {
   if (e && e.stopPropagation) e.stopPropagation();
   haptic('selection');
   const days = currentStreak % 10 === 1 && currentStreak % 100 !== 11 ? 'день' : 'дней';
-  showToast(currentStreak > 0 ? `${currentStreak} ${days} подряд — не разрывай серию` : 'Заходи каждый день, чтобы рос стрик', 'fire');
+  showToast(currentStreak > 0 ? `${currentStreak} ${days} подряд — не разрывай серию` : 'Свайпни тайтл, чтобы начать стрик', 'fire');
 };
 
 /* ============ ПАСХАЛКА: анимированные модельки на месте грабера ============ */
@@ -3517,7 +3692,7 @@ const TUTORIAL_STEPS = [
           <div class="trd-item" data-i="0">${ICON('check',24)}<span class="trd-lbl">Смотрел</span></div>
           <div class="trd-item" data-i="1">${ICON('star',24)}<span class="trd-lbl">Чекнуть</span></div>
           <div class="trd-item" data-i="2">${ICON('clapper',24)}<span class="trd-lbl">Оценка</span></div>
-          <div class="trd-item" data-i="3">${ICON('share',24)}<span class="trd-lbl">Поде­литься</span></div>
+          <div class="trd-item" data-i="3">${ICON('cross',24)}<span class="trd-lbl">Мимо</span></div>
           <div class="trd-item" data-i="4">${ICON('play',24)}<span class="trd-lbl">Смотрю</span></div>
         </div>
       </div>`,
@@ -4088,7 +4263,6 @@ initSwitch(document.getElementById('switchAdult'), true, async (val) => {
   showToast('Обновляю каталог…');
   try{ localStorage.removeItem(TMDB_CACHE_KEY); }catch(e){}
   await loadMovies();
-  setupGenreChips();
   deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); updateStats();
   showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
@@ -4428,7 +4602,6 @@ async function loadMovies(){
 async function retryLoadMovies(){
   showToast('Загружаю каталог…');
   await loadMovies();
-  setupGenreChips();
   deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); updateStats();
 }
@@ -5139,9 +5312,13 @@ function showToast(text){
   /* Кидаем подсказку как текст: раньше рядом рисовался квадратик-иконка, и лента
      читалась как «квадратик сверху». Теперь это просто строка по центру. */
   t.textContent = String(text == null ? '' : text);
+  /* Перезапускаем показ и полоску-прогресс: без сброса анимация на втором
+     сообщении не начинается заново и полоска «залипает» пустой. */
+  t.classList.remove('show');
+  void t.offsetWidth;
   t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 2400);
 }
 
 /* ============ BADGES ============ */
@@ -5229,7 +5406,7 @@ const FAQ_ITEMS = [
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
   ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле.'],
-  ['Какие уровни есть и сколько нужно опыта?', 'Пороги мягкие: 1 «Зритель» — с нуля · 2 «Киноновичок» — 50 XP · 3 «Кинолюб» — 250 · 4 «Киноман» — 500 · 5 «Синеман» — 1 000 · 6 «Киногуру» — 2 000 · 7 «Легенда» — 4 000 · 8 «Кинотитан» — 8 000 · 9 «Кинобессмертный» — 16 000 · 10 «Живая легенда» — 32 000 XP (последний уровень). Дальше каждый порог удваивается: уровень — награда за постоянство, а не за один вечер.'],
+  ['Какие уровни есть и сколько нужно опыта?', 'Уровней 68, удвоений нет: каждый следующий уровень дороже предыдущего ровно на 3 XP — переход стоит 20, 23, 26, 29 и так далее до 221 XP на 68-м. Первые уровни закрываются за вечер (2-й — всего 20 XP, 10-й — 288 XP), а 68-й «Кинолегенда IV» открывается на 7 973 XP: это примерно 800 отмеченных тайтлов вместе с оценками, ачивками и серией дней. Ступени: «Зритель», «Кинолюб», «Киноман», «Киногурман», «Кинофил», «Синефил» … «Киноакадемик», «Киноархимаг», «Кинолегенда» — у каждой по четыре подуровня I–IV. Вся лестница целиком — в окне уровней (тап по строке LVL вверху или по карточке уровня в профиле).'],
 ];
 function renderFaq(){
   const host = document.getElementById('faqBody');
@@ -5399,13 +5576,23 @@ function renderLevelsScreen(){
       <div class="lv-hero-bar"><i style="width:${lv.pct}%"></i></div>
       <div class="lv-hero-foot">
         <span>${lv.next ? `Пройдено <b>${lv.pct}%</b> уровня` : 'Уровень пройден полностью'}</span>
-        <span>${lv.next ? `до «${esc(lv.next.name)}» — <b>${lv.toNext} XP</b>` : `<b>${LEVELS.length}</b> уровней из ${LEVELS.length}`}</span>
+        <span>${lv.next ? `до «${esc(lv.next.name)}» — <b>${lv.toNext} XP</b>` : `вершина лестницы: <b>${LEVELS.length}</b> из ${LEVELS.length}`}</span>
       </div>
     </div>`;
 
-  const ladder = LEVELS.map((L, i) => {
+  /* Лестница целиком — компактными плитками: 68 рядов текстом листать невозможно,
+     а так видно сразу и пройденное, и где ты сейчас, и сколько осталось. */
+  const tiles = LEVELS.map((L, i) => {
     const num = i + 1;
-    const done = lv.xp >= L.xp && num < lv.level;
+    const done = num < lv.level;
+    const cur = num === lv.level;
+    return `<span class="lv-tile ${done ? 'done' : ''} ${cur ? 'cur' : ''}" title="${esc(L.name)} · от ${L.xp} XP">${num}</span>`;
+  }).join('');
+  /* Подробно — только своя ступень: четыре уровня, в которых ты сейчас живёшь. */
+  const tierStart = (lv.level - 1) - ((lv.level - 1) % LEVEL_STAGES.length);
+  const ladder = LEVELS.slice(tierStart, tierStart + LEVEL_STAGES.length).map(L => {
+    const num = L.level;
+    const done = num < lv.level;
     const cur = num === lv.level;
     const need = Math.max(0, L.xp - lv.xp);
     const state = cur
@@ -5417,7 +5604,7 @@ function renderLevelsScreen(){
       <div class="lv-dot">${done ? ICON('check', 14) : num}</div>
       <div>
         <div class="lv-row-name">${ICON(L.icon, 15)} ${esc(L.name)}</div>
-        <div class="lv-row-sub">от ${L.xp} XP</div>
+        <div class="lv-row-sub">от ${L.xp} XP · шаг ${L.need} XP</div>
       </div>
       <div class="lv-row-state">${state}</div>
     </div>`;
@@ -5436,7 +5623,10 @@ function renderLevelsScreen(){
   }).join('');
 
   host.innerHTML = hero
-    + `<div class="lv-sect">Лестница уровней</div><div class="lv-ladder">${ladder}</div>`
+    + `<div class="lv-sect">Все уровни <span class="lv-sect-note">${LEVELS.length} ступеней, без удвоений</span></div>`
+    + `<div class="lv-tiles">${tiles}</div>`
+    + `<div class="lv-sect">Твоя ступень <span class="lv-sect-note">${esc(LEVEL_TIERS[Math.floor((lv.level-1)/LEVEL_STAGES.length)][0])}</span></div>`
+    + `<div class="lv-ladder">${ladder}</div>`
     + `<div class="lv-sect">Откуда опыт</div>`
     + (sources || `<div class="lv-note">Пока пусто: смахни пару карточек, отметь «смотрю» или поставь оценку — опыт появится здесь.</div>`)
     + `<div class="lv-note">Опыт капает сам: ${XP_RULES.watched} — за «смотрел», ${XP_RULES.wishlist} — за «чекнуть», ${XP_RULES.watching} — за «смотрю», ${XP_RULES.skipped} — за «мимо», ${XP_RULES.review} — за оценку, ${XP_RULES.badge} — за ачивку и ${XP_RULES.streakDay} — за каждый день стрика. Он не сгорает: цифра только растёт.</div>`;
@@ -5994,6 +6184,20 @@ function toggleQuick(kind, movie){
     if (already){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); showToast('Убрано из «Смотрю»'); }
     else { pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); showToast('Добавлено в «Смотрю»'); }
   }
+  if (kind === 'skipped'){
+    const already = state.skipped.includes(mid(movie));
+    if (already){ state.skipped = state.skipped.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie),'skipped'); showToast('Возвращено из «Мимо»'); }
+    else {
+      pushUnique(state.skipped, mid(movie));
+      /* «Мимо» — значит смотреть не буду: из «чекнуть» и «смотрю» тайтл уходит,
+         а отметка «смотрел» остаётся (её человек поставил осознанно). */
+      state.wishlist = state.wishlist.filter(id=>id!==mid(movie));
+      state.watching = state.watching.filter(id=>id!==mid(movie));
+      dbSwipe(mid(movie),'skipped'); dbWishRemove(mid(movie)); dbWatchingRemove(mid(movie));
+      checkBadges();
+      showToast('Отмечено «Мимо»', 'cross');
+    }
+  }
   if (kind === 'watched'){
     const already = state.watched.includes(mid(movie));
     if (already){ state.watched = state.watched.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie),'watched'); showToast('Отметка снята'); }
@@ -6024,11 +6228,14 @@ const Radial = (function(){
     const isWish = state.wishlist.includes(mid(movie));
     const isWatching = state.watching.includes(mid(movie));
     const isWatched = state.watched.includes(mid(movie));
+    const isSkipped = state.skipped.includes(mid(movie));
     return [
-      { icon: isWatched?'cross':'check', lbl: isWatched?'Снять':'Смотрел', active:isWatched, run:()=>toggleQuick('watched', movie) },
+      { icon:'check', lbl: isWatched?'Снять':'Смотрел', active:isWatched, run:()=>toggleQuick('watched', movie) },
       { icon: isWish?'starFill':'star', lbl: isWish?'Убрать':'Чекнуть', active:isWish, run:()=>toggleQuick('wishlist', movie) },
       { icon: 'clapper', lbl:'Оценка', run:()=>{ openReviewScreen(movie); } },
-      { icon: 'share', lbl:'Поде­литься', run:()=>{ shareMovie(movie); } },
+      /* Вместо «Поделиться» — «Мимо»: на удержании нужны действия по тайтлу, а
+         поделиться можно из карточки фильма (кнопка там осталась). */
+      { icon:'cross', lbl: isSkipped?'Вернуть':'Мимо', active:isSkipped, run:()=>toggleQuick('skipped', movie) },
       { icon: isWatching?'pause':'play', lbl: isWatching?'Стоп':'Смотрю', active:isWatching, run:()=>toggleQuick('watching', movie) },
     ];
   }
@@ -6240,7 +6447,14 @@ document.addEventListener('keydown', e => {
     const card = stackEl.querySelector('.card:last-child');
     if (!card) return;
     const btn = document.getElementById(hit[0]);
-    if (btn) pulseBtn(btn);
+    /* Кнопка отвечает на клавишу так же, как на палец: короткая подсветка + тот же
+       значок клавиши на ней. Видно, что именно сработало. */
+    if (btn){
+      pulseBtn(btn);
+      btn.classList.add('key-down');
+      clearTimeout(btn._keyTimer);
+      btn._keyTimer = setTimeout(() => btn.classList.remove('key-down'), 180);
+    }
     resolveSwipe(card, deck[0], hit[1]);
     e.preventDefault();
   } else if (e.key === 'Enter'){
@@ -6273,22 +6487,36 @@ let statsFramePending = false;
 /* ============ СМОТРА LVL: уровни и опыт ============
    Опыт считаем из действий, которые уже есть в состоянии: ничего дополнительно
    хранить не нужно, и после сброса прогресса уровень честно упадёт. */
-/* Пороги подняты в 50 раз: «Легенда» должна быть настоящей целью, а не
-   достижением после пары сотен свайпов. */
-/* Лестница уровней — мягкая на старте: порог 50 XP, дальше 250, 500, 1000, 2000 и
-   удвоение. Первые уровни закрываются за вечер, дальние остаются целью.
-   Меняешь пороги — меняй только здесь. */
+/* Лестница уровней: 68 уровней, без удвоений. Логика простая и предсказуемая —
+   каждый следующий уровень стоит на 3 XP дороже предыдущего:
+       20, 23, 26, 29 …  (переход на уровень 68 стоит 221 XP)
+   Суммарно 68-й уровень открывается на 7973 XP — это примерно 800 отмеченных
+   тайтлов вместе с оценками, ачивками и серией дней. Первые уровни закрываются
+   за вечер, дальние идут ровно, без «стены» на середине.
+   Меняешь правило — меняй только здесь: всё остальное считается отсюда. */
+const LEVEL_MAX = 68;
+const LEVEL_TIERS = [
+  ['Зритель','play'], ['Кинолюб','heart'], ['Киноман','star'], ['Киногурман','popcorn'],
+  ['Кинофил','film'], ['Синефил','clapper'], ['Киновед','newspaper'], ['Киноэрудит','detective'],
+  ['Кинокритик','pen'], ['Киноэксперт','target'], ['Киноаналитик','burst'], ['Киноархивариус','reel'],
+  ['Кинохранитель','clock'], ['Киноклассик','masks'], ['Киноакадемик','trophy'], ['Киноархимаг','bolt'],
+  ['Кинолегенда','crown'],
+];
+/* Каждая ступень — четыре подуровня (I, II, III, IV): у всех 68 уровней есть имя. */
+const LEVEL_STAGES = ['I', 'II', 'III', 'IV'];
+function levelNeedXP(n){ return 20 + 3 * (n - 1); }          // сколько нужно на переход с n на n+1
+function levelStartXP(n){                                    // опыт, с которого начинается уровень
+  const k = n - 1;
+  return 20 * k + 3 * k * (k - 1) / 2;
+}
 const LEVELS = (() => {
-  const NAMES = [
-    ['Зритель','play'], ['Киноновичок','clapper'], ['Кинолюб','star'], ['Киноман','sparkles'],
-    ['Синеман','popcorn'], ['Киногуру','trophy'], ['Легенда','rocket'],
-    ['Кинотитан','crown'], ['Кинобессмертный','bolt'], ['Живая легенда','masks'],
-  ];
-  const START = [0, 50, 250, 500, 1000, 2000];
-  return NAMES.map(([name, icon], i) => ({
-    xp: i < START.length ? START[i] : START[START.length - 1] * Math.pow(2, i - START.length + 1),
-    name, icon,
-  }));
+  const out = [];
+  for (let n = 1; n <= LEVEL_MAX; n++){
+    const [tier, icon] = LEVEL_TIERS[Math.min(LEVEL_TIERS.length - 1, Math.floor((n - 1) / LEVEL_STAGES.length))];
+    out.push({ level: n, xp: levelStartXP(n), need: levelNeedXP(n),
+               name: `${tier} ${LEVEL_STAGES[(n - 1) % LEVEL_STAGES.length]}`, icon });
+  }
+  return out;
 })();
 const XP_RULES = { watched: 10, wishlist: 6, watching: 4, skipped: 1, review: 25, badge: 40, streakDay: 5 };
 /* Опыт по любому набору списков (свой профиль или списки друга) */
@@ -6572,32 +6800,195 @@ async function renderWeekActivity(){
 }
 
 /* ============ CATALOG ============ */
-let activeType = 'all';
-let activeGenre = 'Все';
-document.getElementById('typeChips').innerHTML = TYPE_TABS.map(t => `<div class="chip ${t.key===activeType?'active':''}" data-t="${t.key}">${t.label}</div>`).join('');
-document.getElementById('typeChips').addEventListener('click', e=>{
-  const c = e.target.closest('.chip'); if (!c) return;
-  activeType = c.dataset.t; catalogRenderLimit = 60; haptic('selection');
-  [...document.querySelectorAll('#typeChips .chip')].forEach(x=>x.classList.toggle('active', x===c));
-  renderCatalog();
+/* ---- Фильтры каталога ----
+   Раньше это были две ползучие строки чипов прямо над сеткой: чтобы добраться до
+   нужного жанра, приходилось листать вбок, а половина экрана уходила под сами чипы.
+   Теперь все настройки живут в отдельном окне (открывается кнопкой «Фильтры»),
+   а на самом каталоге остаются только выбранные фильтры — и то по одному чипу. */
+const CAT_FILTER_KEY = 'smotra_cat_filters';
+const CAT_FILTER_DEFAULTS = { types: [], genres: [], year: 'any', sort: 'default' };
+let catFilters = (() => {
+  try{
+    const raw = JSON.parse(localStorage.getItem(CAT_FILTER_KEY) || 'null');
+    return raw ? Object.assign({}, CAT_FILTER_DEFAULTS, raw) : { ...CAT_FILTER_DEFAULTS };
+  }catch(e){ return { ...CAT_FILTER_DEFAULTS }; }
+})();
+const CAT_YEARS = [
+  { key:'any',  label:'Любой год' },
+  { key:'2020', label:'2020-е' },
+  { key:'2010', label:'2010-е' },
+  { key:'2000', label:'2000-е' },
+  { key:'old',  label:'до 2000' },
+];
+const CAT_SORTS = [
+  { key:'default', label:'Как в каталоге' },
+  { key:'new',     label:'Сначала новые' },
+  { key:'rating',  label:'По рейтингу' },
+  { key:'title',   label:'По названию' },
+];
+function catYearMatch(m, key){
+  const y = parseInt(m.year, 10) || 0;
+  if (key === 'any') return true;
+  if (key === 'old') return y > 0 && y < 2000;
+  return y >= +key && y < +key + 10;
+}
+function catIsFiltered(){
+  return !!(catFilters.types.length || catFilters.genres.length || catFilters.year !== 'any' || catFilters.sort !== 'default');
+}
+function catFilterCount(){
+  return catFilters.types.length + catFilters.genres.length
+       + (catFilters.year !== 'any' ? 1 : 0) + (catFilters.sort !== 'default' ? 1 : 0);
+}
+/* Одна функция отбора — из неё же считается число в кнопке «Показать», поэтому
+   окно никогда не обещает одно, а показывает другое. */
+function catFilterMovies(f, query){
+  const q = (query === undefined ? searchQuery : query) || '';
+  let list = MOVIES.filter(m =>
+    (!f.types.length || movieTypes(m).some(t => f.types.includes(t))) &&
+    (!f.genres.length || (m.genres || []).some(g => f.genres.includes(g))) &&
+    catYearMatch(m, f.year) &&
+    (!q || (m.title || '').toLowerCase().includes(q) || (m.originalTitle || '').toLowerCase().includes(q))
+  );
+  if (f.sort === 'new') list = list.slice().sort((a, b) => (parseInt(b.year,10)||0) - (parseInt(a.year,10)||0));
+  else if (f.sort === 'rating') list = list.slice().sort((a, b) => (Number(b.rating)||0) - (Number(a.rating)||0));
+  else if (f.sort === 'title') list = list.slice().sort((a, b) => String(a.title||'').localeCompare(String(b.title||''), 'ru'));
+  return list;
+}
+/* Черновик фильтров: в окне крутим его, а в каталог он попадает только после
+   «Показать» — можно спокойно перебрать варианты и не дёргать сетку зря. */
+let filtersDraft = null;
+function renderFilters(){
+  const host = document.getElementById('filtersBody');
+  if (!host || !filtersDraft) return;
+  const f = filtersDraft;
+  const typeChips = TYPE_TABS.filter(t => t.key !== 'all').map(t =>
+    `<button class="f-chip ${f.types.includes(t.key) ? 'on' : ''}" data-f="type" data-v="${t.key}">${ICON(TYPE_ICON[t.key] || 'film', 15)}${esc(t.label)}</button>`).join('');
+  const genreChips = catalogGenres().map(g =>
+    `<button class="f-chip ${f.genres.includes(g) ? 'on' : ''}" data-f="genre" data-v="${esc(g)}">${esc(g)}</button>`).join('');
+  const yearChips = CAT_YEARS.map(y =>
+    `<button class="f-chip ${f.year === y.key ? 'on' : ''}" data-f="year" data-v="${y.key}">${esc(y.label)}</button>`).join('');
+  const sortChips = CAT_SORTS.map(o =>
+    `<button class="f-chip ${f.sort === o.key ? 'on' : ''}" data-f="sort" data-v="${o.key}">${esc(o.label)}</button>`).join('');
+  host.innerHTML = `
+    <div class="f-block">
+      <div class="f-block-title"><span>Тип</span><button data-clear="types">Всё подряд</button></div>
+      <div class="f-chips">${typeChips}</div>
+    </div>
+    <div class="f-block">
+      <div class="f-block-title"><span>Жанры</span><button data-clear="genres">Все жанры</button></div>
+      <div class="f-chips">${genreChips}</div>
+    </div>
+    <div class="f-block">
+      <div class="f-block-title"><span>Год</span></div>
+      <div class="f-chips">${yearChips}</div>
+    </div>
+    <div class="f-block">
+      <div class="f-block-title"><span>Сортировка</span></div>
+      <div class="f-chips">${sortChips}</div>
+    </div>
+    <div class="lv-note" id="filtersFound"></div>`;
+  updateFiltersFound();
+}
+/* Сколько тайтлов попадёт в каталог при текущем черновике. Считается той же
+   функцией, что и сам каталог, поэтому цифры всегда совпадают. */
+function updateFiltersFound(){
+  const el = document.getElementById('filtersFound');
+  const n = catFilterMovies(filtersDraft).length;
+  if (el) el.textContent = n ? `Найдено тайтлов: ${n}` : 'По этим условиям ничего нет — попробуй ослабить фильтры';
+  const apply = document.getElementById('filtersApply');
+  if (apply) apply.textContent = n ? `Показать ${n}` : 'Ничего не найдено';
+  if (apply) apply.disabled = !n;
+}
+function openCatFilters(){
+  filtersDraft = { types: [...catFilters.types], genres: [...catFilters.genres], year: catFilters.year, sort: catFilters.sort };
+  renderFilters();
+  openOverlay('filtersScreen');
+}
+const filtersBody = document.getElementById('filtersBody');
+if (filtersBody) filtersBody.addEventListener('click', e => {
+  const clear = e.target.closest('[data-clear]');
+  if (clear){
+    const what = clear.dataset.clear;
+    if (what === 'types') filtersDraft.types = [];
+    if (what === 'genres') filtersDraft.genres = [];
+    haptic('selection'); renderFilters(); return;
+  }
+  const chip = e.target.closest('.f-chip');
+  if (!chip || !filtersDraft) return;
+  const kind = chip.dataset.f, v = chip.dataset.v;
+  if (kind === 'type' || kind === 'genre'){
+    const list = filtersDraft[kind === 'type' ? 'types' : 'genres'];
+    const i = list.indexOf(v);
+    if (i > -1) list.splice(i, 1); else list.push(v);
+  } else if (kind === 'year'){
+    filtersDraft.year = v;
+  } else if (kind === 'sort'){
+    filtersDraft.sort = v;
+  }
+  haptic('selection');
+  renderFilters();
 });
-setupGenreChips(); // первая отрисовка жанровых чипов
+document.getElementById('openCatFilters').onclick = () => { haptic('selection'); openCatFilters(); };
+document.getElementById('closeFilters').onclick = () => closeOverlay('filtersScreen');
+document.getElementById('filtersReset').onclick = () => {
+  haptic('selection');
+  filtersDraft = { ...CAT_FILTER_DEFAULTS, types: [], genres: [] };
+  renderFilters();
+};
+document.getElementById('filtersApply').onclick = () => {
+  if (!filtersDraft) return;
+  catFilters = { types: [...filtersDraft.types], genres: [...filtersDraft.genres], year: filtersDraft.year, sort: filtersDraft.sort };
+  saveCatFilters();
+  catalogRenderLimit = 60;
+  haptic('impact','light');
+  closeOverlay('filtersScreen');
+  renderCatActive();
+  renderCatalog();
+  showToast(catFilterCount() ? `Фильтры: ${catFilterCount()}` : 'Фильтры сброшены');
+};
+function catalogGenres(){
+  return [...new Set(MOVIES.flatMap(m => m.genres || []))].sort((a,b) => a.localeCompare(b, 'ru'));
+}
+function saveCatFilters(){
+  try{ localStorage.setItem(CAT_FILTER_KEY, JSON.stringify(catFilters)); }catch(e){}
+}
+function renderCatActive(){
+  const host = document.getElementById('catActive');
+  if (!host) return;
+  const chips = [];
+  catFilters.types.forEach(t => {
+    const label = (TYPE_TABS.find(x => x.key === t) || {}).label || t;
+    chips.push(`<div class="chip removable" data-drop="type" data-v="${esc(t)}">${esc(label)}<span class="chip-x">✕</span></div>`);
+  });
+  catFilters.genres.forEach(g => chips.push(`<div class="chip removable" data-drop="genre" data-v="${esc(g)}">${esc(g)}<span class="chip-x">✕</span></div>`));
+  if (catFilters.year !== 'any') chips.push(`<div class="chip removable" data-drop="year">${esc((CAT_YEARS.find(y=>y.key===catFilters.year)||{}).label || catFilters.year)}<span class="chip-x">✕</span></div>`);
+  if (catFilters.sort !== 'default') chips.push(`<div class="chip removable" data-drop="sort">${esc((CAT_SORTS.find(s=>s.key===catFilters.sort)||{}).label || catFilters.sort)}<span class="chip-x">✕</span></div>`);
+  host.innerHTML = chips.join('');
+  const btn = document.getElementById('openCatFilters');
+  const badge = document.getElementById('catFilterBadge');
+  const n = catFilterCount();
+  if (btn) btn.classList.toggle('on', n > 0);
+  if (badge){
+    badge.textContent = n;
+    badge.style.display = n ? 'flex' : 'none';
+  }
+}
+const catActiveHost = document.getElementById('catActive');
+if (catActiveHost) catActiveHost.addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c) return;
+  const kind = c.dataset.drop, v = c.dataset.v;
+  if (kind === 'type') catFilters.types = catFilters.types.filter(t => t !== v);
+  else if (kind === 'genre') catFilters.genres = catFilters.genres.filter(g => g !== v);
+  else if (kind === 'year') catFilters.year = 'any';
+  else if (kind === 'sort') catFilters.sort = 'default';
+  haptic('selection'); saveCatFilters(); renderCatActive(); catalogRenderLimit = 60; renderCatalog();
+});
+renderCatActive();            // чипы выбранных фильтров и значок на кнопке при запуске
 let searchQuery = '';
 document.getElementById('catSearch').addEventListener('input', e=>{
   searchQuery = e.target.value.trim().toLowerCase(); catalogRenderLimit = 60;
   renderCatalog();
 });
-document.getElementById('catChips').addEventListener('click', e=>{
-  const c = e.target.closest('.chip'); if (!c) return;
-  activeGenre = c.dataset.g; catalogRenderLimit = 60; haptic('selection');
-  [...document.querySelectorAll('#catChips .chip')].forEach(x=>x.classList.toggle('active', x===c));
-  renderCatalog();
-});
-function setupGenreChips(){
-  const genres = ['Все', ...new Set(MOVIES.flatMap(m => m.genres || []))];
-  if (!genres.includes(activeGenre)) activeGenre = 'Все'; // жанр мог исчезнуть после смены каталога
-  document.getElementById('catChips').innerHTML = genres.map(g => `<div class="chip ${g===activeGenre?'active':''}" data-g="${esc(g)}">${esc(g)}</div>`).join('');
-}
 /* ============ Общие шаблоны карточек (грид/список) ============ */
 /* Обложки грузим только когда карточка приближается к экрану: в каталоге
    легко набирается сотня постеров, и все они тянулись разом даже с телефона. */
@@ -6772,11 +7163,14 @@ function syncViewToggle(section, def){
 let catalogRenderLimit = 60;
 function renderCatalog(){
   const view = syncViewToggle('catalog', 'grid');
-  const list = MOVIES.filter(m =>
-    typeMatches(m, activeType) &&
-    (activeGenre==='Все' || (m.genres||[]).includes(activeGenre)) &&
-    (!searchQuery || (m.title||'').toLowerCase().includes(searchQuery) || (m.originalTitle||'').toLowerCase().includes(searchQuery))
-  );
+  const list = catFilterMovies(catFilters);
+  /* Верх каталога говорит по делу: сколько тайтлов под текущими условиями, и какие
+     фильтры включены. Обновляем здесь же — данные всегда свежие. */
+  const countEl = document.getElementById('catCount');
+  if (countEl) countEl.textContent = list.length
+    ? `${list.length} ${pluralRu(list.length, 'тайтл', 'тайтла', 'тайтлов')}`
+    : 'ничего не найдено';
+  renderCatActive();
   const grid = document.getElementById('catGrid');
   const moreWrap = document.getElementById('catShowMore');
   if (!list.length){
@@ -7795,7 +8189,7 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
     document.getElementById('catLoadMore').style.display = 'block';
     const added = await fetchMorePages();
     document.getElementById('catLoadMore').style.display = 'none';
-    if (added){ setupGenreChips(); renderCatalog(); }
+    if (added){ renderCatalog(); }
     catalogLoadingMore = false;
   }
 });
@@ -7813,7 +8207,6 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
     renderStack();
   }
   await Promise.all([loadState(), loadMovies()]);
-  setupGenreChips();
   if (MOVIES.length){
     const realGenres = [...new Set(MOVIES.flatMap(m => m.genres))];
     if (realGenres.length) buildOnboardingChips(realGenres);
