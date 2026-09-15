@@ -101,6 +101,8 @@ ok(/const top = fs \? \(tgInset\(sa, 'top'\) \+ tgInset\(csa, 'top'\)\) : 0/.tes
 ok(/if \(!fs && \/android\/i\.test\(tg\.platform \|\| ''\) && !bottom\) bottom = 34/.test(safeFn), 'запас под пилюлю Android остаётся');
 ok(/--safe-left/.test(safeFn) && /--safe-right/.test(safeFn), 'боковые отступы (вырез в горизонтальной ориентации) тоже считаются');
 ok(/padding-left:var\(--safe-left\); padding-right:var\(--safe-right\)/.test(cssClean.replace(/\s+/g, ' ')), 'оболочка приложения уважает боковые зоны');
+ok(/nav\{[\s\S]{0,420}?margin-left:calc\(var\(--safe-left\) \* -1\)/.test(cssClean), 'фон нижней панели растягивается на всю ширину, содержимое — в безопасной зоне');
+ok(/\.lvl-strip\{[\s\S]{0,320}?padding-left:calc\(22px \+ var\(--safe-left\)\)/.test(cssClean), 'строка уровня тоже');
 ok(/removeProperty\('--safe-top'\)/.test(safeFn), 'вне Telegram отдаём расчёт обратно браузеру (env(safe-area-inset-*))');
 ok(/--safe-left: env\(safe-area-inset-left/.test(cssClean) && /--safe-right: env\(safe-area-inset-right/.test(cssClean), 'в CSS есть значения по умолчанию из env()');
 ok(/tg\.setBottomBarColor/.test(js), 'цвет нижней панели Telegram совпадает с темой');
@@ -128,7 +130,12 @@ ok(/document\.fonts\.ready\.then/.test(js), 'раскладка пересоби
 /* ключевое: путь демо-карточки должен влезать в сцену */
 ok(/function tutDemoMove/.test(js) && /data-tut-move/.test(js), 'у демо есть габарит движения');
 ok(/data-tut-move="84x6"/.test(src) && /data-tut-move="0x92"/.test(src), 'шаги «свайп» и «вверх-вниз» сообщают свой ход');
-ok(/const w = \(demo\.offsetWidth \|\| demo\.getBoundingClientRect\(\)\.width \|\| 0\) \+ m\.x \* 2 \+ 10/.test(js), 'масштаб считаем по габариту вместе с движением');
+ok(/const w = \(demo\.offsetWidth \|\| demo\.getBoundingClientRect\(\)\.width \|\| 0\) \+ m\.x \* 2 \+ 16/.test(js), 'масштаб считаем по габариту вместе с движением');
+ok(/function tutFitDemoMove/.test(js) && /const roomX = Math\.max\(0, Math\.floor\(\(\(stage\.clientWidth \|\| 0\) - cardW - 24\) \/ 2\)\)/.test(js), 'ход демо подрезается под сцену — карточка не мельчает');
+ok(/t\.style\.setProperty\('--tut-move-x', move\.x \+ 'px'\)/.test(js) && /--tut-move-y/.test(js), 'величина хода уходит в переменные, которые читают анимации');
+ok(/@keyframes demoWatched\{ 0%,12%\{ transform:translate\(0,0\) rotate\(0\); \} 45%,55%\{ transform:translate\(var\(--tut-move-x, 84px\), -6px\) rotate\(8deg\); \}/.test(cssClean), 'анимация свайпа вправо берёт ход из переменной');
+ok(/@keyframes demoWishBoth\{[^\n]*calc\(var\(--tut-move-y, 92px\) \* -1\)/.test(cssClean) && /@keyframes handMoveBoth\{[\s\S]{0,240}?var\(--tut-move-y/.test(cssClean), 'анимации «вверх и вниз» и пальца тоже');
+ok(/#tutorial\{ --tut-move-x:84px; --tut-move-y:92px;/.test(cssClean.replace(/\n\s+/g, ' ')), 'у слоя туториала есть значения по умолчанию');
 ok(/return Math\.max\(0\.42, Math\.min\(1, availW \/ w, availH \/ h\)\)/.test(js), 'демо никогда не выходит за сцену');
 ok(/transform-origin:50% 50%/.test(rule('.tut-demo')), 'демо масштабируется из центра');
 ok(/tutDemoScale/.test(js) && /tutApplyScale/.test(js), 'подгонка применяется к демо');
@@ -258,7 +265,9 @@ ev('applyTheme("neon"); applyWordmarkShades();');
 ok(ev('(function(){ for (let h = 320; h <= 1100; h += 20){ const p = tutPlan(h - 130, 130, 260); if (p.stageH + p.capH + 130 > h) return false; } return true; })()'), 'при любой высоте строки туториала не выходят за экран');
 ok(ev('(function(){ const p = tutPlan(600, 150, 900); return p.capH <= p.capLimit && p.stageH > 0; })()'), 'очень длинная подпись подрезается, сцена остаётся');
 ok(ev('(function(){ const p = tutPlan(600, 150, 120); return p.stageH === 330 && p.capH === 120; })()'), 'короткой подписи — ровно её высота, остальное сцене');
-ok(ev('(function(){ const f = { offsetWidth:208, offsetHeight:292, dataset:{ tutMove:"84x6" } }; return tutDemoScale(f, { clientWidth:350, clientHeight:420 }) <= 350 / (208 + 168 + 10) + 0.01; })()'), 'масштаб демо учитывает ход карточки вбок');
+ok(ev('(function(){ const f = { offsetWidth:208, offsetHeight:292, dataset:{ tutMove:"84x6" } }; return tutDemoScale(f, { clientWidth:350, clientHeight:420 }) <= 350 / (208 + 168 + 16) + 0.01; })()'), 'масштаб демо учитывает ход карточки вбок');
+ok(ev('(function(){ const f = { offsetWidth:208, offsetHeight:292, dataset:{ tutMove:"84x6" } }; const m = tutFitDemoMove(f, { clientWidth:350, clientHeight:420 }); return m.x === 59 && m.y === 6; })()'), 'на узком экране ход подрезан (59px вместо 84), карточка остаётся крупной');
+ok(ev('(function(){ const f = { offsetWidth:208, offsetHeight:292, dataset:{ tutMove:"84x6" } }; const m = tutFitDemoMove(f, { clientWidth:700, clientHeight:900 }); return m.x === 84; })()'), 'на широком экране ход не тронут');
 ok(ev('(function(){ const f = { offsetWidth:208, offsetHeight:292, dataset:{ tutMove:"0x92" } }; const k = tutDemoScale(f, { clientWidth:350, clientHeight:420 }); return 292 * k + 92 * k * 2 <= 420 + 1; })()'), 'на шаге «вверх и вниз» карточка влезает по высоте');
 ev('document.getElementById("tutorial").classList.add("show"); document.body.classList.add("tut-open"); tutStep = 0; renderTutStep();');
 await sleep(120);

@@ -383,7 +383,9 @@
   /* Полоска уровня живёт в самой верхней строке — над словом SMOTRA и шестерёнкой,
      поэтому карточка фильма поднимается выше и получает больше места. */
   .lvl-strip{ position:relative; z-index:4; display:flex; align-items:center; gap:10px;
-    padding:calc(10px + var(--safe-top)) 22px 0; flex:0 0 auto; cursor:pointer; }
+    padding:calc(10px + var(--safe-top)) 22px 0; flex:0 0 auto; cursor:pointer;
+    margin-left:calc(var(--safe-left) * -1); margin-right:calc(var(--safe-right) * -1);
+    padding-left:calc(22px + var(--safe-left)); padding-right:calc(22px + var(--safe-right)); }
   .lvl-strip-name{ font-family:'Unbounded',sans-serif; font-size:10.5px; font-weight:700; color:var(--text); white-space:nowrap; }
   .lvl-strip-bar{ flex:1; height:6px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
   .lvl-strip-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .3s ease; }
@@ -885,7 +887,12 @@
 
   /* ===== Bottom nav ===== */
   /* align-items:center — иконки и подписи стоят посередине полосы, а не липнут к низу */
-  nav{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center; padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); position:relative; z-index:10; }
+  nav{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center;
+    padding:10px 0 calc(10px + var(--safe-bottom)); border-top:1px solid var(--border); background:var(--bg-2); z-index:10;
+    /* В горизонтальной ориентации содержимое панели держим в безопасной зоне, а фон
+       растягиваем на всю ширину — иначе по бокам остаётся полоса другого цвета. */
+    margin-left:calc(var(--safe-left) * -1); margin-right:calc(var(--safe-right) * -1);
+    padding-left:var(--safe-left); padding-right:var(--safe-right); }
   nav button{ background:none; border:none; color:var(--text-dim); display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; font-family:'Inter'; position:relative; padding:4px 10px; transition:color .2s ease, transform .15s ease; }
   nav button:active{ transform:scale(.9); }
   nav button.nav-home:active .nav-home-circle{ transform:scale(.92); }
@@ -1021,7 +1028,8 @@
      живёт внутри видимой части: за это отвечают --tut-h и --tut-pad-bottom,
      которые считает скрипт. Верхний отступ ограничен: если клиент отдаёт
      подозрительно большой inset, он не должен съедать пол-экрана. */
-  #tutorial{ position:fixed; inset:0; bottom:auto; height:var(--tut-h, var(--app-h, 100%)); overflow:hidden; background:var(--bg); z-index:95; display:none;
+  #tutorial{ --tut-move-x:84px; --tut-move-y:92px;
+    position:fixed; inset:0; bottom:auto; height:var(--tut-h, var(--app-h, 100%)); overflow:hidden; background:var(--bg); z-index:95; display:none;
     grid-template-rows:auto minmax(0,1fr) minmax(0,auto) auto; gap:10px; align-content:stretch;
     padding:calc(10px + min(var(--safe-top), 90px)) calc(16px + var(--safe-right))
             calc(10px + var(--safe-bottom) + var(--tut-pad-bottom, 0px)) calc(16px + var(--safe-left)); }
@@ -1084,11 +1092,13 @@
   .tut-streak-num{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:29px; line-height:1.1; }
   .tut-streak-lbl{ font-size:11px; }
   .tut-demo-card .tdc-poster-icon{ display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.22); }
-  /* Карточка уезжает недалеко: она должна оставаться в кадре, а не исчезать за краем */
-  @keyframes demoWatched{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(84px,-6px) rotate(8deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
-  @keyframes demoSkip{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(-84px,-6px) rotate(-8deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
+  /* Карточка уезжает недалеко: она должна оставаться в кадре, а не исчезать за
+     краем. Насколько далеко — решает --tut-move-x/--tut-move-y: скрипт подрезает
+     ход под размер сцены, чтобы демо оставалось крупным, но не вылетало. */
+  @keyframes demoWatched{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(var(--tut-move-x, 84px), -6px) rotate(8deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
+  @keyframes demoSkip{ 0%,12%{ transform:translate(0,0) rotate(0); } 45%,55%{ transform:translate(calc(var(--tut-move-x, 84px) * -1), -6px) rotate(-8deg); } 88%,100%{ transform:translate(0,0) rotate(0);} }
   /* Единственный шаг про вертикаль: вверх (чекнуть), затем вниз (смотрю) */
-  @keyframes demoWishBoth{ 0%,8%{ transform:translate(0,0) rotate(0); } 26%,34%{ transform:translate(0,-92px) rotate(0); } 48%,56%{ transform:translate(0,0) rotate(0); } 72%,80%{ transform:translate(0,84px) rotate(0); } 96%,100%{ transform:translate(0,0) rotate(0);} }
+  @keyframes demoWishBoth{ 0%,8%{ transform:translate(0,0) rotate(0); } 26%,34%{ transform:translate(0,calc(var(--tut-move-y, 92px) * -1)) rotate(0); } 48%,56%{ transform:translate(0,0) rotate(0); } 72%,80%{ transform:translate(0,var(--tut-move-y, 92px)) rotate(0); } 96%,100%{ transform:translate(0,0) rotate(0);} }
   @keyframes tutStampUp{ 0%,18%{ opacity:0; } 28%,36%{ opacity:1; } 46%,100%{ opacity:0; } }
   @keyframes tutStampDown{ 0%,62%{ opacity:0; } 72%,82%{ opacity:1; } 94%,100%{ opacity:0; } }
   /* Затемнение подложки, пока карточка в полёте: штамп «СМОТРЕЛ/МИМО/…» читается
@@ -1096,13 +1106,13 @@
   @keyframes dimWatched{ 0%,12%{ opacity:0; } 22%,80%{ opacity:1; } 88%,100%{ opacity:0; } }
   @keyframes dimBoth{ 0%,8%{ opacity:0; } 22%,36%{ opacity:1; } 46%,50%{ opacity:0; } 68%,82%{ opacity:1; } 92%,100%{ opacity:0; } }
   @keyframes handMoveBoth{ 0%,8%{ opacity:0; transform:translate(0,0); } 16%{ opacity:1; }
-    26%,34%{ opacity:1; transform:translate(0,-60px); } 48%,56%{ opacity:1; transform:translate(0,0); }
-    72%,80%{ opacity:1; transform:translate(0,58px); } 92%,100%{ opacity:0; transform:translate(0,0); } }
+    26%,34%{ opacity:1; transform:translate(0,calc(var(--tut-move-y, 92px) * -0.65)); } 48%,56%{ opacity:1; transform:translate(0,0); }
+    72%,80%{ opacity:1; transform:translate(0,calc(var(--tut-move-y, 92px) * 0.63)); } 92%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes handMove{ 0%{ opacity:0; } 10%{ opacity:1; } 55%{ opacity:1; } 70%,100%{ opacity:0; } }
   /* Палец идёт по той же траектории, что и карточка (те же проценты таймлайна),
      но на 60% амплитуды — так видно направление свайпа и кружок не уезжает за экран. */
-  @keyframes handWatched{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
-  @keyframes handSkip{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(-54px,-4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
+  @keyframes handWatched{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(calc(var(--tut-move-x, 84px) * 0.64), -4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
+  @keyframes handSkip{ 0%,12%{ opacity:0; transform:translate(0,0); } 22%{ opacity:1; } 45%,55%{ opacity:1; transform:translate(calc(var(--tut-move-x, 84px) * -0.64), -4px); } 76%{ opacity:1; transform:translate(0,0); } 88%,100%{ opacity:0; transform:translate(0,0); } }
   @keyframes tutStamp{ 0%,20%{ opacity:0; } 45%,55%{ opacity:1; } 80%,100%{ opacity:0; } }
   .tut-caption{ text-align:center; flex:0 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0 2px; overflow:hidden; max-height:100%; }
   .tut-caption .tc-title{ font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; line-height:1.25; }
@@ -3166,8 +3176,15 @@ function fitTutorial(){
   // 4. Сцена получает ровно остаток места — ни пикселем больше.
   if (stage && plan.stageH > 0) stage.style.height = plan.stageH + 'px';
 
-  // 5. Демо внутри сцены подгоняем под её новый размер.
-  if (demo) tutApplyScale(demo, tutDemoScale(demo, stage));
+  // 5. Демо внутри сцены: сперва подрезаем его ХОД под размер сцены (карточку не
+  //    уменьшаем — иначе мельчают подписи), и лишь затем, если она всё равно не
+  //    влезает, масштабируем.
+  if (demo && stage){
+    const move = tutFitDemoMove(demo, stage);
+    t.style.setProperty('--tut-move-x', move.x + 'px');
+    t.style.setProperty('--tut-move-y', move.y + 'px');
+    tutApplyScale(demo, tutDemoScale(demo, stage, move));
+  }
   clampTutorial();
 }
 
@@ -3178,16 +3195,28 @@ function tutDemoMove(demo){
   const raw = String((demo && demo.dataset && demo.dataset.tutMove) || '').split(/[x,; ]+/).filter(Boolean);
   return { x: Math.abs(parseFloat(raw[0]) || 0), y: Math.abs(parseFloat(raw[1]) || 0) };
 }
-/* Насколько можно показать демо, чтобы ВЕСЬ его путь влез в сцену */
-function tutDemoScale(demo, stage){
+/* Насколько можно показать демо, чтобы ВЕСЬ его путь влез в сцену.
+   Сжимаем демо только в крайнем случае: сначала уменьшаем его ХОД (см. fitTutorial),
+   чтобы карточка осталась крупной и подписи внутри неё читались. */
+function tutDemoScale(demo, stage, move){
   if (!demo || !stage) return 1;
   const availW = stage.clientWidth || 0, availH = stage.clientHeight || 0;
   if (!availW || !availH) return 1;
-  const m = tutDemoMove(demo);
-  const w = (demo.offsetWidth || demo.getBoundingClientRect().width || 0) + m.x * 2 + 10;
-  const h = (demo.offsetHeight || demo.getBoundingClientRect().height || 0) + m.y * 2 + 10;
+  const m = move || tutDemoMove(demo);
+  const w = (demo.offsetWidth || demo.getBoundingClientRect().width || 0) + m.x * 2 + 16;
+  const h = (demo.offsetHeight || demo.getBoundingClientRect().height || 0) + m.y * 2 + 16;
   if (!w || !h) return 1;
   return Math.max(0.42, Math.min(1, availW / w, availH / h));
+}
+/* Ход демо под размер сцены: карточка должна доехать до края и не вылезти за него.
+   Величина хода живёт в --tut-move-x/--tut-move-y — её читают анимации свайпа. */
+function tutFitDemoMove(demo, stage){
+  const want = tutDemoMove(demo);
+  const cardW = (demo && demo.offsetWidth) || 0;
+  const cardH = (demo && demo.offsetHeight) || 0;
+  const roomX = Math.max(0, Math.floor(((stage.clientWidth || 0) - cardW - 24) / 2));
+  const roomY = Math.max(0, Math.floor(((stage.clientHeight || 0) - cardH - 24) / 2));
+  return { x: Math.max(0, Math.min(want.x, roomX)), y: Math.max(0, Math.min(want.y, roomY)) };
 }
 function tutApplyScale(demo, k){
   demo.style.transform = (k && k < 0.995) ? `scale(${Math.round(k * 100) / 100})` : '';
