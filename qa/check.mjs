@@ -1402,82 +1402,101 @@ ok(/let wf = take\('wishFilters'\)/.test(js), 'и приезжают на дру
 ok(/id="openWishFilters"/.test(src) && /id="wishFilterBadge"/.test(src), 'кнопка фильтров и счётчик есть в разметке');
 devX.close();
 
-/* ================= [22] Ни порно, ни хентая ================= */
-section('[22] Ни порно, ни хентая');
-/* статика: взрослое не запрашиваем, не описываем и не запоминаем (проверки без
-   регулярных выражений — так отчёт читается, а экранирование не мешает) */
+/* ================= [22] Порно и хентай убираем, обычные 18+ оставляем ================= */
+section('[22] Порно и хентай убираем, обычные 18+ оставляем');
+const devPre = await bootDevice(makeFakeDb(), { platform: 'android' });
+/* статика: убираем только порно и хентай, обычные 18+ не трогаем */
 ok(js.indexOf('include_adult=${') === -1 && js.indexOf('include_adult=true') === -1,
-  'запросы к TMDB больше не просят взрослое ни при каких настройках');
+  'запросы к TMDB больше не просят порно ни при каких настройках');
 ok((js.match(/include_adult=false/g) || []).length >= 4, 'и все четыре подборки просят только обычное');
-ok(js.indexOf("const ADULT_KEYWORDS = '198385|445|356759|155477';") > -1,
-  'в запрос уходят теги взрослого: hentai, pornography, porn, softcore');
+ok(js.indexOf("const ADULT_KEYWORDS = '198385|378816';") > -1,
+  'в запрос уходят ровно два тега: hentai и animated porn');
+ok(js.indexOf('445') === -1 || js.indexOf("445|") === -1, 'тег «pornography» из запроса убран — он стоит и на обычном кино');
 ok((js.match(/without_keywords=\$\{ADULT_KEYWORDS\}/g) || []).length >= 3,
   'и они приклеены ко всем подборкам, включая аниме и мультфильмы');
+ok(js.indexOf('ADULT_TITLE_RE') === -1, 'проверки по словам в названии больше нет — она выкидывала обычное кино');
 ok(src.indexOf('switchAdult') === -1 && src.indexOf('<div class="set-label">Показывать 18+</div>') === -1,
   'тумблера «Показывать 18+» в настройках нет');
-ok(js.indexOf("getFlag('smotra_adult'") === -1 && js.indexOf("syncSetting('adult'") === -1,
-  'взрослый режим убран и из настроек, и из синхронизации');
-ok(js.indexOf('const ADULT_TITLE_RE = /(^|[^a-zа-яё])(hentai|porn|хентай|порн)/i;') > -1,
-  'есть строгая проверка названия: hentai / porn / хентай / порн');
-ok(js.indexOf('if (item.adult === true) return true;') > -1, 'флаг adult из TMDB отбрасывает карточку сразу');
+ok(js.indexOf('if (item.adult === true) return true;') === -1 && js.indexOf('return item.adult === true;') > -1,
+  'флаг adult — единственный признак порно в коде');
 ok(js.indexOf('filter(item => !isAdultItem(item))') > -1, 'подборка фильтруется на входе');
 ok(js.indexOf('if (isAdultItem(data)) return null;') > -1, 'подробности по id тоже проверяются');
-ok(js.indexOf('if (!m || !m.id || isAdultItem(m)) return;') > -1, 'в память телефона взрослое не запоминается');
-ok(js.indexOf('smotra_tmdb_cache_v5_safe') > -1, 'ключ кэша подборки сменился — старый кэш со взрослым больше не читается');
+ok(js.indexOf('if (!m || !m.id || isAdultItem(m)) return;') > -1, 'в память телефона порно не запоминается');
+ok(js.indexOf('smotra_tmdb_cache_v5_safe') > -1, 'ключ кэша подборки сменился — старый кэш с порно больше не читается');
 ok(js.indexOf('if (!isAdultItem(stored[k])) movieStubs[k] = stored[k];') > -1,
   'копии тайтлов в памяти телефона просеиваются при загрузке');
-/* живой прогон: мусор в ответе TMDB не доходит до экрана */
+/* обычные 18+ этим фильтром не задеваются: проверяем на живых названиях */
+ok(devPre.ev('isAdultItem({ title: "Пятьдесят оттенков серого", originalTitle: "Fifty Shades of Grey", adult: false })') === false,
+  '«50 оттенков серого» фильтр пропускает');
+ok(devPre.ev('isAdultItem({ title: "Зак и Мири снимают порно", originalTitle: "Zack and Miri Make a Porno" })') === false,
+  'комедия с «порно» в названии остаётся');
+ok(devPre.ev('isAdultItem({ title: "Хентайный принц и несмеющаяся кошка" })') === false,
+  'аниме с неудачным названием остаётся');
+ok(devPre.ev('isAdultItem({ title: "Ночи в стиле буги", originalTitle: "Boogie Nights" })') === false,
+  '«Ночи в стиле буги» остаются — тег pornography тут ни при чём');
+ok(devPre.ev('isAdultItem({ title: "Хентай Sex School", adult: true })') === true, 'порно по флагу убирается');
+ok(devPre.ev('isAdultItem({ title: "Обычный фильм" })') === false, 'и всё остальное фильтр не трогает');
+/* живой прогон: в ответе TMDB есть и порно, и обычные 18+ — на экран попадают только вторые */
 const adultDb = makeFakeDb();
 const ADULT_FIX = [
   { id: 9101, title: 'Обычный фильм', name: 'Обычный фильм', original_title: 'Normal Film', media_type: 'movie',
     poster_path: '/ok1.jpg', vote_average: 7.4, vote_count: 900, popularity: 900, release_date: '2020-05-05', genre_ids: [28], overview: 'Описание' },
-  { id: 9102, title: 'Porn Test Movie', name: 'Porn Test Movie', media_type: 'movie', adult: true,
+  { id: 9102, title: 'Пятьдесят оттенков серого', name: 'Пятьдесят оттенков серого', original_title: 'Fifty Shades of Grey',
+    poster_path: '/fifty.jpg', vote_average: 5.9, vote_count: 900, popularity: 995, release_date: '2015-02-11', genre_ids: [18], overview: 'Описание' },
+  { id: 9106, title: 'Зак и Мири снимают порно', name: 'Зак и Мири снимают порно', original_title: 'Zack and Miri Make a Porno',
+    poster_path: '/zack.jpg', vote_average: 6.5, vote_count: 800, popularity: 993, release_date: '2008-10-31', genre_ids: [35], overview: 'Описание' },
+  { id: 9104, title: 'Хентайная история', name: 'Хентайная история', original_title: 'Hentai Angels', media_type: 'tv',
+    keyword_ids: [198385], poster_path: '/bad3.jpg', vote_average: 6.9, vote_count: 300, popularity: 997,
+    first_air_date: '2023-05-05', genre_ids: [16], overview: 'Описание' },
+  { id: 9107, title: 'Ночи в стиле буги', name: 'Ночи в стиле буги', original_title: 'Boogie Nights', media_type: 'movie',
+    keyword_ids: [445], poster_path: '/boogie.jpg', vote_average: 7.6, vote_count: 700, popularity: 992, release_date: '1997-10-07', genre_ids: [18], overview: 'Описание' },
+  { id: 9102 + 100, title: 'Порно по флагу', original_title: 'Porn Flag', media_type: 'movie', adult: true,
     poster_path: '/bad1.jpg', vote_average: 6.1, vote_count: 300, popularity: 999, release_date: '2021-05-05', genre_ids: [28], overview: 'Описание' },
-  { id: 9103, title: 'Хентайная история', name: 'Хентайная история', media_type: 'movie',
-    poster_path: '/bad2.jpg', vote_average: 6.6, vote_count: 300, popularity: 998, release_date: '2022-05-05', genre_ids: [16], overview: 'Описание' },
-  { id: 9104, title: 'Тихий омут', name: 'Тихий омут', original_title: 'Hentai Angels', media_type: 'tv',
-    poster_path: '/bad3.jpg', vote_average: 6.9, vote_count: 300, popularity: 997, first_air_date: '2023-05-05', genre_ids: [16], overview: 'Описание' },
-  { id: 9105, title: 'Второй нормальный', name: 'Второй нормальный', media_type: 'movie',
-    poster_path: '/ok2.jpg', vote_average: 8.0, vote_count: 800, popularity: 890, release_date: '2019-05-05', genre_ids: [35], overview: 'Описание' },
 ];
-const devY = await bootDevice(adultDb, { platform: 'android', storage: { smotra_adult: 'true' }, fetch: async (url) => {
+const adultUrls = [];
+const devY = await bootDevice(adultDb, { platform: 'android', fetch: async (url) => {
   const u = String(url);
-  if (/\/genre\/(movie|tv)\/list/.test(u)) return { ok: true, json: async () => ({ genres: [{ id: 28, name: 'Боевик' }, { id: 35, name: 'Комедия' }, { id: 16, name: 'Анимация' }] }) };
-  return { ok: true, json: async () => ({ page: 1, total_pages: 1, results: ADULT_FIX, genres: [] }) };
+  adultUrls.push(u);
+  if (/\/genre\/(movie|tv)\/list/.test(u)) return { ok: true, json: async () => ({ genres: [{ id: 28, name: 'Боевик' }, { id: 35, name: 'Комедия' }, { id: 16, name: 'Анимация' }, { id: 18, name: 'Драма' }] }) };
+  /* TMDB сам убирает тайтлы, чьи теги попали в without_keywords, — мок повторяет это. */
+  const skip = (u.match(/without_keywords=([^&]*)/) || [])[1];
+  const banned = skip ? skip.split(/[|,]/).map(Number) : [];
+  const results = ADULT_FIX.filter(it => !(it.keyword_ids || []).some(k => banned.indexOf(k) > -1));
+  return { ok: true, json: async () => ({ page: 1, total_pages: 1, results, genres: [] }) };
 } });
 ok(devY.errors.length === 0, 'устройство со взрослым в ответе TMDB стартует без ошибок' + (devY.errors.length ? ': ' + devY.errors[0] : ''));
 const adultTitles = () => devY.ev('[...new Set(MOVIES.map(m => m.title))].sort()');
-ok(JSON.stringify(adultTitles()) === JSON.stringify(['Второй нормальный', 'Обычный фильм']),
-  'в каталог попали только обычные тайтлы: ' + adultTitles().join(', '));
-ok(!/Porn|Хентай|Hentai/.test(devY.ev('MOVIES.map(m => m.title + " " + m.originalTitle).join(" | ")')), 'взрослых названий в каталоге нет');
-ok(devY.ev('isAdultItem({ adult: true })') === true && devY.ev('isAdultItem({ title: "Porn" })') === true
-  && devY.ev('isAdultItem({ originalTitle: "Hentai Club" })') === true && devY.ev('isAdultItem({ title: "Хентайный принц" })') === true,
-  'проверка ловит и флаг, и название в любом языке');
-ok(devY.ev('isAdultItem({ title: "Обычный фильм", originalTitle: "Normal Film" })') === false, 'обычный тайтл проверку проходит');
-ok(devY.ev('movieFromTmdb({ id: 9102, title: "Porn Test", adult: true }, "movie")') === null, 'описание взрослого тайтла не собирается вообще');
-devY.ev('rememberMovie({ id: 9103, type: "movie", title: "Хентайная история", posterPath: "/x.jpg" })');
-ok(devY.ev('keyToMovie(9103) === null'), 'взрослый тайтл не оседает в памяти телефона');
-ok(devY.ev('!!localStorage.getItem("smotra_adult")') === false, 'ключ тумблера из прошлых версий вычищен');
-/* на экране: ни в ленте, ни в каталоге, ни в поиске */
+ok(JSON.stringify(adultTitles()) === JSON.stringify(['Зак и Мири снимают порно', 'Ночи в стиле буги', 'Обычный фильм', 'Пятьдесят оттенков серого']),
+  'в каталоге остались обычные тайтлы, включая 18+ и «Ночи в стиле буги»: ' + adultTitles().join(' · '));
+ok(adultTitles().filter(t => t === 'Хентайная история').length === 0, 'хентай с тегом 198385 в каталог не попал');
+ok(adultTitles().filter(t => t === 'Порно по флагу').length === 0, 'и порно с флагом adult тоже');
+const discoverUrls = adultUrls.filter(u => /\/discover\//.test(u));
+ok(discoverUrls.length >= 4, 'подборки запрошены: ' + discoverUrls.length);
+ok(discoverUrls.every(u => u.indexOf('include_adult=false') > -1), 'каждый запрос подборки ушёл за обычным кино');
+ok(discoverUrls.every(u => u.indexOf('without_keywords=198385%7C378816') > -1 || u.indexOf('without_keywords=198385|378816') > -1),
+  'и с исключением тегов hentai и animated porn');
+ok(adultUrls.every(u => u.indexOf('include_adult=true') === -1), 'запроса за порно не было ни одного');
+/* на экране: порна нет, обычные 18+ на месте */
 devY.ev('renderStack(); renderCatalog();');
 await sleep(60);
-const seenTitles = devY.ev('[...document.querySelectorAll(".pc-title, .rl-name, .card-title, .deck-title")].map(e => e.textContent).join(" | ")');
-ok(!/Porn|Хентай|Hentai/.test(seenTitles), 'на экране нет ни одного взрослого тайтла: ' + seenTitles.slice(0, 80));
-devY.doc.getElementById('catSearch').value = 'хентай';
+const seenTitles = devY.ev('[...document.querySelectorAll(".pc-title, .card-title, .deck-title")].map(e => e.textContent).join(" | ")');
+ok(!/Хентайная история|Порно по флагу/.test(seenTitles), 'на экране нет ни одного порно-тайтла: ' + seenTitles.slice(0, 90));
+ok(/оттенков серого/i.test(seenTitles), 'а «50 оттенков серого» на экране есть: ' + seenTitles.slice(0, 90));
+devY.doc.getElementById('catSearch').value = 'оттенков';
 devY.doc.getElementById('catSearch').dispatchEvent(new devY.win.Event('input', { bubbles: true }));
 await sleep(60);
-ok(devY.ev('[...document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card")].length') === 0, 'поиск по слову «хентай» ничего не находит');
-devY.doc.getElementById('catSearch').value = 'обычный';
-devY.doc.getElementById('catSearch').dispatchEvent(new devY.win.Event('input', { bubbles: true }));
-await sleep(60);
-ok(devY.ev('[...document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card")].length') >= 1, 'а обычные тайтлы поиск находит как раньше');
-/* подробности по id: ответ со взрослым не заполняет карточку */
-devY.ev('(function(){ const bare = { id: 9102, type: "movie", title: "", posterPath: null, overview: "", genres: [], year: "", rating: 0 }; rememberMovie(bare); return true; })()');
-devY.ev('loadMovieDetails({ movie: { id: 9102, type: "movie" }, key: 9102 }).then(() => { window.__adultDone = true; })');
+ok(devY.ev('[...document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card")].length') >= 1,
+  'поиск по «оттенков» находит фильм 18+');
+/* подробности по id: ответ с флагом порно не заполняет карточку */
+devY.ev('(function(){ const bare = { id: 9202, type: "movie", title: "", posterPath: null, overview: "", genres: [], year: "", rating: 0 }; rememberMovie(bare); return true; })()');
+devY.ev('loadMovieDetails({ movie: { id: 9202, type: "movie" }, key: 9202 }).then(() => { window.__adultDone = true; })');
 await sleep(300);
-ok(devY.ev('String(!!window.__adultDone)') === 'true', 'ответ по взрослому id обработан');
-ok(devY.ev('!!keyToMovie(9102) === false || !keyToMovie(9102).title'), 'и карточка осталась пустой — название не подставилось');
+ok(devY.ev('String(!!window.__adultDone)') === 'true', 'ответ по порно-id обработан');
+ok(devY.ev('!!keyToMovie(9202) === false || !keyToMovie(9202).title'), 'и карточка осталась пустой — название не подставилось');
+devY.ev('rememberMovie({ id: 9203, type: "movie", title: "Порно по флагу", adult: true, posterPath: "/x.jpg" })');
+ok(devY.ev('keyToMovie(9203) === null'), 'порно не оседает и в памяти телефона');
 devY.close();
+devPre.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
