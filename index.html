@@ -132,8 +132,23 @@
 
   /* ===== Top bar ===== */
   .topbar{ position:relative; z-index:4; display:flex; align-items:center; justify-content:space-between; padding:8px 20px 8px; }
-  .topbar .wordmark{ font-size:19px; }
-  .topbar .wordmark b{ color:var(--accent); font-weight:800; }
+  .topbar .wordmark{ font-size:19px; cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none; }
+  .topbar .wordmark .wm-l.o{ color:var(--accent); }
+  /* Буквы логотипа: своя анимация и свой цвет у акцентной «O». */
+  .wordmark .wm-l, .side-head .wm-l{ display:inline-block; }
+  .side-head .wm-l{ cursor:pointer; }
+  .wordmark.eggo .wm-l, .side-head.eggo .wm-l{ animation:wmJump .66s cubic-bezier(.2,.8,.2,1) both; }
+  .wordmark.eggo, .side-head.eggo{ filter:drop-shadow(0 8px 14px var(--accent-glow)); }
+  .wordmark.eggo .wm-l.o, .side-head.eggo .wm-l.o{ color:var(--accent-2); }
+  @keyframes wmJump{
+    0%{ transform:translateY(0) rotate(0) scale(1); color:var(--text); }
+    32%{ transform:translateY(-10px) rotate(-6deg) scale(1.16); color:var(--accent); }
+    62%{ transform:translateY(3px) rotate(3deg) scale(1.03); color:var(--accent-2); }
+    100%{ transform:translateY(0) rotate(0) scale(1); color:var(--text); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .wordmark.eggo .wm-l, .side-head.eggo .wm-l{ animation-duration:.01s; }
+  }
   .topbar-icons{ display:flex; align-items:center; gap:12px; }
   /* Иконки на телефоне были мелкими — теперь кнопки и значки крупнее */
   .topbar .icon-btn svg{ width:21px; height:21px; }
@@ -303,11 +318,8 @@
   /* Ряд фильтров: одинаковый шаг между рядами и от сетки — раньше чипсы липли
      к поиску и друг к другу без отступа */
   /* Верх каталога — две строки по делу, без пустоты справа */
-  .cat-head-row{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+  .cat-head-row{ display:flex; align-items:center; justify-content:flex-end; gap:12px;
     padding:2px 0 10px; }
-  .cat-head{ display:flex; align-items:baseline; gap:8px; min-width:0; }
-  .cat-title{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:700; letter-spacing:-.2px; }
-  .cat-count{ font-size:12.5px; color:var(--text-dim); }
   .cat-actions{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
   .cat-filter-btn{ position:relative; display:flex; align-items:center; gap:7px; height:36px; padding:0 14px;
     border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text);
@@ -338,6 +350,13 @@
   .ov-title{ flex:1; font-family:'Unbounded',sans-serif; font-size:17px; font-weight:700; }
   .ov-close{ width:40px; height:40px; border-radius:13px; background:var(--surface); border:1px solid var(--border);
     color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  /* Окно фильтров на телефоне было с пустой полосой сверху: шапка отступала
+     на 16px под safe-area, а тело окна добавляло ещё 6px, плюс 18px поля блока.
+     Поджимаем только это окно — остальные окна не трогаем. */
+  #filtersScreen .ov-head{ padding:calc(12px + var(--safe-top)) 20px 6px; }
+  #filtersScreen .ov-body{ padding-top:0; padding-bottom:20px; }
+  #filtersScreen .f-block{ margin-bottom:16px; }
+  #filtersScreen .f-block:first-child{ margin-top:0; }
   .filters-foot{ display:flex; gap:10px; padding:12px 24px calc(16px + var(--safe-bottom));
     border-top:1px solid var(--border); background:var(--surface); }
   .filters-reset{ flex:0 0 auto; padding:14px 20px; border-radius:15px; background:var(--surface-2);
@@ -681,7 +700,7 @@
   #reviewScreen .set-group-title{ display:flex; align-items:center; gap:10px; padding:16px 2px 8px; opacity:1; color:var(--text-dim); font-weight:700; }
   #reviewScreen .set-group-title::after{ content:''; flex:1; height:1px; background:var(--border); }
   .cat-row{ margin-bottom:14px; }
-  .cat-card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:13px 14px 6px;
+  .cat-card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:13px 14px 12px;
     transition:border-color .2s ease, box-shadow .25s ease; }
   .cat-row.hot .cat-card{ border-color:var(--accent-border); box-shadow:0 14px 30px -24px var(--accent-glow); }
   .cat-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; gap:10px; }
@@ -690,20 +709,21 @@
     color:var(--text); background:linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; background-clip:text;
     -webkit-text-fill-color:transparent; }
   .cat-val small{ font-size:11px; font-weight:600; -webkit-text-fill-color:var(--text-dim); color:var(--text-dim); }
-  /* Деления: заполненные светятся, пустые — просто фон */
-  .cat-dots{ display:flex; gap:4px; margin-bottom:9px; }
-  .cat-dots i{ flex:1; height:5px; border-radius:3px; background:var(--surface-2); transition:background .18s ease, transform .18s ease; }
-  .cat-dots i.on{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); transform:scaleY(1.25); }
-  .cat-dots i.top{ background:var(--accent); box-shadow:0 0 8px var(--accent-glow); }
-  .cat-slider{ --pct:50%; width:100%; -webkit-appearance:none; appearance:none; height:14px; border-radius:9px; outline:none; margin:0 0 6px;
-    background:linear-gradient(90deg, var(--accent) 0%, var(--accent-2) var(--pct), var(--surface-2) var(--pct), var(--surface-2) 100%);
-    box-shadow:inset 0 1px 3px rgba(0,0,0,0.45); }
-  .cat-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:30px; height:30px; border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 72%); border:3px solid var(--bg-2);
-    box-shadow:0 4px 12px -2px rgba(0,0,0,0.7), 0 0 0 4px var(--accent-soft); transition:transform .12s ease, box-shadow .18s ease; }
-  .cat-slider:active::-webkit-slider-thumb{ transform:scale(1.14); box-shadow:0 6px 16px -2px rgba(0,0,0,0.75), 0 0 0 7px var(--accent-soft); }
-  .cat-slider::-moz-range-thumb{ width:26px; height:26px; border-radius:50%; background:var(--accent); border:3px solid var(--bg-2); box-shadow:0 4px 12px -2px rgba(0,0,0,0.7); }
-  .cat-slider::-moz-range-track{ height:14px; border-radius:9px; background:var(--surface-2); }
+  /* Эквалайзер оценки: столбики растут слева направо, выбранные светятся.
+     touch-action:pan-y — вертикальная прокрутка окна пальцем не ломается. */
+  .cat-meter{ display:flex; align-items:flex-end; gap:6px; height:58px; padding:2px 0 0; touch-action:pan-y; }
+  .cm-bar{ flex:1; min-width:0; padding:0; cursor:pointer; border-radius:6px; border:1px solid var(--border);
+    background:var(--surface-2); -webkit-tap-highlight-color:transparent;
+    transition:background .18s ease, border-color .18s ease, box-shadow .2s ease, transform .12s ease; }
+  .cm-bar.on{ background:linear-gradient(180deg, var(--accent), var(--accent-2)); border-color:transparent; }
+  .cm-bar.cur{ box-shadow:0 0 12px var(--accent-glow); transform:scaleY(1.06); }
+  .cm-bar:active{ transform:scaleY(.93); }
+  .cm-line{ margin-top:10px; height:5px; border-radius:3px; background:var(--surface-2); overflow:hidden; }
+  .cm-line i{ display:block; height:100%; border-radius:3px; background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow:0 0 10px var(--accent-glow); transition:width .22s ease; }
+  .cm-scale{ display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:var(--text-dim); }
+  .cat-val.pop{ animation:catValPop .24s cubic-bezier(.2,.8,.2,1); }
+  @keyframes catValPop{ 0%{ transform:scale(1); } 45%{ transform:scale(1.18); } 100%{ transform:scale(1); } }
   /* Итог: крупная цифра, шкала до 68 и словесный вердикт */
   .score-hero{ margin-top:14px; padding:16px 16px 14px; border-radius:20px; border:1px solid var(--accent-border);
     background:linear-gradient(135deg, var(--accent-soft), rgba(79,139,255,0.05)); }
@@ -714,6 +734,12 @@
   .score-verdict{ margin-top:6px; font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700;
     background:linear-gradient(120deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
   .score-bar{ height:9px; margin-top:12px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .score-map{ display:flex; align-items:flex-end; gap:5px; height:30px; margin-top:12px; }
+  .score-map i{ flex:1; border-radius:4px; background:var(--surface-2); position:relative; overflow:hidden; }
+  .score-map i b{ position:absolute; left:0; right:0; bottom:0; height:0;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent)); border-radius:4px; transition:height .22s ease; }
+  .score-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:9px; font-size:11px; color:var(--text-dim); }
+  .score-foot span:first-child{ font-family:'Unbounded',sans-serif; font-weight:700; color:var(--text); }
   .score-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .25s ease; }
   .score-total.pulse{ animation:popPulse .35s cubic-bezier(.3,.6,.3,1.4); }
   .review-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; animation:rise .35s cubic-bezier(.2,.8,.2,1) both; display:flex; gap:12px; }
@@ -1357,7 +1383,7 @@
        ложился поверх первой кнопки («Каталог»). */
     .side-head{ display:block; margin:0 10px 18px; padding-bottom:16px; border-bottom:1px solid var(--border);
       font-family:'Unbounded',sans-serif; font-weight:800; font-size:20px; letter-spacing:-.5px; color:var(--text); }
-    .side-head b{ color:var(--accent); font-weight:800; }
+    .side-head .wm-l.o{ color:var(--accent); }
     nav button{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;
       padding:12px 14px; border-radius:14px; font-size:14px; font-weight:600; }
     nav button:active{ transform:none; background:var(--accent-soft); }
@@ -1479,12 +1505,18 @@
   .lv-hero-badge{ width:54px; height:54px; border-radius:17px; flex:0 0 auto;
     background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent);
     display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px -14px var(--accent-glow); }
-  .lv-hero-level{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:800; }
+  .lv-hero-txt{ min-width:0; flex:1; }
+  .lv-hero-level{ font-family:'Unbounded',sans-serif; font-size:clamp(15px,4.6vw,19px); font-weight:800; line-height:1.25; overflow-wrap:anywhere; }
   .lv-hero-sub{ font-size:12px; color:var(--text-dim); margin-top:4px; }
-  .lv-hero-xp{ margin-left:auto; text-align:right; }
-  .lv-hero-xp b{ display:block; font-family:'Unbounded',sans-serif; font-size:24px; font-weight:800; }
-  .lv-hero-xp span{ font-size:10.5px; color:var(--text-dim); }
-  .lv-hero-bar{ margin-top:16px; height:9px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  /* Три ячейки вместо одной большой цифры справа: шестизначный опыт
+     («100 000 XP») раньше уезжал за край окна, теперь у каждой цифры своё место. */
+  .lv-hero-nums{ display:grid; grid-template-columns:repeat(3, 1fr); gap:9px; margin-top:16px; }
+  .lv-hero-cell{ min-width:0; padding:9px 10px; border-radius:14px; background:var(--surface-2); border:1px solid var(--border); }
+  .lv-hero-cell b{ display:block; font-family:'Unbounded',sans-serif; font-weight:800; letter-spacing:-.01em;
+    font-size:clamp(13px, 4.1vw, 18px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .lv-hero-cell span{ display:block; margin-top:4px; font-size:10px; line-height:1.2; color:var(--text-dim); }
+  .lv-hero-bar{ margin-top:14px; height:9px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .lv-hero-progress{ margin-top:9px; font-size:11px; color:var(--text-dim); }
   .lv-hero-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .4s ease; }
   .lv-hero-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:11.5px; color:var(--text-dim); }
   .lv-hero-foot b{ color:var(--text); }
@@ -1493,12 +1525,34 @@
   .lv-sect-note{ font-size:11px; font-weight:500; letter-spacing:0; text-transform:none; color:var(--text-dim); opacity:.75; }
   /* Все уровни плитками: пройденные — акцентом, текущий — градиентом, дальние — тихо. */
   .lv-tiles{ display:grid; grid-template-columns:repeat(auto-fill, minmax(40px, 1fr)); gap:7px; }
-  .lv-tile{ display:flex; align-items:center; justify-content:center; height:38px; border-radius:11px;
-    font-family:'Unbounded',sans-serif; font-size:11.5px; font-weight:700; color:var(--text-dim);
-    background:var(--surface-2); border:1px solid var(--border); transition:transform .12s ease; }
+  .lv-tile{ display:flex; align-items:center; justify-content:center; height:38px; border-radius:11px; padding:0;
+    font-family:'Unbounded',sans-serif; font-size:11.5px; font-weight:700; color:var(--text-dim); cursor:pointer;
+    background:var(--surface-2); border:1px solid var(--border); transition:transform .12s ease, box-shadow .16s ease;
+    -webkit-tap-highlight-color:transparent; }
+  .lv-tile:active{ transform:scale(.93); }
+  .lv-tile.sel{ box-shadow:0 0 0 2px var(--accent); }
   .lv-tile.done{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
   .lv-tile.cur{ background:linear-gradient(150deg, var(--accent), var(--accent-2)); border-color:transparent;
     color:var(--on-accent); box-shadow:0 14px 28px -14px var(--accent-glow); transform:scale(1.06); }
+  .lv-jump{ margin-left:auto; padding:5px 11px; border-radius:11px; cursor:pointer; font-size:11px; font-weight:600;
+    text-transform:none; letter-spacing:0; color:var(--accent); background:var(--accent-soft);
+    border:1px solid var(--accent-border); -webkit-tap-highlight-color:transparent; }
+  /* Карточка выбранного уровня: имя, порог, шаг и сколько до него осталось. */
+  .lv-pick{ margin-top:12px; padding:14px; border-radius:18px; background:var(--surface);
+    border:1px solid var(--accent-border); box-shadow:0 20px 44px -30px var(--accent-glow);
+    animation:lvPickIn .22s cubic-bezier(.2,.8,.2,1) both; }
+  .lv-pick[hidden]{ display:none; }
+  @keyframes lvPickIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+  .lv-pick-top{ display:flex; align-items:center; gap:12px; }
+  .lv-pick-badge{ width:44px; height:44px; border-radius:14px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent); }
+  .lv-pick-txt{ min-width:0; flex:1; }
+  .lv-pick-name{ font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; line-height:1.3; overflow-wrap:anywhere; }
+  .lv-pick-sub{ font-size:11px; color:var(--text-dim); margin-top:4px; }
+  .lv-pick-x{ width:32px; height:32px; border-radius:11px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim); cursor:pointer; }
+  .lv-pick-nums{ display:grid; grid-template-columns:repeat(3, 1fr); gap:9px; margin-top:12px; }
+  .lv-pick-note{ margin-top:10px; font-size:11.5px; line-height:1.45; color:var(--text-dim); }
   .lv-ladder{ display:flex; flex-direction:column; }
   .lv-row{ position:relative; display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; border:1px solid transparent; }
   .lv-row .lv-dot{ position:relative; z-index:1; width:30px; height:30px; border-radius:50%; flex:0 0 auto;
@@ -1509,11 +1563,12 @@
   .lv-row.done .lv-dot{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
   .lv-row.cur{ background:var(--surface); border-color:var(--accent-border); box-shadow:0 18px 44px -30px var(--accent-glow); }
   .lv-row.cur .lv-dot{ background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent); border-color:transparent; }
+  .lv-row-txt{ min-width:0; flex:1; }
   .lv-row-name{ font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
   .lv-row-name svg{ width:15px; height:15px; color:var(--accent); }
   .lv-row.neon-ahead .lv-row-name svg{ color:var(--text-dim); }
-  .lv-row-sub{ font-size:11px; color:var(--text-dim); margin-top:3px; }
-  .lv-row-state{ margin-left:auto; text-align:right; font-size:11.5px; color:var(--text-dim); white-space:nowrap; }
+  .lv-row-sub{ font-size:11px; color:var(--text-dim); margin-top:3px; overflow-wrap:anywhere; }
+  .lv-row-state{ margin-left:auto; flex:0 0 auto; text-align:right; font-size:11.5px; color:var(--text-dim); white-space:nowrap; }
   .lv-row-state b{ display:block; font-size:12.5px; color:var(--text); font-weight:700; }
   .lv-row.done .lv-row-state b{ color:var(--accent); }
   .lv-src{ display:flex; align-items:center; gap:12px; padding:9px 4px; }
@@ -1526,6 +1581,18 @@
   .lv-src-num{ font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; white-space:nowrap; }
   .lv-src-num small{ display:block; font-family:'Inter'; font-size:10.5px; font-weight:500; color:var(--text-dim); }
   .lv-note{ font-size:12px; color:var(--text-dim); line-height:1.5; margin-top:10px; }
+  @media (max-width:360px){
+    .lv-hero{ padding:16px; }
+    .lv-hero-nums, .lv-pick-nums{ gap:7px; }
+    .lv-hero-cell{ padding:8px; }
+    .lv-row{ gap:9px; padding:10px; }
+    .lv-row-name{ font-size:12.5px; }
+    .lv-row-sub{ font-size:10px; }
+    .lv-row-state{ font-size:10.5px; }
+    .lv-row-state b{ font-size:11.5px; }
+    .lv-tiles{ grid-template-columns:repeat(auto-fill, minmax(34px, 1fr)); gap:6px; }
+    .lv-tile{ height:34px; font-size:10.5px; }
+  }
 
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
@@ -1624,7 +1691,7 @@
 </div>
 
 <div class="topbar">
-  <div class="wordmark">SM<b>O</b>TRA</div>
+  <div class="wordmark"><span class="wm-l">S</span><span class="wm-l">M</span><span class="wm-l o">O</span><span class="wm-l">T</span><span class="wm-l">R</span><span class="wm-l">A</span></div>
   <div class="topbar-icons">
     
     <div class="streak" id="streakBadge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="currentColor" stroke="none"/></svg> <span id="streakNum">0</span></div>
@@ -1660,13 +1727,10 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <!-- Верх каталога занят по делу: слева название и счётчик тайтлов, справа —
-         кнопка фильтров со значком и переключатель вида. Раньше строка пустовала. -->
+    <!-- Верх каталога — только управление: кнопка фильтров со значком и
+         переключатель вида, прижатые вправо. Счётчик «N тайтлов» убран: он ничего
+         не решал, а место в шапке занимал. -->
     <div class="cat-head-row">
-      <div class="cat-head">
-        <span class="cat-title">Каталог</span>
-        <span class="cat-count" id="catCount">0</span>
-      </div>
       <div class="cat-actions">
         <button class="cat-filter-btn" id="openCatFilters">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -1705,13 +1769,13 @@
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
-    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="search-wrap" id="wishSearchWrap">
       <button class="search-btn" id="wishSearchBtn" aria-label="Поиск в «Хочу чекнуть»"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
       <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…"
         enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="wishSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
+    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="chips" id="wishSort"></div>
     <button class="roulette-btn" id="openRoulette"><span class="rl-ico"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></span> Рандомайзер</button>
     <div id="wishList"></div>
@@ -1776,7 +1840,7 @@
 <nav>
   <!-- На десктопе панель разделов становится боковой, и логотип переезжает сюда.
        Раньше он был position:fixed внутри шапки — из-за этого и вставал криво. -->
-  <div class="side-head" aria-hidden="true">SM<b>O</b>TRA</div>
+  <div class="side-head" aria-hidden="true"><span class="wm-l">S</span><span class="wm-l">M</span><span class="wm-l o">O</span><span class="wm-l">T</span><span class="wm-l">R</span><span class="wm-l">A</span></div>
   <button data-tab="catalog">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
     Каталог
@@ -1948,6 +2012,8 @@
         <div class="score-verdict" id="reviewVerdict">Оцени</div>
       </div>
       <div class="score-bar"><i id="reviewTotalBar" style="width:0%"></i></div>
+      <div class="score-map" id="reviewScoreMap" aria-hidden="true"></div>
+      <div class="score-foot"><span id="reviewTotalPct">0%</span><span id="reviewCriteriaLabel">по всем критериям</span></div>
     </div>
     <div class="set-group-title" style="padding-left:0; padding-top:0; margin-top:14px;">Текст рецензии</div>
     <textarea id="reviewText" rows="5" placeholder="Что понравилось, что нет, кому советуешь…" style="width:100%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 14px; color:var(--text); font-family:'Inter'; font-size:14px; resize:vertical;"></textarea>
@@ -2119,6 +2185,30 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.33 — полная синхронизация и большая уборка:
+         • телефон и десктоп теперь совпадают во всём: тема, 18+, жанры, вид
+           разделов, сортировка и фильтры чек-листа, пройденное обучение и дата
+           «в SMOTRA с» едут через базу (строки cfg.* в таблице badges), а при
+           первом входе настройки отправляются туда целиком; пока связи нет,
+           своё изменение помечается как «не отправленное» и не перетирается
+           значением из базы;
+         • лестница уровней доведена до 68 ступеней и ровно 100 000 XP на вершине:
+           каждый следующий уровень дороже примерно на 45 XP (22, 67, 111 … 2 963),
+           в окне уровней — три ячейки с цифрами (ничего не обрезается), плитка
+           любого уровня по тапу показывает название и порог, вся лестница целиком
+           со своими статусами и прыжок «К моему уровню»;
+         • ачивок стало ровно 68: добавлены вехи по жанрам, сериям, десятилетиям,
+           оценкам и серии дней — с теми же значками и объяснениями;
+         • Смотриметры переделаны: вместо ползунков — столбики-эквалайзер, оценка
+           ставится тапом, протяжкой или цифрой с клавиатуры, под шкалой горит
+           полоса заполнения, в итоговом блоке — карта всех десяти критериев;
+         • каталог стал чище: счётчик «N тайтлов» убран, управление прижато вправо;
+           в окне фильтров больше нет пустой полосы сверху на телефоне;
+         • в «Хочу чекнуть» иконка поиска поднята наверх, заголовок со счётчиком
+           перешёл под неё;
+         • пасхалка: тап по надписи SMOTRA в шапке (или в панели на десктопе) —
+           буквы по очереди подпрыгивают и перекрашиваются в цвет темы;
+         • убраны мёртвые функции и отладочные хвосты, состояние грузится мягче.
    0.32 — большая порция по замечаниям:
          • серия дней больше не расходится между телефоном и десктопом: она считается
            по синхронизированным дням активности из базы, а не по памяти устройства;
@@ -2356,8 +2446,8 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.32';
-const APP_BUILD_DATE = '2026-09-14';
+const APP_VERSION = '0.33';
+const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
 const ICONS = {
@@ -2558,6 +2648,145 @@ function haptic(type, style){
     else if (type==='notification') tg.HapticFeedback.notificationOccurred(style||'success');
     else if (type==='selection') tg.HapticFeedback.selectionChanged();
   }catch(e){}
+}
+
+/* ===== Синхронизация настроек между устройствами =====
+   Списки (смотрел/чекнуть/смотрю/оценки/серии/ачивки/серия дней) живут в своих
+   таблицах и потому одинаковы на всех устройствах. Настройки же хранились только
+   в памяти устройства: тему, выбранные жанры, 18+, вид разделов и фильтры каталога
+   телефон и десктоп видели по-разному.
+   Отдельной таблицы для настроек в базе нет, поэтому используем таблицу badges:
+   строка с badge_id вида «cfg.theme="amber"» — обычная строка, которую не жалко.
+   Ачивки читаются с фильтром по известным id (см. loadState), поэтому на счёт
+   достижений и на опыт эти строки не влияют. Ошибка записи ничего не ломает:
+   настройка остаётся локальной и помечается как «не отправленная», чтобы при
+   следующем запуске её не перебило значение из базы. */
+const CFG_PREFIX = 'cfg.';
+const CFG_PENDING_KEY = 'smotra_cfg_pending';
+let cfgRemoteEmpty = false;      // база ещё ничего не знает о настройках
+let cfgPending = (() => {
+  try{ return new Set(JSON.parse(localStorage.getItem(CFG_PENDING_KEY) || '[]')); }catch(e){ return new Set(); }
+})();
+function cfgSavePending(){ try{ localStorage.setItem(CFG_PENDING_KEY, JSON.stringify([...cfgPending])); }catch(e){} }
+function cfgRowId(key, value){ return CFG_PREFIX + key + '=' + JSON.stringify(value); }
+function cfgDecode(id){
+  if (id.indexOf(CFG_PREFIX) !== 0) return null;
+  const body = id.slice(CFG_PREFIX.length);
+  const eq = body.indexOf('=');
+  if (eq < 1) return null;
+  const key = body.slice(0, eq);
+  try{ return { key, value: JSON.parse(body.slice(eq + 1)) }; }catch(e){ return null; }
+}
+/* Отправляем одну настройку. Старые строки этого ключа убираем — иначе база
+   копила бы по строке на каждое переключение темы. */
+let applyingRemote = false;      // пока применяем чужие настройки — своих записей не делаем
+/* Записи по одному ключу не должны обгонять друг друга: тему можно перещёлкнуть
+   быстрее, чем ответит база, и тогда старая строка легла бы рядом с новой. */
+const cfgWriteChains = new Map();
+function syncSetting(key, value){
+  if (applyingRemote) return Promise.resolve();
+  const prev = cfgWriteChains.get(key) || Promise.resolve();
+  const next = prev.then(() => writeSettingNow(key, value), () => writeSettingNow(key, value));
+  cfgWriteChains.set(key, next);
+  return next;
+}
+async function writeSettingNow(key, value){
+  const id = cfgRowId(key, value);
+  try{
+    await sb.from('badges').delete().eq('telegram_id', TG_ID).like('badge_id', CFG_PREFIX + key + '=%');
+    const res = await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: id });
+    if (sbFail(res, 'cfg save ' + key)) throw new Error('cfg save failed');
+    cfgPending.delete(key); cfgSavePending();
+  }catch(e){
+    /* Нет связи или таблицы — настройка остаётся на устройстве и не перетирается
+       значением из базы при следующем запуске. */
+    cfgPending.add(key); cfgSavePending();
+  }
+}
+/* Применяем то, что пришло из базы. Ключи из cfgPending (меняли здесь, но не
+   отправили) не трогаем — иначе своё же изменение откатилось бы на перезапуске. */
+function applyRemoteSettings(remote){
+  if (!remote || applyingRemote) return;
+  applyingRemote = true;
+  try{ applyRemoteSettingsInner(remote); } finally { applyingRemote = false; }
+}
+function applyRemoteSettingsInner(remote){
+  const take = (key) => (Object.prototype.hasOwnProperty.call(remote, key) && !cfgPending.has(key)) ? remote[key] : undefined;
+  let t = take('theme');
+  if (typeof t === 'string' && THEME_NAMES[t] && t !== themeId()){
+    /* Именно pickTheme: тема должна не только примениться, но и лечь в память
+       устройства, иначе после перезапуска она вернётся к прежней. В базу при этом
+       ничего не уходит — мы сейчас внутри применения чужих настроек. */
+    try{ pickTheme(t); }catch(e){ try{ applyTheme(t); }catch(e2){} }
+  }
+  let g = take('genres');
+  if (Array.isArray(g) && JSON.stringify(g) !== JSON.stringify(selectedGenres)){
+    selectedGenres = g.filter(x => typeof x === 'string');
+    try{ localStorage.setItem('smotra_genres', JSON.stringify(selectedGenres)); }catch(e){}
+    try{ updateObCount(); }catch(e){}
+  }
+  let a = take('adult');
+  if (typeof a === 'boolean'){
+    setFlag('smotra_adult', a);
+    const sw = document.getElementById('switchAdult');
+    if (sw) sw.classList.toggle('on', a);
+  }
+  let tut = take('tutorial');
+  if (tut === true){
+    try{ localStorage.setItem('smotra_tutorial_done', '1'); }catch(e){}
+  }
+  let v = take('views');
+  if (v && typeof v === 'object'){
+    Object.keys(v).forEach(section => {
+      if (typeof v[section] === 'string'){ try{ localStorage.setItem('smotra_view_' + section, v[section]); }catch(e){} }
+    });
+    try{ refreshVisibleScreens(); }catch(e){}
+  }
+  let cf = take('catFilters');
+  if (cf && typeof cf === 'object'){
+    catFilters = Object.assign({}, CAT_FILTER_DEFAULTS, cf);
+    catFilters.types = Array.isArray(catFilters.types) ? catFilters.types : [];
+    catFilters.genres = Array.isArray(catFilters.genres) ? catFilters.genres : [];
+    saveCatFilters();
+    try{ renderCatActive(); renderCatalog(); }catch(e){}
+  }
+  let ws = take('wishSort');
+  if (typeof ws === 'string' && WISH_SORTS.some(x => x.key === ws) && ws !== wishSort){
+    wishSort = ws;
+    try{ initWishSortChips(); renderWishlist(); }catch(e){}
+  }
+  let since = take('since');
+  if (typeof since === 'string' && since){
+    try{
+      /* Дата «в SMOTRA с …» — это первое устройство, а не последнее: если на
+         этом устройстве дата раньше, оставляем её, иначе берём дату из базы. */
+      const local = localStorage.getItem('smotra_since');
+      const earlier = (local && new Date(local).getTime() < new Date(since).getTime()) ? local : since;
+      localStorage.setItem('smotra_since', earlier);
+    }catch(e){}
+    try{ initSinceLabel(); }catch(e){}
+  }
+}
+function pushAllSettings(){
+  const all = currentSyncedSettings();
+  Object.keys(all).forEach(key => { if (all[key] !== undefined && all[key] !== null) syncSetting(key, all[key]); });
+}
+/* Все настройки, которые имеют смысл на другом устройстве. */
+function currentSyncedSettings(){
+  return {
+    theme: themeId(),
+    genres: selectedGenres,
+    adult: getFlag('smotra_adult', true),
+    tutorial: getFlag('smotra_tutorial_done', false),
+    views: {
+      catalog: getView('catalog', 'grid'),
+      wishlist: getView('wishlist', 'grid'),
+      watching: getView('watching', 'list'),
+    },
+    catFilters,
+    wishSort,
+    since: (() => { try{ return localStorage.getItem('smotra_since') || ''; }catch(e){ return ''; } })(),
+  };
 }
 
 /* ===== Десктоп: шапку с иконками переносим внутрь боковой панели =====
@@ -2991,7 +3220,8 @@ function openTitleList(title, movies, opts){
   const screen = document.getElementById('titleListScreen');
   if (!screen) return;
   document.getElementById('titleListTitle').textContent = title;
-  document.getElementById('titleListCount').textContent = movies.length;
+  /* Счётчик в окне списка подписываем словом: «12 тайтлов» читается лучше, чем «12» */
+  document.getElementById('titleListCount').textContent = `${movies.length} ${pluralRu(movies.length, 'тайтл', 'тайтла', 'тайтлов')}`;
   const body = document.getElementById('titleListBody');
   if (!movies.length){
     body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">${o.empty || 'Здесь пока пусто'}</div>`;
@@ -3311,8 +3541,22 @@ async function loadState(){
       res = await sb.from('badges').select('badge_id').eq('telegram_id', TG_ID);
     }
     if (!sbFail(res, 'badges select')){
-      state.unlocked = (res.data||[]).map(r=>r.badge_id);
-      (res.data||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
+      /* В таблице badges лежат ещё и настройки (badge_id вида «cfg.*»), а раньше
+         туда мог попасть id ачивки, которой в приложении уже нет. Считаем только
+         известные ачивки: иначе счётчик достижений и опыт за них завышались. */
+      const rows = res.data || [];
+      state.unlocked = rows.map(r=>r.badge_id);
+      pruneUnlockedBadges();
+      rows.forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
+      const remote = {};
+      rows.forEach(r => {
+        const cfg = cfgDecode(r.badge_id);
+        if (cfg && !(cfg.key in remote)) remote[cfg.key] = cfg.value;   // свежая строка важнее старой
+      });
+      /* «since» каждое устройство пишет само при первом запуске, поэтому за
+         признак «в базе ещё нет настроек» считаем отсутствие остальных ключей. */
+      cfgRemoteEmpty = !Object.keys(remote).some(k => k !== 'since');
+      applyRemoteSettings(remote);
     } else stateLoadFailed.push('badges');
   }catch(e){ console.error(e); stateLoadFailed.push('badges'); }
   })());
@@ -3352,7 +3596,13 @@ async function loadState(){
     }catch(e){ /* остаёмся на локальном счёте */ }
   })());
   await Promise.all(stateJobs);
-  mergeLocalAndRemote();
+  try{ mergeLocalAndRemote(); }
+  catch(e){ console.error('[state] слияние локального и базы', e); }
+  /* Первый вход на этом устройстве: если в базе про настройки ещё пусто, отправляем
+     туда всё, что уже настроено здесь, — тогда телефон и десктоп совпадут сразу.
+     Стоит именно здесь, а не в mergeLocalAndRemote: тот выходит раньше, когда на
+     устройстве ещё нет сохранённого состояния (то есть как раз при первом входе). */
+  if (cfgRemoteEmpty) pushAllSettings();
   if (stateLoadFailed.length){
     // Что-то из таблиц не ответило. Не оставляем экраны полупустыми: тихо
     // догружаем через пару секунд, потом ещё раз — база обычно отвечает со второго.
@@ -3426,6 +3676,43 @@ const sTitle = document.getElementById('sTitle');
   sp.style.animationDelay = `${delay}s, ${(1.0 + i * 0.12).toFixed(2)}s`;
   sTitle.appendChild(sp);
 });
+/* ============ ПАСХАЛКА НА ЛОГОТИПЕ ============
+   Тап по надписи SMOTRA (в шапке на телефоне и в панели на десктопе) — буквы
+   по очереди подпрыгивают и перекрашиваются в цвет темы, потом возвращаются.
+   Разметка надписи разбирается на буквы один раз здесь, чтобы у каждой был свой
+   темп: без этого пришлось бы дублировать «SMOTRA» руками в двух местах. */
+const WM_LETTERS = 'SMOTRA';
+function buildWordmarks(){
+  document.querySelectorAll('.topbar .wordmark, .side-head').forEach(el => {
+    if (el.dataset.wmLetters) return;
+    el.dataset.wmLetters = '1';
+    if (!el.querySelector('.wm-l')){              // страховка: разметку могли заменить
+      el.innerHTML = '';
+      [...WM_LETTERS].forEach(ch => {
+        const sp = document.createElement('span');
+        sp.className = 'wm-l' + (ch === 'O' ? ' o' : '');
+        sp.textContent = ch;
+        el.appendChild(sp);
+      });
+    }
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', 'SMOTRA');
+    const jump = (e) => {
+      if (e){ e.preventDefault(); e.stopPropagation(); }
+      haptic('impact', 'light');
+      el.classList.remove('eggo');
+      void el.offsetWidth;                       // перезапуск анимации, если тапают подряд
+      [...el.querySelectorAll('.wm-l')].forEach((sp, i) => { sp.style.animationDelay = (i * 0.055).toFixed(3) + 's'; });
+      el.classList.add('eggo');
+      clearTimeout(el._wmTimer);
+      el._wmTimer = setTimeout(() => el.classList.remove('eggo'), 1050);
+    };
+    el.addEventListener('click', jump);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') jump(e); });
+  });
+}
+buildWordmarks();
 /* Сцена заставки короткая: буквы въезжают до ~0.6с, слоган — к 1.2с,
    подпись автора — к 1.7с, на 2.9с заставка уходит (параметр ?splash
    оставляет её на экране, если хочется разглядеть). */
@@ -3521,19 +3808,22 @@ function applySyncedStreak(rows){
   return true;
 }
 let currentStreak = recordVisitAndGetStreak();
-(function initSince(){
+function initSinceLabel(){
   const el = document.getElementById('profileSince');
   if (!el) return;
   let since = null;
   try{
     since = localStorage.getItem('smotra_since');
+    /* Дата «в SMOTRA с …» — тоже настройка: на новом устройстве она не должна
+       начинаться заново. Ставим её один раз и уносим в базу. */
     if (!since){ since = new Date().toISOString(); localStorage.setItem('smotra_since', since); }
   }catch(e){}
   if (since){
     const d = new Date(since);
     el.textContent = 'в SMOTRA с ' + d.toLocaleDateString('ru-RU', { month:'long', year:'numeric' });
   }
-})();
+}
+initSinceLabel();
 (function initVersion(){
   const el = document.getElementById('appVersionLabel');
   if (el) el.textContent = `SMOTRA · версия ${APP_VERSION} · ${APP_BUILD_DATE}`;
@@ -3581,6 +3871,7 @@ buildOnboardingChips(GENRES_FALLBACK); // временно, пока не под
 function finishOnboarding(){
   localStorage.setItem('smotra_onboarded', '1');
   localStorage.setItem('smotra_genres', JSON.stringify(selectedGenres));
+  syncSetting('genres', selectedGenres);
   document.getElementById('onboarding').classList.remove('show');
   if (typeof MOVIES !== 'undefined' && MOVIES.length){
     deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
@@ -3758,14 +4049,6 @@ function tutVisibleBottom(box){
   return vvH ? Math.min(own, vvH) : own;
 }
 /* Не влезает ли нижний ряд (подпись + кнопка «Дальше») в видимую часть экрана */
-function tutCaptionOverflow(){
-  const t = document.getElementById('tutorial');
-  const actions = t && t.querySelector('.tut-actions');
-  if (!t || !actions) return false;
-  const box = t.getBoundingClientRect();
-  if (!box.height) return false;                        // раскладка ещё не посчитана
-  return actions.getBoundingClientRect().bottom > tutVisibleBottom(box) - 2;
-}
 /* Последний рубеж: если после всех подгонок нижний ряд всё равно ниже видимой
    части экрана — поднимаем содержимое слоя ровно на величину переполнения.
    Так кнопка «Дальше» не может уехать за низ ни при какой раскладке. */
@@ -3923,6 +4206,7 @@ function closeTutorial(){
   document.body.classList.remove('tut-open');
   document.getElementById('tutorial').classList.remove('show');
   localStorage.setItem('smotra_tutorial_done', '1');
+  syncSetting('tutorial', true);       // прошёл обучение — на другом устройстве не повторяем
 }
 document.getElementById('tutNext').onclick = () => {
   haptic('selection');
@@ -4149,6 +4433,7 @@ document.addEventListener('visibilitychange', () => {
 function pickTheme(name){
   if (!THEME_NAMES[name]) return;
   localStorage.setItem('smotra_theme', name);
+  syncSetting('theme', name);          // тема тоже едет на другое устройство
   applyTheme(name);
   renderThemeWindow();
 }
@@ -4266,6 +4551,7 @@ initSwitch(document.getElementById('switchAdult'), true, async (val) => {
   deck = dedupeByKey(sortByPopularity(MOVIES.filter(isUnseen)));
   renderStack(); renderCatalog(); updateStats();
   showToast(val ? '18+ теперь показывается' : '18+ снова скрыт');
+  syncSetting('adult', val);
 });
 
 function onTypeFilterChange(){
@@ -4841,6 +5127,44 @@ const BADGES = [
   { id:'b30', kind:'streak',   min:365,  icon:'moon',  name:'Год в кино',     desc:'Заходи 365 дней подряд' },
   { id:'b31', kind:'genres',   min:15,   icon:'bolt',  name:'Эрудит',         desc:'Посмотри тайтлы из 15 разных жанров' },
   { id:'b32', kind:'episodes', min:200,  icon:'pause', name:'Долгий сериал',  desc:'Отметь 200 просмотренных серий' },
+
+  /* --- продолжение лестницы: добираем список до 68 ачивок --- */
+  { id:'b33', kind:'genres',   min:3,    icon:'sparkles', name:'Первые жанры',      desc:'Посмотри тайтлы из 3 разных жанров' },
+  { id:'b34', kind:'genres',   min:7,    icon:'grid',     name:'Семь жанров',       desc:'Посмотри тайтлы из 7 разных жанров' },
+  { id:'b35', kind:'genres',   min:12,   icon:'folder',   name:'Жанровая карта',    desc:'Посмотри тайтлы из 12 разных жанров' },
+  { id:'b36', kind:'genres',   min:18,   icon:'bolt',     name:'Жанровый максимум', desc:'Посмотри тайтлы из 18 разных жанров' },
+  { id:'b37', kind:'wishlist', min:1,    icon:'list',     name:'Хочу чекнуть',      desc:'Добавь первый тайтл в «Хочу чекнуть»' },
+  { id:'b38', kind:'wishlist', min:10,   icon:'star',     name:'Список растёт',     desc:'Собери 10 тайтлов в «Хочу чекнуть»' },
+  { id:'b39', kind:'wishlist', min:200,  icon:'dice',     name:'Список на всю жизнь', desc:'Собери 200 тайтлов в «Хочу чекнуть»' },
+  { id:'b40', kind:'watching', min:1,    icon:'play',     name:'Первое смотрю',     desc:'Держи первый тайтл в «Смотрю»' },
+  { id:'b41', kind:'watching', min:25,   icon:'masks',    name:'Двадцать пять в работе', desc:'Держи 25 тайтлов в «Смотрю»' },
+  { id:'b42', kind:'skipped',  min:1,    icon:'cross',    name:'Первый мимо',       desc:'Пропусти первый тайтл' },
+  { id:'b43', kind:'skipped',  min:10,   icon:'ghost',    name:'Разборчивый',       desc:'Пропусти 10 тайтлов' },
+  { id:'b44', kind:'skipped',  min:500,  icon:'reel',     name:'Полтысячи мимо',    desc:'Пропусти 500 тайтлов' },
+  { id:'b45', kind:'reviews',  min:5,    icon:'smile',    name:'Пять оценок',       desc:'Поставь 5 оценок по шкале' },
+  { id:'b46', kind:'reviews',  min:25,   icon:'detective',name:'Двадцать пять оценок', desc:'Поставь 25 оценок по шкале' },
+  { id:'b47', kind:'reviews',  min:200,  icon:'pen',      name:'Коллекционер оценок', desc:'Поставь 200 оценок по шкале' },
+  { id:'b48', kind:'reviews',  min:500,  icon:'crown',    name:'Мастер шкалы',      desc:'Поставь 500 оценок по шкале' },
+  { id:'b49', kind:'streak',   min:1,    icon:'fire',     name:'Первый день',       desc:'Загляни в приложение' },
+  { id:'b50', kind:'streak',   min:2,    icon:'bolt',     name:'Два дня подряд',    desc:'Заходи 2 дня подряд' },
+  { id:'b51', kind:'streak',   min:14,   icon:'burst',    name:'Две недели',        desc:'Заходи 14 дней подряд' },
+  { id:'b52', kind:'streak',   min:60,   icon:'heart',    name:'Два месяца',        desc:'Заходи 60 дней подряд' },
+  { id:'b53', kind:'streak',   min:200,  icon:'clock',    name:'Двести дней',       desc:'Заходи 200 дней подряд' },
+  { id:'b54', kind:'episodes', min:10,   icon:'tv',       name:'Десять серий',      desc:'Отметь 10 просмотренных серий' },
+  { id:'b55', kind:'episodes', min:100,  icon:'clapper',  name:'Сотня серий',       desc:'Отметь 100 просмотренных серий' },
+  { id:'b56', kind:'episodes', min:500,  icon:'film',     name:'Пятьсот серий',     desc:'Отметь 500 просмотренных серий' },
+  { id:'b57', kind:'episodes', min:1000, icon:'trophy',   name:'Тысяча серий',      desc:'Отметь 1000 просмотренных серий' },
+  { id:'b58', kind:'watched',  min:1500, icon:'rocket',   name:'Полторы тысячи',    desc:'Отметь 1500 просмотренных тайтлов' },
+  { id:'b59', kind:'watched',  min:2000, icon:'starFill', name:'Две тысячи',        desc:'Отметь 2000 просмотренных тайтлов' },
+  { id:'b60', kind:'decades',  min:3,    icon:'clock',    name:'Три десятилетия',   desc:'Посмотри кино из 3 разных десятилетий' },
+  { id:'b61', kind:'decades',  min:5,    icon:'moon',     name:'Пять десятилетий',  desc:'Посмотри кино из 5 разных десятилетий' },
+  { id:'b62', kind:'decades',  min:7,    icon:'rocket',   name:'Семь десятилетий',  desc:'Посмотри кино из 7 разных десятилетий' },
+  { id:'b63', kind:'wishlist', min:75,   icon:'newspaper',name:'Список на три месяца', desc:'Собери 75 тайтлов в «Хочу чекнуть»' },
+  { id:'b64', kind:'watching', min:5,    icon:'teddy',    name:'Пять в работе',     desc:'Держи 5 тайтлов в «Смотрю»' },
+  { id:'b65', kind:'episodes', min:20,   icon:'play',     name:'Двадцать серий',    desc:'Отметь 20 просмотренных серий' },
+  { id:'b66', kind:'skipped',  min:50,   icon:'shuffle',  name:'Пятьдесят мимо',    desc:'Пропусти 50 тайтлов' },
+  { id:'b67', kind:'genres',   min:9,    icon:'folder',   name:'Девять жанров',     desc:'Посмотри тайтлы из 9 разных жанров' },
+  { id:'b68', kind:'episodes', min:2000, icon:'trophy',   name:'Две тысячи серий',  desc:'Отметь 2000 просмотренных серий' },
 ];
 
 let catalogStale = false, wishlistStale = false, watchingStale = false, rankStale = false;
@@ -5323,15 +5647,35 @@ function showToast(text){
 
 /* ============ BADGES ============ */
 /* Значение каждого счётчика для ачивок: считается из состояния и прогресса серий */
+/* Список ачивок объявлен ниже по файлу, а ответ базы может прийти раньше —
+   поэтому спрашиваем его аккуратно и не роняем загрузку состояния. */
+function knownBadgeIds(){
+  try{ return new Set(BADGES.map(b => b.id)); }catch(e){ return null; }
+}
+function pruneUnlockedBadges(){
+  const known = knownBadgeIds();
+  if (!known) return false;
+  const before = state.unlocked.length;
+  state.unlocked = state.unlocked.filter(id => known.has(id));
+  return before !== state.unlocked.length;
+}
 function badgeCounters(){
   const genres = new Set();
-  state.watched.forEach(key => { const m = keyToMovie(key); if (m) (m.genres || []).forEach(g => genres.add(g)); });
+  const decades = new Set();
+  state.watched.forEach(key => {
+    const m = keyToMovie(key);
+    if (!m) return;
+    (m.genres || []).forEach(g => genres.add(g));
+    const y = Number(m.year);
+    if (y) decades.add(Math.floor(y / 10) * 10);   // 1994 → 1990-е
+  });
   let episodes = 0;
   Object.values(state.episodes || {}).forEach(e => {
     Object.values(e.seasons || {}).forEach(n => { episodes += Number(n) || 0; });
   });
   return {
     watched: state.watched.length,
+    decades: decades.size,
     wishlist: state.wishlist.length,
     watching: state.watching.length,
     skipped: state.skipped.length,
@@ -5366,6 +5710,7 @@ function badgeTileHTML(b, iconSize){
   </div>`;
 }
 function renderBadges(){
+  pruneUnlockedBadges();      // список ачивок уже известен: выкидываем чужие id
   const grid = document.getElementById('badgesGrid');
   const shown = BADGES.slice(0, BADGES_PREVIEW);
   const rest = BADGES.length - shown.length;
@@ -5405,8 +5750,8 @@ const FAQ_ITEMS = [
   ['Что такое «Хочу чекнуть»?', 'Список на потом. Когда он подрастёт, запусти рандомайзер — рулетку или колесо — и он выберет один тайтл за тебя.'],
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
-  ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле.'],
-  ['Какие уровни есть и сколько нужно опыта?', 'Уровней 68, удвоений нет: каждый следующий уровень дороже предыдущего ровно на 3 XP — переход стоит 20, 23, 26, 29 и так далее до 221 XP на 68-м. Первые уровни закрываются за вечер (2-й — всего 20 XP, 10-й — 288 XP), а 68-й «Кинолегенда IV» открывается на 7 973 XP: это примерно 800 отмеченных тайтлов вместе с оценками, ачивками и серией дней. Ступени: «Зритель», «Кинолюб», «Киноман», «Киногурман», «Кинофил», «Синефил» … «Киноакадемик», «Киноархимаг», «Кинолегенда» — у каждой по четыре подуровня I–IV. Вся лестница целиком — в окне уровней (тап по строке LVL вверху или по карточке уровня в профиле).'],
+  ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле, а вся лестница из 68 уровней до 100 000 XP — в окне уровней: там же разбор, из чего именно набежал опыт.'],
+  ['Какие уровни есть и сколько нужно опыта?', 'Уровней 68, удвоений нет: каждый следующий уровень дороже предыдущего примерно на 45 XP. Переходы стоят 22, 67, 111, 156 и так далее до 2 963 XP на последнем, а весь путь до 68-го — ровно 100 000 XP. Первые уровни закрываются за вечер (2-й — всего 22 XP), а 68-й «Кинолегенда IV» открывается на 100 000 XP — это длинная цель, зато без обрывов и «стены»: каждая ступень честно чуть дороже предыдущей. Ступени: «Зритель», «Кинолюб», «Киноман», «Киногурман», «Кинофил», «Синефил» … «Киноакадемик», «Киноархимаг», «Кинолегенда» — у каждой по четыре подуровня I–IV. Вся лестница целиком — в окне уровней (тап по полоске LVL вверху или по карточке уровня в профиле), и там же тап по любой плитке уровня показывает его название, порог и сколько опыта до него осталось.'],
 ];
 function renderFaq(){
   const host = document.getElementById('faqBody');
@@ -5561,50 +5906,57 @@ function renderLevelsScreen(){
   const maxRow = Math.max(1, ...rows.map(r => r.count * r.per));
   document.getElementById('levelsTotal').textContent = total + ' XP';
 
+  /* Шапка переделана: большое число опыта больше не висит справа от названия —
+     на шестизначных значениях («100 000 XP») оно вылезало за край окна. Теперь
+     опыт живёт в трёх отдельных ячейках под названием и обрезаться не может. */
   const hero = `
     <div class="lv-hero">
       <div class="lv-hero-top">
         <div class="lv-hero-badge">${ICON(lv.icon, 26)}</div>
-        <div>
+        <div class="lv-hero-txt">
           <div class="lv-hero-level">Уровень ${lv.level} · ${esc(lv.name)}</div>
           <div class="lv-hero-sub">${lv.next
-            ? `Следующий — «${esc(lv.next.name)}» на ${lv.next.xp} XP`
-            : 'Это последний уровень: выше уже некуда'}</div>
+            ? `Дальше — «${esc(lv.next.name)}»`
+            : 'Вершина: 68-й уровень, выше некуда'}</div>
         </div>
-        <div class="lv-hero-xp"><b>${lv.xp}</b><span>XP всего</span></div>
       </div>
-      <div class="lv-hero-bar"><i style="width:${lv.pct}%"></i></div>
+      <div class="lv-hero-nums">
+        <div class="lv-hero-cell"><b>${fmtXP(lv.xp)}</b><span>XP сейчас</span></div>
+        <div class="lv-hero-cell"><b>${lv.next ? fmtXP(lv.toNext) : '—'}</b><span>${lv.next ? 'до следующего' : 'дальше некуда'}</span></div>
+        <div class="lv-hero-cell"><b>${fmtXP(LEVEL_XP_TARGET)}</b><span>вершина, LVL ${LEVEL_MAX}</span></div>
+      </div>
+      <div class="lv-hero-bar"><i style="width:${Math.max(lv.pct, 1)}%"></i></div>
       <div class="lv-hero-foot">
-        <span>${lv.next ? `Пройдено <b>${lv.pct}%</b> уровня` : 'Уровень пройден полностью'}</span>
-        <span>${lv.next ? `до «${esc(lv.next.name)}» — <b>${lv.toNext} XP</b>` : `вершина лестницы: <b>${LEVELS.length}</b> из ${LEVELS.length}`}</span>
+        <span>${lv.next ? `Уровень пройден на <b>${lv.pct}%</b>` : 'Уровень пройден полностью'}</span>
+        <span>${lv.next ? `до «${esc(lv.next.name)}» — <b>${fmtXP(lv.toNext)} XP</b>` : `вершина: <b>${LEVELS.length}</b> из ${LEVELS.length}`}</span>
       </div>
+      <div class="lv-hero-progress">Весь путь: ${fmtXP(lv.xp)} из ${fmtXP(LEVEL_XP_TARGET)} XP · ${(lv.xp / LEVEL_XP_TARGET * 100).toFixed(lv.xp < 10000 ? 2 : 1)}%</div>
     </div>`;
 
-  /* Лестница целиком — компактными плитками: 68 рядов текстом листать невозможно,
-     а так видно сразу и пройденное, и где ты сейчас, и сколько осталось. */
-  const tiles = LEVELS.map((L, i) => {
-    const num = i + 1;
-    const done = num < lv.level;
-    const cur = num === lv.level;
-    return `<span class="lv-tile ${done ? 'done' : ''} ${cur ? 'cur' : ''}" title="${esc(L.name)} · от ${L.xp} XP">${num}</span>`;
+  /* Плитки — кнопки: нажатие на любую открывает карточку уровня с именем,
+     порогом и тем, сколько до него осталось. */
+  const tiles = LEVELS.map(L => {
+    const done = L.level < lv.level;
+    const cur = L.level === lv.level;
+    return `<button type="button" class="lv-tile ${done ? 'done' : ''} ${cur ? 'cur' : ''}" data-lv="${L.level}"
+      aria-label="Уровень ${L.level}, ${esc(L.name)}, от ${fmtXP(L.xp)} XP" title="${esc(L.name)} · от ${fmtXP(L.xp)} XP">${L.level}</button>`;
   }).join('');
-  /* Подробно — только своя ступень: четыре уровня, в которых ты сейчас живёшь. */
-  const tierStart = (lv.level - 1) - ((lv.level - 1) % LEVEL_STAGES.length);
-  const ladder = LEVELS.slice(tierStart, tierStart + LEVEL_STAGES.length).map(L => {
-    const num = L.level;
-    const done = num < lv.level;
-    const cur = num === lv.level;
+  /* Лестница целиком: все 68 уровней с именем, порогом и шагом. Раньше здесь была
+     только своя ступень — по просьбе показываем всю лестницу и умеем прыгнуть к себе. */
+  const ladder = LEVELS.map(L => {
+    const done = L.level < lv.level;
+    const cur = L.level === lv.level;
     const need = Math.max(0, L.xp - lv.xp);
     const state = cur
-      ? `<b>сейчас</b>${lv.next ? `осталось ${lv.toNext} XP` : 'максимум'}`
+      ? `<b>сейчас</b>${lv.next ? `осталось ${fmtXP(lv.toNext)} XP` : 'вершина'}`
       : done
         ? '<b>пройден</b>уровень открыт'
-        : `<b>впереди</b>нужно ещё ${need} XP`;
-    return `<div class="lv-row ${done ? 'done' : ''} ${cur ? 'cur' : ''} ${(!done && !cur) ? 'neon-ahead' : ''}">
-      <div class="lv-dot">${done ? ICON('check', 14) : num}</div>
-      <div>
+        : `<b>впереди</b>нужно ещё ${fmtXP(need)} XP`;
+    return `<div class="lv-row ${done ? 'done' : ''} ${cur ? 'cur' : ''} ${(!done && !cur) ? 'neon-ahead' : ''}" data-lv="${L.level}">
+      <div class="lv-dot">${done ? ICON('check', 14) : L.level}</div>
+      <div class="lv-row-txt">
         <div class="lv-row-name">${ICON(L.icon, 15)} ${esc(L.name)}</div>
-        <div class="lv-row-sub">от ${L.xp} XP · шаг ${L.need} XP</div>
+        <div class="lv-row-sub">${L.top ? `вершина лестницы · ${fmtXP(LEVEL_XP_TARGET)} XP` : `от ${fmtXP(L.xp)} XP · шаг ${fmtXP(L.need)} XP`}</div>
       </div>
       <div class="lv-row-state">${state}</div>
     </div>`;
@@ -5623,13 +5975,68 @@ function renderLevelsScreen(){
   }).join('');
 
   host.innerHTML = hero
-    + `<div class="lv-sect">Все уровни <span class="lv-sect-note">${LEVELS.length} ступеней, без удвоений</span></div>`
+    + `<div class="lv-sect">Все уровни <span class="lv-sect-note">нажми любую плитку — покажу название и сколько нужно</span></div>`
     + `<div class="lv-tiles">${tiles}</div>`
-    + `<div class="lv-sect">Твоя ступень <span class="lv-sect-note">${esc(LEVEL_TIERS[Math.floor((lv.level-1)/LEVEL_STAGES.length)][0])}</span></div>`
-    + `<div class="lv-ladder">${ladder}</div>`
+    + `<div class="lv-pick" id="lvPick" hidden></div>`
+    + `<div class="lv-sect">Лестница целиком <button type="button" class="lv-jump" id="lvJump">К моему уровню</button></div>`
+    + `<div class="lv-ladder" id="lvLadder">${ladder}</div>`
     + `<div class="lv-sect">Откуда опыт</div>`
     + (sources || `<div class="lv-note">Пока пусто: смахни пару карточек, отметь «смотрю» или поставь оценку — опыт появится здесь.</div>`)
-    + `<div class="lv-note">Опыт капает сам: ${XP_RULES.watched} — за «смотрел», ${XP_RULES.wishlist} — за «чекнуть», ${XP_RULES.watching} — за «смотрю», ${XP_RULES.skipped} — за «мимо», ${XP_RULES.review} — за оценку, ${XP_RULES.badge} — за ачивку и ${XP_RULES.streakDay} — за каждый день стрика. Он не сгорает: цифра только растёт.</div>`;
+    + `<div class="lv-note">Опыт капает сам: ${XP_RULES.watched} — за «смотрел», ${XP_RULES.wishlist} — за «чекнуть», ${XP_RULES.watching} — за «смотрю», ${XP_RULES.skipped} — за «мимо», ${XP_RULES.review} — за оценку, ${XP_RULES.badge} — за ачивку и ${XP_RULES.streakDay} — за каждый день стрика. Он не сгорает: цифра только растёт.</div>`
+    + `<div class="lv-note">Ступеней 68, удвоений нет: каждый следующий уровень дороже предыдущего примерно на 45 XP — от 22 XP на втором уровне до ${fmtXP(LEVELS[LEVELS.length-1].need)} XP на последнем переходе. Вершина лестницы — ровно ${fmtXP(LEVEL_XP_TARGET)} XP.</div>`;
+
+  /* --- нажатия: плитка → карточка уровня, «К моему уровню» → прокрутка --- */
+  const pick = document.getElementById('lvPick');
+  const showPick = (n) => {
+    const L = LEVELS[n - 1];
+    if (!pick || !L) return;
+    const done = L.level < lv.level;
+    const cur = L.level === lv.level;
+    const left = Math.max(0, L.xp - lv.xp);
+    const status = cur ? 'ты здесь' : done ? 'пройден' : 'впереди';
+    const tail = cur
+      ? (lv.next ? `До «${esc(lv.next.name)}» — ${fmtXP(lv.toNext)} XP.` : 'Это вершина лестницы.')
+      : done
+        ? 'Уровень уже открыт.'
+        : `До него — ${fmtXP(left)} XP.`;
+    pick.hidden = false;
+    pick.innerHTML = `
+      <div class="lv-pick-top">
+        <div class="lv-pick-badge">${ICON(L.icon, 22)}</div>
+        <div class="lv-pick-txt">
+          <div class="lv-pick-name">Уровень ${L.level} · ${esc(L.name)}</div>
+          <div class="lv-pick-sub">${L.top ? `вершина · ${fmtXP(LEVEL_XP_TARGET)} XP` : `открывается на ${fmtXP(L.xp)} XP · шаг ${fmtXP(L.need)} XP`}</div>
+        </div>
+        <button type="button" class="lv-pick-x" id="lvPickClose" aria-label="Закрыть">${ICON('cross', 14)}</button>
+      </div>
+      <div class="lv-pick-nums">
+        <div class="lv-hero-cell"><b>${fmtXP(L.xp)}</b><span>нужно всего</span></div>
+        <div class="lv-hero-cell"><b>${L.top ? '—' : fmtXP(L.need)}</b><span>${L.top ? 'максимум' : 'шаг уровня'}</span></div>
+        <div class="lv-hero-cell"><b>${status}</b><span>${cur ? `прогресс ${lv.pct}%` : done ? 'открыт' : `ещё ${fmtXP(left)} XP`}</span></div>
+      </div>
+      <div class="lv-pick-note">${tail}</div>`;
+    haptic('selection');
+    [...host.querySelectorAll('.lv-tile')].forEach(t => t.classList.toggle('sel', Number(t.dataset.lv) === L.level));
+    const row = host.querySelector(`.lv-row[data-lv="${L.level}"]`);
+    if (row && row.scrollIntoView) try{ row.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){}
+  };
+  [...host.querySelectorAll('.lv-tile')].forEach(t => {
+    t.onclick = () => showPick(Number(t.dataset.lv));
+  });
+  if (pick){
+    pick.onclick = (e) => {
+      if (e.target.closest('#lvPickClose') || !e.target.closest('.lv-pick-top')) {
+        pick.hidden = true;
+        [...host.querySelectorAll('.lv-tile.sel')].forEach(t => t.classList.remove('sel'));
+      }
+    };
+  }
+  const jump = document.getElementById('lvJump');
+  if (jump) jump.onclick = () => {
+    haptic('selection');
+    const row = host.querySelector('.lv-row.cur');
+    if (row && row.scrollIntoView) try{ row.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){}
+  };
 }
 document.getElementById('closeAchievements').onclick = () => closeOverlay('achievementsScreen');
 
@@ -6487,14 +6894,15 @@ let statsFramePending = false;
 /* ============ СМОТРА LVL: уровни и опыт ============
    Опыт считаем из действий, которые уже есть в состоянии: ничего дополнительно
    хранить не нужно, и после сброса прогресса уровень честно упадёт. */
-/* Лестница уровней: 68 уровней, без удвоений. Логика простая и предсказуемая —
-   каждый следующий уровень стоит на 3 XP дороже предыдущего:
-       20, 23, 26, 29 …  (переход на уровень 68 стоит 221 XP)
-   Суммарно 68-й уровень открывается на 7973 XP — это примерно 800 отмеченных
-   тайтлов вместе с оценками, ачивками и серией дней. Первые уровни закрываются
-   за вечер, дальние идут ровно, без «стены» на середине.
+/* Лестница уровней: 68 ступеней и ровно 100 000 XP на вершине. Удвоений нет:
+   каждый следующий уровень дороже предыдущего примерно на 45 XP, поэтому шаги
+   растут ровно: 22, 67, 111, 155 … 2 965 XP на последнем переходе. Первые
+   уровни закрываются за вечер, дальние — длинная цель на годы.
+   Формула одна: порог уровня = 100 000 × (n−1)² / 67². При n = 68 получается
+   ровно 100 000 XP — это и есть вершина лестницы.
    Меняешь правило — меняй только здесь: всё остальное считается отсюда. */
 const LEVEL_MAX = 68;
+const LEVEL_XP_TARGET = 100000;      // столько XP нужно, чтобы открыть 68-й уровень
 const LEVEL_TIERS = [
   ['Зритель','play'], ['Кинолюб','heart'], ['Киноман','star'], ['Киногурман','popcorn'],
   ['Кинофил','film'], ['Синефил','clapper'], ['Киновед','newspaper'], ['Киноэрудит','detective'],
@@ -6504,16 +6912,23 @@ const LEVEL_TIERS = [
 ];
 /* Каждая ступень — четыре подуровня (I, II, III, IV): у всех 68 уровней есть имя. */
 const LEVEL_STAGES = ['I', 'II', 'III', 'IV'];
-function levelNeedXP(n){ return 20 + 3 * (n - 1); }          // сколько нужно на переход с n на n+1
 function levelStartXP(n){                                    // опыт, с которого начинается уровень
-  const k = n - 1;
-  return 20 * k + 3 * k * (k - 1) / 2;
+  const k = Math.min(Math.max(n, 1), LEVEL_MAX) - 1;
+  const span = LEVEL_MAX - 1;
+  return Math.round(LEVEL_XP_TARGET * k * k / (span * span));
 }
+function levelNeedXP(n){                                     // сколько нужно на переход с n на n+1
+  if (n >= LEVEL_MAX) return 0;                              // выше 68-го уже некуда
+  return levelStartXP(n + 1) - levelStartXP(n);
+}
+/* Большие числа читаются только с разрядами: 100 000, а не 100000. */
+function fmtXP(n){ return String(Math.max(0, Math.round(Number(n) || 0))).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
 const LEVELS = (() => {
   const out = [];
   for (let n = 1; n <= LEVEL_MAX; n++){
     const [tier, icon] = LEVEL_TIERS[Math.min(LEVEL_TIERS.length - 1, Math.floor((n - 1) / LEVEL_STAGES.length))];
     out.push({ level: n, xp: levelStartXP(n), need: levelNeedXP(n),
+               top: n === LEVEL_MAX, total: LEVEL_XP_TARGET,
                name: `${tier} ${LEVEL_STAGES[(n - 1) % LEVEL_STAGES.length]}`, icon });
   }
   return out;
@@ -6548,7 +6963,7 @@ function levelCardHTML(level, compact){
       <div class="lvl-badge">${ICON(level.icon, 22)}</div>
       <div class="lvl-text">
         <div class="lvl-name">LVL ${level.level} · ${esc(level.name)}</div>
-        <div class="lvl-xp">${level.xp} XP${level.next ? ` · до «${esc(level.next.name)}» ${level.toNext} XP` : ' · максимальный уровень'}</div>
+        <div class="lvl-xp">${fmtXP(level.xp)} XP${level.next ? ` · до «${esc(level.next.name)}» ${fmtXP(level.toNext)} XP` : ` · вершина: ${fmtXP(LEVEL_XP_TARGET)} XP`}</div>
       </div>
     </div>
     <div class="lvl-bar"><i style="width:${level.pct}%"></i></div>
@@ -6592,7 +7007,14 @@ function renderHomeLevel(){
   const xp = document.getElementById('homeLevelXP');
   if (name) name.textContent = `LVL ${level.level} · ${level.name}`;
   if (bar) bar.style.width = level.pct + '%';
-  if (xp) xp.textContent = level.next ? `${level.xp}/${level.next.xp}` : 'MAX';
+  /* Раньше тут было «31/43»: на дальних уровнях это «97 035/100 000» и полоска
+     ужималась в нитку. Показываем текущий опыт, а всё остальное — в окне уровней. */
+  if (xp){
+    xp.textContent = `${fmtXP(level.xp)} XP`;
+    xp.title = level.next
+      ? `До «${level.next.name}» — ${fmtXP(level.toNext)} XP (порог ${fmtXP(level.next.xp)})`
+      : `Вершина лестницы: ${fmtXP(LEVEL_XP_TARGET)} XP`;
+  }
 }
 /* В профиле остаётся только карточка уровня: название, опыт и полоса. Лестница
    уровней и правила опыта переехали в «Частые вопросы» — там им и место, а профиль
@@ -6832,9 +7254,6 @@ function catYearMatch(m, key){
   if (key === 'old') return y > 0 && y < 2000;
   return y >= +key && y < +key + 10;
 }
-function catIsFiltered(){
-  return !!(catFilters.types.length || catFilters.genres.length || catFilters.year !== 'any' || catFilters.sort !== 'default');
-}
 function catFilterCount(){
   return catFilters.types.length + catFilters.genres.length
        + (catFilters.year !== 'any' ? 1 : 0) + (catFilters.sort !== 'default' ? 1 : 0);
@@ -6951,6 +7370,7 @@ function catalogGenres(){
 }
 function saveCatFilters(){
   try{ localStorage.setItem(CAT_FILTER_KEY, JSON.stringify(catFilters)); }catch(e){}
+  syncSetting('catFilters', catFilters);   // фильтры каталога — тоже настройка
 }
 function renderCatActive(){
   const host = document.getElementById('catActive');
@@ -7145,6 +7565,7 @@ document.querySelectorAll('.view-toggle').forEach(tg=>{
       const section = tg.dataset.section;
       haptic('selection');
       setView(section, btn.dataset.v);
+      syncSetting('views', { catalog: getView('catalog','grid'), wishlist: getView('wishlist','grid'), watching: getView('watching','list') });
       tg.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
       if (section==='catalog') renderCatalog();
       if (section==='wishlist') renderWishlist();
@@ -7164,12 +7585,8 @@ let catalogRenderLimit = 60;
 function renderCatalog(){
   const view = syncViewToggle('catalog', 'grid');
   const list = catFilterMovies(catFilters);
-  /* Верх каталога говорит по делу: сколько тайтлов под текущими условиями, и какие
-     фильтры включены. Обновляем здесь же — данные всегда свежие. */
-  const countEl = document.getElementById('catCount');
-  if (countEl) countEl.textContent = list.length
-    ? `${list.length} ${pluralRu(list.length, 'тайтл', 'тайтла', 'тайтлов')}`
-    : 'ничего не найдено';
+  /* Счётчик «N тайтлов» больше не показываем: он ничего не решал. Сколько тайтлов
+     под фильтрами, видно в самой кнопке окна фильтров — «Показать N». */
   renderCatActive();
   const grid = document.getElementById('catGrid');
   const moreWrap = document.getElementById('catShowMore');
@@ -7212,11 +7629,19 @@ function renderCatalog(){
 
 /* ============ WISHLIST ============ */
 const WISH_SORTS = [ {key:'added', label:'По добавлению'}, {key:'rating', label:'По рейтингу'}, {key:'type', label:'По типу'} ];
-let wishSort = 'added';
-document.getElementById('wishSort').innerHTML = WISH_SORTS.map(s => `<div class="chip ${s.key===wishSort?'active':''}" data-s="${s.key}">${s.label}</div>`).join('');
+let wishSort = (() => { try{ return localStorage.getItem('smotra_wish_sort') || 'added'; }catch(e){ return 'added'; } })();
+if (!WISH_SORTS.some(x => x.key === wishSort)) wishSort = 'added';
+function initWishSortChips(){
+  const host = document.getElementById('wishSort');
+  if (!host) return;
+  host.innerHTML = WISH_SORTS.map(s => `<div class="chip ${s.key===wishSort?'active':''}" data-s="${s.key}">${s.label}</div>`).join('');
+}
+initWishSortChips();
 document.getElementById('wishSort').addEventListener('click', e=>{
   const c = e.target.closest('.chip'); if (!c) return;
   wishSort = c.dataset.s; haptic('selection');
+  try{ localStorage.setItem('smotra_wish_sort', wishSort); }catch(e){}
+  syncSetting('wishSort', wishSort);
   [...document.querySelectorAll('#wishSort .chip')].forEach(x=>x.classList.toggle('active', x===c));
   renderWishlist();
 });
@@ -7661,6 +8086,7 @@ async function refreshSheetReviews(movie){
 let reviewMovie = null, reviewBig = {}, reviewSmall = {};
 function updateReviewTotal(){
   const total = scoreTotal(reviewBig, reviewSmall);
+  paintScoreMap();
   document.getElementById('reviewTotalBadge').textContent = `${total}/${SCORE_MAX}`;
   const val = document.getElementById('reviewTotalValue');
   if (val) val.innerHTML = `${total}<b>/${SCORE_MAX}</b>`;
@@ -7668,6 +8094,8 @@ function updateReviewTotal(){
   if (bar) bar.style.width = Math.round(total / SCORE_MAX * 100) + '%';
   const verdict = document.getElementById('reviewVerdict');
   if (verdict) verdict.textContent = scoreVerdict(total);
+  const pct = document.getElementById('reviewTotalPct');
+  if (pct) pct.textContent = Math.round(total / SCORE_MAX * 100) + '%';
   const row = document.getElementById('reviewTotalRow');
   if (row){ row.classList.remove('pulse'); void row.offsetWidth; row.classList.add('pulse'); }
 }
@@ -7681,21 +8109,44 @@ function scoreVerdict(total){
   if (p >= 0.26) return 'Слабо';
   return 'Мимо';
 }
-/* Заливка шкалы до бегунка — чтобы ползунок «читался» как объёмный */
-function paintSlider(input, max){
-  const v = (+input.value || 0) / max * 100;
-  input.style.setProperty('--pct', v + '%');
-}
-function paintDots(row, value, max){
-  const dots = row.querySelector('.cat-dots');
-  if (!dots) return;
-  [...dots.children].forEach((dot, i) => {
-    dot.classList.toggle('on', i < value);
-    dot.classList.toggle('top', i === value - 1);
+/* Оценка «как в пульте»: вместо ползунка — столбики-эквалайзер. Нажатие или
+   протяжка пальцем выбирает значение, выбранные столбики заливаются темой, под
+   ними горит полоса заполнения. Ползунок был скучным и на телефоне мазал мимо. */
+/* Карта всех критериев: десять полосок высотой по своей оценке. */
+function paintScoreMap(){
+  const map = document.getElementById('reviewScoreMap');
+  if (!map) return;
+  const items = [
+    ...BIG_CATS.map(c => ({ v: reviewBig[c.key] || 0, max: 8, label: c.label })),
+    ...SMALL_CATS.map(c => ({ v: reviewSmall[c.key] || 0, max: 5, label: c.label })),
+  ];
+  if (map.children.length !== items.length){
+    map.innerHTML = items.map(() => '<i><b></b></i>').join('');
+  }
+  const label = document.getElementById('reviewCriteriaLabel');
+  if (label) label.textContent = `по всем ${items.length} критериям`;
+  [...map.children].forEach((bar, i) => {
+    const it = items[i];
+    bar.title = `${it.label}: ${it.v}/${it.max}`;
+    const fill = bar.firstElementChild;
+    if (fill) fill.style.height = Math.round(it.v / it.max * 100) + '%';
   });
+}
+function paintMeter(row, value, max){
+  const meter = row.querySelector('.cat-meter');
+  if (!meter) return;
+  [...meter.querySelectorAll('.cm-bar')].forEach((bar, i) => {
+    bar.classList.toggle('on', i < value);
+    bar.classList.toggle('cur', i === value - 1);
+  });
+  meter.setAttribute('aria-valuenow', value);
+  const line = row.querySelector('.cm-line i');
+  if (line) line.style.width = Math.round(value / max * 100) + '%';
+  row.classList.toggle('hot', value >= max);
 }
 function renderSliders(containerId, cats, store, max){
   const el = document.getElementById(containerId);
+  if (!el) return;
   el.innerHTML = cats.map(c => `
     <div class="cat-row" data-key="${c.key}">
       <div class="cat-card">
@@ -7703,22 +8154,69 @@ function renderSliders(containerId, cats, store, max){
           <span class="cat-name">${c.label}</span>
           <span class="cat-val" id="val-${c.key}">${store[c.key]}<small>/${max}</small></span>
         </div>
-        <div class="cat-dots">${Array.from({ length: max }, () => '<i></i>').join('')}</div>
-        <input type="range" class="cat-slider" min="1" max="${max}" value="${store[c.key]}" data-key="${c.key}">
+        <div class="cat-meter" data-key="${c.key}" role="slider" tabindex="0"
+             aria-label="${esc(c.label)}" aria-valuemin="1" aria-valuemax="${max}" aria-valuenow="${store[c.key]}">
+          ${Array.from({ length: max }, (_, i) => `<button type="button" class="cm-bar" data-v="${i+1}" style="height:${Math.round(32 + (i / (max - 1)) * 58)}%" aria-label="${i+1}"></button>`).join('')}
+        </div>
+        <div class="cm-line"><i style="width:${Math.round(store[c.key] / max * 100)}%"></i></div>
+        <div class="cm-scale"><span>1</span><span>${max}</span></div>
       </div>
     </div>`).join('');
-  el.querySelectorAll('.cat-slider').forEach(input => {
-    const row = input.closest('.cat-row');
-    paintSlider(input, max);
-    paintDots(row, +input.value, max);
-    input.addEventListener('input', () => {
-      store[input.dataset.key] = +input.value;
-      document.getElementById('val-'+input.dataset.key).innerHTML = `${input.value}<small>/${max}</small>`;
-      paintSlider(input, max);
-      paintDots(row, +input.value, max);
-      updateReviewTotal();
+  el.querySelectorAll('.cat-row').forEach(row => {
+    const key = row.dataset.key;
+    const meter = row.querySelector('.cat-meter');
+    if (!meter) return;
+    /* Тихо — без вибрации и пересчёта итога: так обновляем значение, пока палец
+       ведут по столбикам, иначе телефон жужжит на каждом пикселе. */
+    const setVal = (v, quiet) => {
+      const val = Math.max(1, Math.min(max, Math.round(v) || 1));
+      store[key] = val;
+      const num = document.getElementById('val-' + key);
+      if (num){
+        num.innerHTML = `${val}<small>/${max}</small>`;
+        num.classList.remove('pop');
+        void num.offsetWidth;
+        num.classList.add('pop');
+      }
+      paintMeter(row, val, max);
+      if (!quiet){ haptic('selection'); updateReviewTotal(); }
+    };
+    meter.querySelectorAll('.cm-bar').forEach(bar => {
+      bar.onclick = () => setVal(+bar.dataset.v);
     });
-    input.addEventListener('change', () => haptic('selection'));
+    meter.onkeydown = (e) => {
+      const cur = +(meter.getAttribute('aria-valuenow') || 1);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp'){ e.preventDefault(); setVal(cur + 1); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ e.preventDefault(); setVal(cur - 1); }
+      else if (/^[1-9]$/.test(e.key)){ e.preventDefault(); setVal(+e.key); }
+    };
+    /* Протяжка пальцем по столбикам — как по шкале в приложении-пульте. */
+    let dragging = false;
+    const valFromX = (clientX) => {
+      const bars = [...meter.querySelectorAll('.cm-bar')];
+      let best = bars[0], bestD = Infinity;
+      bars.forEach(b => {
+        const r = b.getBoundingClientRect();
+        const d = Math.abs(clientX - (r.left + r.width / 2));
+        if (d < bestD){ bestD = d; best = b; }
+      });
+      return +best.dataset.v;
+    };
+    meter.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      try{ meter.setPointerCapture && meter.setPointerCapture(e.pointerId); }catch(err){}
+      setVal(valFromX(e.clientX), true);
+    });
+    meter.addEventListener('pointermove', (e) => { if (dragging) setVal(valFromX(e.clientX), true); });
+    const drop = () => {
+      if (!dragging) return;
+      dragging = false;
+      haptic('selection');
+      updateReviewTotal();
+    };
+    meter.addEventListener('pointerup', drop);
+    meter.addEventListener('pointercancel', () => { dragging = false; });
+    paintMeter(row, store[key], max);
   });
 }
 async function openReviewScreen(movie){
@@ -8108,7 +8606,7 @@ switchTab = function(id){
       const top = topOverlay();
       // Только «от края экрана и вправо» — как системный жест «назад» на iOS.
       // Раньше закрывалось свайпом в любую сторону из любого места — это мешало.
-      if (top && t0.clientX <= 38 && !e.target.closest('.sheet, input, textarea, .cat-slider, [data-no-swipe]')){
+      if (top && t0.clientX <= 38 && !e.target.closest('.sheet, input, textarea, .cat-meter, [data-no-swipe]')){
         ovEl = top; ovTrack = true; ovShown = false; ovDx = 0;
         ovX = t0.clientX; ovY = t0.clientY;
         return;                       // свайпаем именно оверлей, а не разделы под ним

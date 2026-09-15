@@ -148,8 +148,9 @@ ok(/addEventListener\('resize', \(\) => \{ syncAppHeight\(\); applySafeArea\(\);
 
 /* ============================== [5] Уровни ============================== */
 section('[5] LVL: мягкая лестница и правила в FAQ');
-ok(/const LEVEL_MAX = 68;/.test(js) && /function levelNeedXP\(n\)\{ return 20 \+ 3 \* \(n - 1\); \}/.test(js), '68 уровней, шаг растёт на 3 XP: 20, 23, 26 …');
-ok(/function levelStartXP\(n\)\{[\s\S]{0,140}?return 20 \* k \+ 3 \* k \* \(k - 1\) \/ 2;/.test(js), 'порог уровня считается формулой, без удвоений');
+ok(/const LEVEL_MAX = 68;/.test(js) && /const LEVEL_XP_TARGET = 100000;/.test(js), '68 уровней, вершина — ровно 100 000 XP');
+ok(/function levelStartXP\(n\)\{[\s\S]{0,160}?return Math\.round\(LEVEL_XP_TARGET \* k \* k \/ \(span \* span\)\);/.test(js), 'порог уровня считается формулой, без удвоений');
+ok(/function fmtXP\(n\)\{ return String\(Math\.max\(0, Math\.round\(Number\(n\) \|\| 0\)\)\)\.replace/.test(js), 'большие числа показываются с разрядами: 100 000');
 ok(!/Math\.pow\(2, i - START/.test(js), 'удвоения порогов больше нет');
 ok(/function smotraXP/.test(js) && /function levelFor/.test(js) && /function myXP/.test(js), 'опыт и уровень считаются отдельными функциями');
 ok(/XP_RULES = \{ watched: 10, wishlist: 6, watching: 4, skipped: 1, review: 25, badge: 40, streakDay: 5 \}/.test(js), 'правила опыта на месте');
@@ -159,7 +160,7 @@ ok(!/СмотраLVL/.test(jsCode), 'в интерфейсе нет слова �
 ok(!/Легенда SMOTRA/.test(jsCode), 'уровни и ачивки без слова «Смотра»');
 ok(/LVL \$\{level\.level\}/.test(js) && /lvl-bar/.test(cssClean), 'уровень показывается с полосой прогресса');
 ok(/\[.Как растёт LVL\?./.test(js) && /Какие уровни есть/.test(js), 'правила и лестница объясняются в FAQ');
-ok(/7 973 XP/.test(js) && /68-м/.test(js), 'в FAQ видно, сколько стоит 68-й уровень');
+ok(/100 000 XP/.test(js) && /68-й «Кинолегенда IV» открывается на 100 000 XP/.test(js) && /22, 67, 111, 156/.test(js), 'в FAQ видно, сколько стоит 68-й уровень');
 
 /* ============================== [6] Поиск ============================== */
 section('[6] Поиск: иконка, «Готово», без лишних надписей');
@@ -316,7 +317,12 @@ for (let i = 0; i < 6; i++) ev('document.getElementById("tutStage").click();');
 ok(!ev('document.getElementById("tutorial").classList.contains("show")'), 'тапом по сцене обучение тоже проходится до конца');
 ev('localStorage.removeItem("smotra_tutorial_done"); document.getElementById("tutorial").classList.remove("show"); document.body.classList.remove("tut-open");');
 /* уровни */
-ok(ev('LEVELS.length') === 68 && ev('LEVELS[1].xp') === 20 && ev('LEVELS[9].xp') === 288 && ev('LEVELS[67].xp') === 7973, 'пороги уровней: ' + ev('LEVELS.slice(0,4).map(l => l.xp).join(",")') + ' … ' + ev('LEVELS[67].xp'));
+ok(ev('LEVELS.length') === 68 && ev('LEVELS[1].xp') === 22 && ev('LEVELS[9].xp') === 1804 && ev('LEVELS[67].xp') === 100000, 'пороги уровней: ' + ev('LEVELS.slice(0,4).map(l => l.xp).join(",")') + ' … ' + ev('LEVELS[67].xp'));
+ok(ev('LEVEL_XP_TARGET') === 100000 && ev('levelStartXP(68)') === 100000 && ev('LEVELS[67].top') === true, 'вершина лестницы — ровно 100 000 XP');
+ok(ev('LEVELS.every((l, i) => i === 0 || l.xp > LEVELS[i-1].xp)'), 'пороги уровней только растут');
+ok(ev('LEVELS[6].need') === 290 && ev('LEVELS[66].need') === 2963 && ev('LEVELS[65].need') === 2918 && ev('LEVELS[67].need') === 0, 'шаг уровня растёт до 2 963 XP, у 68-го шага нет');
+ok(ev('LEVELS.reduce((a, l) => a + l.need, 0)') === 100000, 'сумма всех переходов — ровно 100 000 XP');
+ok(ev('LEVELS.every((l, i) => i === 0 || l.need === 0 || ((l.need - LEVELS[i-1].need) >= 43 && (l.need - LEVELS[i-1].need) <= 46))'), 'каждый следующий переход дороже на 43–46 XP: без удвоений');
 /* серия дней: считается по базе, а не по памяти устройства — иначе телефон и
    десктоп показывают разные числа */
 ok(/function streakFromDays\(days\)\{/.test(js) && /while \(days\.has\(dateKey\(cursor\)\)\)\{ n\+\+; cursor\.setDate\(cursor\.getDate\(\) - 1\); \}/.test(js), 'серия считается по дням активности');
@@ -365,16 +371,20 @@ ok(!doc.getElementById('catChips') && !doc.getElementById('typeChips'), 'пол�
 ok(!/lbl:'Поде/.test(js) && /icon:'cross', lbl: isSkipped\?'Вернуть':'Мимо'/.test(js), 'на удержании вместо «Поделиться» — «Мимо»');
 ok(/if \(kind === 'skipped'\)\{/.test(js) && /showToast\('Отмечено «Мимо»', 'cross'\)/.test(js), 'действие «Мимо» действительно работает');
 ok(/<span class="trd-lbl">Мимо<\/span>/.test(src) && !/<span class="trd-lbl">Поде/.test(src), 'в обучении тот же набор кружков');
-ok(ev('levelFor(0).level') === 1 && ev('levelFor(20).level') === 2 && ev('levelFor(288).level') === 10 && ev('levelFor(7973).level') === 68, 'уровень считается верно');
-ok(ev('levelFor(7973).next') === null && ev('levelFor(7973).pct') === 100, 'на 68-м уровне лестница заканчивается');
+ok(ev('levelFor(0).level') === 1 && ev('levelFor(22).level') === 2 && ev('levelFor(1804).level') === 10 && ev('levelFor(100000).level') === 68, 'уровень считается верно');
+ok(ev('levelFor(99999).level') === 67 && ev('levelFor(100000).level') === 68, 'на 99 999 XP ещё 67-й уровень, на 100 000 — 68-й');
+ok(ev('levelFor(100000).next') === null && ev('levelFor(100000).pct') === 100, 'на 68-м уровне лестница заканчивается');
 ok(/LVL \d+ ·/.test(ev('document.getElementById("homeLevelName").textContent')), 'вверху главной видно уровень: ' + ev('document.getElementById("homeLevelName").textContent'));
 ok(!ev('document.getElementById("levelCard").innerHTML').includes('СмотраLVL'), 'в профиле нет слова «СмотраLVL»');
 const faq = ev('(function(){ renderFaq(); return document.getElementById("faqBody").textContent; })()');
-ok(faq.indexOf('7 973') > -1 && faq.indexOf('+10 XP') > -1 && faq.indexOf('68') > -1, 'в FAQ есть лестница и правила опыта');
+ok(faq.indexOf('100 000 XP') > -1 && faq.indexOf('+10 XP') > -1 && faq.indexOf('68') > -1, 'в FAQ есть лестница и правила опыта');
 ok(faq.indexOf('LVL') > -1 && faq.indexOf('СмотраLVL') === -1, 'в FAQ пишем LVL');
 /* ачивки */
-ok(ev('BADGES.length') >= 20, 'ачивок в приложении: ' + ev('BADGES.length'));
+ok(ev('BADGES.length') === 68, 'ачивок в приложении — ровно 68: ' + ev('BADGES.length'));
+ok(ev('new Set(BADGES.map(b => b.id)).size') === 68, 'id ачивок не повторяются');
 ok(ev('new Set(BADGES.map(b => b.icon)).size') >= 24, 'значки ачивок не повторяются: ' + ev('new Set(BADGES.map(b => b.icon)).size'));
+ok(ev('BADGES.every(b => b.name && b.desc && b.min > 0 && typeof b.kind === "string")'), 'у каждой ачивки есть название, описание и условие');
+ok(ev('badgeCounters().decades') >= 0 && ev('BADGES.some(b => b.kind === "decades")'), 'работает и счётчик десятилетий: ' + ev('badgeCounters().decades'));
 ev('openAchievementsScreen();');
 ok(ev('document.getElementById("achievementsScreen").classList.contains("open")'), 'окно всех ачивок открывается');
 ok(ev('document.querySelectorAll("#achievementsGrid .badge").length') === ev('BADGES.length'), 'рисуются все ' + ev('BADGES.length') + ' ачивок');
@@ -710,7 +720,7 @@ ok(/\.ov-scrim\{ display:block; position:fixed; inset:0; z-index:24;/.test(dflat
 ok(/body\.ov-open \.ov-scrim\{ opacity:1; pointer-events:auto; \}/.test(dflat), 'затемнение включается классом на body');
 ok(/\.ov-scrim\{ display:none; \}/.test(dflat), 'на телефоне затемнение не показывается (там окна полноэкранные)');
 ok(/#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'профиль и лента держатся колонкой по центру');
-ok(/<div class="side-head" aria-hidden="true">SM<b>O<\/b>TRA<\/div>/.test(src), 'логотип есть в разметке панели');
+ok(/<div class="side-head" aria-hidden="true"><span class="wm-l">S<\/span><span class="wm-l">M<\/span><span class="wm-l o">O<\/span>/.test(src), 'логотип есть в разметке панели — он же пасхалка');
 ok(/\.side-head\{ display:none; \}/.test(cssClean), 'на телефоне надписи SMOTRA в нижней панели нет');
 ok(/\.side-head\{ display:block; margin:0 10px 18px; padding-bottom:16px; border-bottom:1px solid var\(--border\);/.test(dflat), 'на десктопе логотип — обычная строка панели, поверх «Каталога» не ляжет');
 ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(168px, 1fr\)\); \}/.test(dflat), 'каталог занимает всю ширину: обложек помещается больше');
@@ -791,11 +801,19 @@ ok(/function myXPBreakdown\(\)\{/.test(js), 'опыт раскладываетс
 ok(/\{ icon:'check',    label:'Смотрел',        count: state\.watched\.length,      per: XP_RULES\.watched \}/.test(js), 'в разборе есть «смотрел» со своей ставкой');
 ok(/const total = rows\.reduce\(\(sum, r\) => sum \+ r\.count \* r\.per, 0\);/.test(js), 'сумма складывается из тех же ставок, что и myXP()');
 ok(/function renderLevelsScreen\(\)\{/.test(js) && /const lv = levelFor\(myXP\(\)\);/.test(js), 'окно считает уровень тем же levelFor()');
-ok(/LEVELS\.map\(\(L, i\) => \{/.test(js) && /const done = num < lv\.level;/.test(js) && /const cur = num === lv\.level;/.test(js), 'плитки размечены: пройденные, текущий, будущие');
-ok(/const tierStart = \(lv\.level - 1\) - \(\(lv\.level - 1\) % LEVEL_STAGES\.length\)/.test(js), 'подробно показывается своя ступень из четырёх уровней');
+ok(/const tiles = LEVELS\.map\(L => \{/.test(js) && /const done = L\.level < lv\.level;/.test(js) && /const cur = L\.level === lv\.level;/.test(js), 'плитки размечены: пройденные, текущий, будущие');
+ok(/<button type="button" class="lv-tile \$\{done \? 'done' : ''\} \$\{cur \? 'cur' : ''\}" data-lv="\$\{L\.level\}"/.test(js), 'каждая плитка — кнопка со своим уровнем');
+ok(/const ladder = LEVELS\.map\(L => \{/.test(js) && /const need = Math\.max\(0, L\.xp - lv\.xp\);/.test(js), 'лестница целиком: все 68 уровней с порогом и шагом');
 ok(/\.lv-tiles\{ display:grid; grid-template-columns:repeat\(auto-fill, minmax\(40px, 1fr\)\); gap:7px; \}/.test(dflat) && /\.lv-tile\.cur\{/.test(dflat), 'все уровни — сеткой плиток, текущий выделен');
-ok(/нужно ещё \$\{need\} XP/.test(js), 'у будущих уровней написано, сколько до них не хватает');
-ok(/Пройдено <b>\$\{lv\.pct\}%<\/b> уровня/.test(js), 'в шапке окна — процент пройденного уровня');
+ok(/нужно ещё \$\{fmtXP\(need\)\} XP/.test(js), 'у будущих уровней написано, сколько до них не хватает');
+ok(/Уровень пройден на <b>\$\{lv\.pct\}%<\/b>/.test(js), 'в шапке окна — процент пройденного уровня');
+ok(/function fmtXP\(n\)/.test(js) && /\.lv-hero-nums\{ display:grid; grid-template-columns:repeat\(3, 1fr\)/.test(dflat), 'опыт разложен по трём ячейкам — длинные числа не обрезаются');
+ok(/\.lv-hero-cell b\{ display:block;[\s\S]{0,200}?text-overflow:ellipsis; \}/.test(dflat), 'у больших чисел есть запас и аккуратное ужатие');
+ok(/\.lv-pick\{ margin-top:12px;/.test(dflat) && /\.lv-pick-nums\{ display:grid/.test(dflat), 'карточка выбранного уровня оформлена');
+ok(/const showPick = \(n\) => \{/.test(js) && /document\.getElementById\('lvPick'\)/.test(js), 'тап по плитке раскрывает карточку уровня');
+ok(/aria-label="Уровень \$\{L\.level\}, \$\{esc\(L\.name\}\}?/.test(js) || /aria-label="Уровень \$\{L\.level\}/.test(js), 'у плитки есть подпись для доступности');
+ok(/id="lvJump"/.test(js) && /К моему уровню/.test(js) && /row\.scrollIntoView\(\{ block:'center', behavior:'smooth' \}\)/.test(js), 'есть прыжок к своему уровню в лестнице');
+ok(/Ступеней 68, удвоений нет/.test(js) && /Вершина лестницы — ровно \$\{fmtXP\(LEVEL_XP_TARGET\)\} XP/.test(js), 'внизу окна объяснена вся лестница до 100 000 XP');
 ok(/Опыт капает сам: \$\{XP_RULES\.watched\}/.test(js), 'внизу окна — правила опыта из тех же ставок');
 ok(!/\[data-ach-open\]'\]\.forEach\(btn => \{ btn\.onclick = openAchievementsScreen/.test(js) || /document\.getElementById\('openAchievements'\)\.onclick = openAchievementsScreen;/.test(js), 'ачивки по-прежнему открываются из профиля');
 /* вид окна */
@@ -850,23 +868,72 @@ ok(lev('(document.querySelectorAll("#levelsBody .lv-tile") || []).length') === l
 ok(lev('(document.querySelectorAll("#levelsBody .lv-row.cur") || []).length') === 1, 'текущий уровень один');
 ok(/Зритель/.test(lvHtml) && /Кинолегенда/.test(lvHtml), 'видны первая и последняя ступени лестницы');
 ok(lev('(document.querySelectorAll("#levelsBody .lv-tile.cur") || []).length') === 1, 'текущий уровень в плитках один');
-ok(lev('(document.querySelectorAll("#levelsBody .lv-row") || []).length') === lev('LEVEL_STAGES.length'), 'подробно — ровно своя ступень');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-row") || []).length') === lev('LEVELS.length'), 'в лестнице расписаны все ' + lev('LEVELS.length') + ' уровней');
+ok(lev('document.getElementById("levelsBody").textContent').indexOf('100 000') > -1, 'наверху видно вершину — 100 000 XP');
+ok(lev('LEVELS[67].xp') === 100000, '68-й уровень открывается ровно на 100 000 XP');
 ok(/Откуда опыт/.test(lvHtml), 'есть блок «Откуда опыт»');
 ok(lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') >= 2, 'источники опыта показаны (' + lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') + ')');
-ok(lev('document.getElementById("levelsTotal").textContent') === lev('myXP()') + ' XP', 'в шапке окна — тот же опыт, что считает myXP(): ' + lev('document.getElementById("levelsTotal").textContent'));
+ok(lev('document.getElementById("levelsTotal").textContent') === lev('fmtXP(myXP()) + " XP"'), 'в шапке окна — тот же опыт, что считает myXP(): ' + lev('document.getElementById("levelsTotal").textContent'));
 ok(lev('myXP()') >= 2 * lev('XP_RULES.watched') + lev('XP_RULES.wishlist'), 'опыт включает и свайпы, и чек-лист: ' + lev('myXP()'));
 ok(lev('myXPBreakdown().total') === lev('myXP()'), 'разбор по источникам сходится с myXP()');
+/* тап по любой плитке показывает название уровня и сколько нужно опыта */
+ok(ldoc.getElementById('lvPick').hidden === true, 'карточка уровня спрятана, пока не выбрал');
+ldoc.querySelector('#levelsBody .lv-tile[data-lv="68"]').click();
+await sleep(40);
+const pickText = ldoc.getElementById('lvPick').textContent;
+ok(ldoc.getElementById('lvPick').hidden === false, 'тап по 68-й плитке открывает карточку');
+ok(pickText.indexOf('Кинолегенда IV') > -1, 'в карточке — название уровня: ' + pickText.slice(0, 60));
+ok(pickText.indexOf('100 000') > -1 && pickText.indexOf('вершина') > -1, 'в карточке — сколько нужно опыта');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-tile.sel") || []).length') === 1, 'выбранная плитка подсвечена');
+ldoc.querySelector('#levelsBody .lv-tile[data-lv="1"]').click();
+await sleep(40);
+const pick1 = ldoc.getElementById('lvPick').textContent;
+ok(pick1.indexOf('Зритель I') > -1 && /пройден|ты здесь/.test(pick1), 'первый уровень тоже рассказывает о себе: ' + pick1.slice(0, 60));
+ldoc.getElementById('lvPickClose').click();
+await sleep(30);
+ok(ldoc.getElementById('lvPick').hidden === true && lev('(document.querySelectorAll("#levelsBody .lv-tile.sel") || []).length') === 0, 'карточку можно закрыть');
+ldoc.getElementById('lvJump').click();
+await sleep(30);
+ok(true, 'прыжок к своему уровню не ломает окно');
 ldoc.getElementById('closeLevels').click();
 await sleep(60);
 ok(!ldoc.getElementById('levelsScreen').classList.contains('open'), 'окно закрывается');
 /* шкала вверху показывает тот же уровень */
 const lvName = ldoc.getElementById('homeLevelName').textContent;
 ok(/^LVL \d+ · /.test(lvName), 'шкала вверху показывает уровень: ' + lvName);
-ok(/^\d+\/\d+$/.test(ldoc.getElementById('homeLevelXP').textContent), 'и опыт со порогом уровня: ' + ldoc.getElementById('homeLevelXP').textContent);
+ok(/^\d[\d ]* XP$/.test(ldoc.getElementById('homeLevelXP').textContent), 'в полоске уровня — текущий опыт: ' + ldoc.getElementById('homeLevelXP').textContent);
 ok(!ldoc.querySelector('.topbar [data-ach-open]'), 'в шапке нет иконки достижений');
 ok(!!ldoc.getElementById('themeArt') && ldoc.querySelectorAll('#themeArt svg').length >= 2, 'фон темы нарисован: два слоя SVG');
 ok(ldoc.querySelectorAll('#themeArt .ta-layer').length >= 2, 'у фона есть дальний и ближний слои');
 ok(!ldoc.getElementById('homeToy') && !ldoc.querySelector('.home-toy'), 'игрушки над карточкой нет');
+
+/* --- Смотриметры: новая шкала-эквалайзер --- */
+lev('window.__m = { id: 5555, type: "movie", title: "Тестовая картина", year: 2020, genres: ["Драма"], rating: 7.5 }');
+lev('openReviewScreen(window.__m)');
+await sleep(120);
+ok(ldoc.getElementById('reviewScreen').classList.contains('open'), 'окно Смотриметров открывается');
+ok(lev('document.querySelectorAll("#reviewBigSliders .cat-meter").length') === lev('BIG_CATS.length'), 'у каждого критерия своя шкала: ' + lev('BIG_CATS.length') + ' главных');
+ok(lev('document.querySelectorAll("#reviewSmallSliders .cat-meter").length') === lev('SMALL_CATS.length'), 'и ' + lev('SMALL_CATS.length') + ' детальных');
+ok(lev('document.querySelectorAll("#reviewBigSliders .cm-bar").length') === lev('BIG_CATS.length') * 8, 'по 8 столбиков на главный критерий');
+ok(lev('document.querySelectorAll("#reviewSmallSliders .cm-bar").length') === lev('SMALL_CATS.length') * 5, 'по 5 столбиков на детальный');
+ok(lev('document.querySelectorAll("#reviewBigSliders input[type=range]").length') === 0 && lev('document.querySelectorAll("#reviewBigSliders .cat-dots").length') === 0, 'скучных ползунков и точек больше нет');
+const scoreBefore = lev('scoreTotal(reviewBig, reviewSmall)');
+lev('document.querySelector("#reviewBigSliders .cat-row[data-key=\'story\'] .cm-bar[data-v=\'8\']").click()');
+await sleep(60);
+ok(lev('reviewBig.story') === 8, 'тап по столбику ставит оценку: story = ' + lev('reviewBig.story'));
+ok(lev('scoreTotal(reviewBig, reviewSmall)') === scoreBefore + 4, 'итог пересчитывается сразу: ' + lev('scoreTotal(reviewBig, reviewSmall)'));
+ok(lev('document.getElementById("val-story").textContent').indexOf('8') === 0, 'цифра критерия показывает 8/' + 8);
+ok(lev('document.querySelector("#reviewBigSliders .cat-row[data-key=\'story\']").classList.contains("hot")'), 'максимум по критерию подсвечивается');
+ok(lev('document.querySelectorAll("#reviewScoreMap i").length') === lev('BIG_CATS.length + SMALL_CATS.length'), 'карта критериев нарисована');
+ok(lev('document.querySelector("#reviewScoreMap i b").style.height') === '100%', 'и первый столбик карты заполнен целиком');
+ok(/\/68/.test(lev('document.getElementById("reviewTotalValue").textContent')), 'итог по-прежнему из 68: ' + lev('document.getElementById("reviewTotalValue").textContent'));
+ok(lev('document.getElementById("reviewCriteriaLabel").textContent').indexOf('10') > -1, 'подпись считает критерии сама: ' + lev('document.getElementById("reviewCriteriaLabel").textContent'));
+lev('const mm = document.querySelector("#reviewSmallSliders .cat-meter"); mm.dispatchEvent(new window.KeyboardEvent("keydown", { key: "3" }));');
+await sleep(40);
+ok(lev('reviewSmall.dialogue') === 3, 'со стрелками и цифрами шкала работает и с клавиатуры');
+lev('document.getElementById("closeReview").click()');
+await sleep(60);
+ok(!ldoc.getElementById('reviewScreen').classList.contains('open'), 'окно Смотриметров закрывается');
 lwin.close();
 
 
@@ -881,6 +948,199 @@ ok(!/Что за игрушка вверху главной/.test(src), 'и пу
 ok(/\.theme-swatch \.sw-art svg, \.theme-swatch \.sw-art svg \*\{ animation:none !important; \}/.test(dflat), 'превью тем в окне выбора — статичные');
 ok(/const THEME_ART = \{/.test(js) && /THEME_ART\[t\.id\]/.test(js), 'рисунок темы остался только как картинка превью');
 ok(!/ach-chip-top/.test(cssClean) && !/ach-chip-top/.test(src), 'кубка достижений в шапке больше нет');
+
+/* ============== [18] Полная синхронизация настроек: телефон ↔ десктоп ============== */
+section('[18] Полная синхронизация: телефон ↔ десктоп');
+/* Настоящий Supabase из песочницы недоступен (сети нет), поэтому проверяем на своей
+   таблице: она хранит строки так же, как база, и умеет select/insert/delete/update
+   с фильтрами. Настройки приложение кладёт в таблицу badges строками cfg.<ключ>=<значение>. */
+function makeFakeDb(){
+  const store = { badges: [], swipes: [], wishlist: [], episodes_progress: [], reviews: [], friends: [], profiles: [] };
+  const db = { offline: false, writes: 0, store };
+  const finish = (state) => {
+    const table = store[state.name] = store[state.name] || [];
+    if (db.offline) return { data: null, error: { message: 'offline' } };
+    let rows = table.slice();
+    state.filters.forEach(([k, v, mode]) => {
+      rows = rows.filter(r => mode === 'like' ? String(r[k] || '').startsWith(v.replace(/%$/, '')) : r[k] === v);
+    });
+    if (state.op === 'insert' || state.op === 'upsert'){
+      db.writes++;
+      (Array.isArray(state.payload) ? state.payload : [state.payload]).forEach(p => table.push(Object.assign({}, p)));
+      return { data: null, error: null };
+    }
+    if (state.op === 'delete'){
+      db.writes++;
+      const kill = new Set(rows);
+      for (let i = table.length - 1; i >= 0; i--) if (kill.has(table[i])) table.splice(i, 1);
+      return { data: null, error: null };
+    }
+    if (state.op === 'update'){
+      db.writes++;
+      rows.forEach(r => Object.assign(r, state.payload));
+      return { data: null, error: null };
+    }
+    return { data: state.single ? (rows[0] || null) : rows, error: null, count: rows.length };
+  };
+  const makeChain = (state) => {
+    const base = {
+      then: (res, rej) => { try{ res(finish(state)); }catch(e){ if (rej) rej(e); else setTimeout(() => { throw e; }); } },
+      catch: () => base,
+      finally: (f) => { try{ f(); } catch(e){} return base; },
+    };
+    return new Proxy(base, { get(t, prop){
+      if (prop in t) return t[prop];
+      return (...args) => {
+        if (prop === 'insert' || prop === 'upsert'){ state.op = prop; state.payload = args[0]; }
+        else if (prop === 'delete') state.op = 'delete';
+        else if (prop === 'update'){ state.op = 'update'; state.payload = args[0]; }
+        else if (prop === 'eq') state.filters.push([args[0], args[1], 'eq']);
+        else if (prop === 'like') state.filters.push([args[0], args[1], 'like']);
+        else if (prop === 'single' || prop === 'maybeSingle') state.single = true;
+        return makeChain(state);
+      };
+    } });
+  };
+  db.createClient = () => ({ from: (name) => makeChain({ name, filters: [], op: 'select', single: false }) });
+  db.rows = (name) => store[name] || [];
+  db.cfgRows = () => db.rows('badges').filter(r => String(r.badge_id).startsWith('cfg.'));
+  db.cfgValue = (key) => {
+    const row = db.cfgRows().find(r => r.badge_id.startsWith('cfg.' + key + '='));
+    if (!row) return undefined;
+    try{ return JSON.parse(row.badge_id.slice(('cfg.' + key + '=').length)); }catch(e){ return undefined; }
+  };
+  return db;
+}
+async function bootDevice(fake, opts){
+  const o = opts || {};
+  const errors = [];
+  const io = [];
+  const vc = new VirtualConsole();
+  vc.on('jsdomError', e => errors.push('jsdomError: ' + (e && e.message)));
+  vc.on('error', (...a) => errors.push('console.error: ' + a.join(' ')));
+  const dom = new JSDOM(src.replace(/<script src="[^"]*"><\/script>/g, '').replace(/<link[^>]*fonts\.googleapis[^>]*>/g, ''), {
+    runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://smotra.test/sync', virtualConsole: vc,
+    beforeParse(w){
+      w.Telegram = { WebApp: { initDataUnsafe: { user: { id: 909090, first_name: 'Тенгиз', username: 'tengizka' } },
+        initData: 'user=%7B%22id%22%3A909090%7D', version: '8.0', platform: o.platform || 'android', colorScheme: 'dark',
+        themeParams: {}, viewportStableHeight: 900, ready(){}, expand(){}, onEvent(){}, isVersionAtLeast: () => true,
+        disableVerticalSwipes(){}, requestFullscreen(){ return Promise.resolve(); }, setHeaderColor(){}, setBackgroundColor(){},
+        setBottomBarColor(){}, HapticFeedback: { impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} }, openTelegramLink(){} } };
+      w.supabase = fake;
+      w.fetch = async () => ({ ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX.slice(0, 6), genres: [] }) });
+      w.IntersectionObserver = class { constructor(cb){ this.cb = cb; } observe(el){ io.push({ el, cb: this.cb }); } unobserve(){} disconnect(){} takeRecords(){ return []; } };
+      w.__flushIO = () => io.splice(0).forEach(({ el, cb }) => { try{ cb([{ target: el, isIntersecting: true, intersectionRatio: 1 }], {}); } catch(e){} });
+    },
+  });
+  const win = dom.window, doc = win.document;
+  const ev = (code) => win.eval(code);
+  const t0 = Date.now();
+  while (Date.now() - t0 < 1300){ win.__flushIO(); await sleep(40); }
+  return { win, doc, ev, errors, close: () => win.close() };
+}
+const syncDb = makeFakeDb();
+const SYNC_ID = 909090;
+syncDb.rows('swipes').push({ telegram_id: SYNC_ID, movie_id: 5000, action: 'watched', created_at: '2026-08-01T10:00:00Z' });
+syncDb.rows('badges').push({ telegram_id: SYNC_ID, badge_id: 'b1', created_at: '2026-08-01T10:00:00Z' });
+syncDb.rows('badges').push({ telegram_id: SYNC_ID, badge_id: 'b999-выдуманная', created_at: '2026-08-01T10:00:00Z' });
+const devA = await bootDevice(syncDb, { platform: 'android' });
+ok(devA.errors.length === 0, 'телефон запускается без ошибок' + (devA.errors.length ? ': ' + devA.errors[0] : ''));
+ok(devA.ev('state.unlocked.length') === 1 && devA.ev('state.unlocked[0]') === 'b1', 'чужая строка в badges не считается ачивкой — иначе достижения завышались');
+const cfgKeys = [...new Set(syncDb.cfgRows().map(r => String(r.badge_id).split('=')[0]))];
+ok(['cfg.theme','cfg.genres','cfg.adult','cfg.views','cfg.catFilters','cfg.wishSort','cfg.since'].every(k => cfgKeys.indexOf(k) > -1),
+  'при первом входе настройки уезжают в базу (' + cfgKeys.length + ' ключей)');
+/* меняем настройки на телефоне как обычный человек */
+devA.ev('pickTheme("amber"); pickTheme("rose")');   // тот же путь, что по тапу по карточке темы
+devA.doc.getElementById('switchAdult').click();
+devA.doc.querySelector('.view-toggle[data-section="catalog"] button[data-v="list"]').click();
+devA.doc.querySelector('#wishSort .chip[data-s="rating"]').click();
+devA.ev('catFilters.genres = ["Драма"]; saveCatFilters();');
+devA.ev('closeTutorial()');
+await sleep(220);
+ok(syncDb.cfgValue('theme') === 'rose', 'тема доехала до базы: ' + syncDb.cfgValue('theme'));
+ok(syncDb.cfgRows().filter(r => String(r.badge_id).startsWith('cfg.theme=')).length === 1, 'на ключ остаётся одна строка, а не история переключений');
+ok(syncDb.cfgValue('adult') === false, '18+ синхронизирован: ' + syncDb.cfgValue('adult'));
+ok(syncDb.cfgValue('views') && syncDb.cfgValue('views').catalog === 'list', 'вид раздела синхронизирован');
+ok(syncDb.cfgValue('wishSort') === 'rating', 'сортировка «Хочу чекнуть» синхронизирована');
+ok(syncDb.cfgValue('catFilters') && syncDb.cfgValue('catFilters').genres[0] === 'Драма', 'фильтры каталога синхронизированы');
+ok(syncDb.cfgValue('tutorial') === true, 'пройденное обучение синхронизировано');
+/* второе устройство: тот же аккаунт, чистая память */
+const devB = await bootDevice(syncDb, { platform: 'tdesktop' });
+ok(devB.errors.length === 0, 'десктоп запускается без ошибок' + (devB.errors.length ? ': ' + devB.errors[0] : ''));
+ok(devB.ev('themeId()') === 'rose', 'тема с телефона приехала на десктоп: ' + devB.ev('themeId()'));
+ok(devB.ev('localStorage.getItem("smotra_theme")') === 'rose', 'и записалась в память устройства');
+ok(devB.ev('getFlag("smotra_adult", true)') === false, '18+ приехал на десктоп');
+ok(devB.ev('document.getElementById("switchAdult").classList.contains("on")') === false, 'и тумблер в настройках показывает то же');
+ok(devB.ev('wishSort') === 'rating', 'сортировка чек-листа приехала');
+ok(devB.ev('localStorage.getItem("smotra_view_catalog")') === 'list', 'вид каталога приехал');
+ok(devB.ev('catFilters.genres.length') === 1 && devB.ev('catFilters.genres[0]') === 'Драма', 'фильтры каталога приехали');
+ok(devB.ev('getFlag("smotra_tutorial_done", false)') === true, 'обучение на втором устройстве не повторяется');
+ok(devB.ev('localStorage.getItem("smotra_since")') === devA.ev('localStorage.getItem("smotra_since")'), 'дата «в SMOTRA с» одна на двух устройствах');
+ok(devB.ev('currentStreak') === devA.ev('currentStreak'), 'серия дней совпадает: телефон ' + devA.ev('currentStreak') + ', десктоп ' + devB.ev('currentStreak'));
+ok(devB.ev('document.getElementById("streakNum").textContent') === String(devB.ev('currentStreak')) &&
+   devB.ev('document.getElementById("statStreak").textContent') === String(devB.ev('currentStreak')), 'и обе цифры серии на десктопе показывают одно и то же');
+/* без связи своё изменение не теряется */
+syncDb.offline = true;
+devB.ev('pickTheme("emerald")');
+await sleep(140);
+ok(devB.ev('cfgPending.has("theme")') === true, 'неотправленная настройка помечена как «своя»');
+syncDb.offline = false;
+const writesBefore = syncDb.writes;
+devB.ev('applyRemoteSettings({ theme: "rose", adult: true })');
+await sleep(80);
+ok(devB.ev('themeId()') === 'emerald', 'чужая настройка не перебивает неотправленную свою');
+ok(syncDb.writes === writesBefore, 'применение чужих настроек не пишет их обратно в базу');
+devB.ev('syncSetting("theme", "emerald")');
+await sleep(120);
+ok(devB.ev('cfgPending.has("theme")') === false && syncDb.cfgValue('theme') === 'emerald', 'после успешной отправки пометка снимается, в базе свежее значение');
+devA.close();
+devB.close();
+
+
+/* ================== [19] Правки: каталог, чек-лист, логотип, фильтры ================== */
+section('[19] Каталог без счётчика, поиск сверху, пасхалка, фильтры');
+/* каталог: счётчик «N тайтлов» убран, остались только управление и сетка */
+ok(!/id="catCount"/.test(src) && !/catCount/.test(js), 'счётчика тайтлов в каталоге больше нет');
+ok(!/ничего не найдено/.test(js) || !/countEl\.textContent/.test(js), 'и надписи «ничего не найдено» в шапке каталога тоже нет');
+ok(/\.cat-head-row\{ display:flex; align-items:center; justify-content:flex-end; gap:12px;/.test(dflat), 'управление каталога прижато вправо');
+ok(!/\.cat-count\{/.test(dflat) && !/\.cat-title\{/.test(dflat) && !/cat-title/.test(src), 'надписи «Каталог» и счётчика в шапке не осталось');
+ok(/Показать \$\{n\}` : 'Ничего не найдено'/.test(js), 'сколько тайтлов под фильтрами — видно в кнопке окна фильтров');
+/* чек-лист: иконка поиска сверху, заголовок под ней */
+const wishStart = src.indexOf('<!-- WISHLIST -->');
+const wishSrc = src.slice(wishStart, src.indexOf('<!-- WATCHING -->', wishStart));
+ok(wishSrc.indexOf('id="wishSearchWrap"') > -1 && wishSrc.indexOf('id="wishSearchWrap"') < wishSrc.indexOf('id="wishCount"'),
+  'в «Хочу чекнуть» поиск стоит выше заголовка');
+ok(/wishQuery/.test(js) && /search-btn/.test(wishSrc), 'поиск по чек-листу остался короткой иконкой');
+/* окно фильтров: сверху больше нет пустой полосы */
+ok(/#filtersScreen \.ov-head\{ padding:calc\(12px \+ var\(--safe-top\)\) 20px 6px; \}/.test(dflat), 'шапка окна фильтров поджата');
+ok(/#filtersScreen \.ov-body\{ padding-top:0; padding-bottom:20px; \}/.test(dflat), 'и тело окна начинается сразу под шапкой');
+ok(/#filtersScreen \.f-block\{ margin-bottom:16px; \}/.test(dflat) && /#filtersScreen \.f-block:first-child\{ margin-top:0; \}/.test(dflat), 'первый блок не отступает сверху');
+/* пасхалка на логотипе */
+ok((src.match(/class="wm-l/g) || []).length === 12, 'обе надписи SMOTRA разобраны на буквы (6 + 6)');
+ok((src.match(/class="wm-l o"/g) || []).length === 2, 'в каждой надписи акцентная «O» помечена отдельно');
+ok(/function buildWordmarks\(\)\{/.test(js) && /buildWordmarks\(\);/.test(js), 'буквы логотипа готовятся скриптом');
+ok(/@keyframes wmJump\{/.test(dflat), 'есть анимация прыжка букв');
+ok(/\{ transform:translateY\(-10px\) rotate\(-6deg\) scale\(1\.16\); color:var\(--accent\); \}/.test(dflat), 'буквы прыгают и красятся в цвет темы');
+ok(/\.wordmark\.eggo \.wm-l, \.side-head\.eggo \.wm-l\{ animation:wmJump/.test(dflat), 'анимация включается классом eggo');
+ok(/el\.classList\.add\('eggo'\)/.test(js) && /setTimeout\(\(\) => el\.classList\.remove\('eggo'\), 1050\)/.test(js), 'и возвращается обратно через секунду');
+ok(/el\.addEventListener\('click', jump\)/.test(js) && /el\.addEventListener\('keydown'/.test(js), 'работает и мышью, и с клавиатуры');
+ok(/@media \(prefers-reduced-motion: reduce\)\{/.test(dflat) && /animation-duration:\.01s/.test(dflat), 'при отключённых анимациях пасхалка не мешает');
+ok(/\.topbar \.wordmark \.wm-l\.o\{ color:var\(--accent\); \}/.test(dflat), 'акцентная «O» в логотипе осталась акцентной');
+ok(/if \(!el\.querySelector\('\.wm-l'\)\)/.test(js), 'если разметку логотипа заменят, буквы соберутся сами');
+/* слой синхронизации настроек */
+ok(/const CFG_PREFIX = 'cfg\.';/.test(js) && /function cfgRowId\(/.test(js) && /function cfgDecode\(/.test(js), 'настройки хранятся строками cfg.<ключ>=<значение>');
+ok(/async function writeSettingNow\(key, value\)\{[\s\S]{0,200}?\.delete\(\)\.eq\('telegram_id', TG_ID\)\.like\('badge_id', CFG_PREFIX \+ key \+ '=%'\)/.test(js),
+  'перед записью старые строки ключа удаляются');
+ok(/const cfgWriteChains = new Map\(\);/.test(js) && /const prev = cfgWriteChains\.get\(key\) \|\| Promise\.resolve\(\);/.test(js), 'записи по одному ключу идут очередью, а не вперегонки');
+ok(/function pushAllSettings\(\)\{/.test(js) && /if \(cfgRemoteEmpty\) pushAllSettings\(\);/.test(js), 'при первом входе настройки уезжают в базу целиком');
+ok(/function pruneUnlockedBadges\(\)\{/.test(js) && /function knownBadgeIds\(\)\{/.test(js), 'чужие строки в badges не считаются ачивками');
+ok(/smotra_wish_sort/.test(js), 'сортировка «Хочу чекнуть» запоминается на устройстве');
+ok(/localStorage\.setItem\('smotra_view_' \+ section, val\)/.test(js) === false || /function setView/.test(js), 'вид разделов по-прежнему в памяти устройства');
+ok(/const local = localStorage\.getItem\('smotra_since'\);[\s\S]{0,160}?earlier/.test(js), 'дата «в SMOTRA с» берётся самой ранней');
+ok(/syncSetting\('tutorial', true\)/.test(js) && /syncSetting\('adult', val\)/.test(js) && /syncSetting\('catFilters', catFilters\)/.test(js), 'тема, 18+, обучение и фильтры уезжают на другое устройство');
+ok(/try\{ pickTheme\(t\); \}catch\(e\)\{ try\{ applyTheme\(t\); \}catch\(e2\)\{\} \}/.test(js), 'тема из базы и применяется, и сохраняется на устройстве');
+ok(/function applyRemoteSettings\(remote\)\{\s*if \(!remote \|\| applyingRemote\) return;/.test(js), 'применение чужих настроек не зацикливается');
+ok(!/window\.__/.test(js), 'отладочных проб в коде не осталось');
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
