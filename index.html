@@ -168,6 +168,10 @@
   @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
   .eyebrow{ font-size:13px; color:var(--text-dim); margin:12px 0 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-shrink:0; }
+  /* В «Хочу чекнуть» поиск, заголовок, фильтры и вид стоят одной строкой. */
+  .eyebrow .search-wrap{ margin:0; }
+  .eyebrow.searching > *:not(.search-wrap){ display:none; }
+  .eyebrow.searching .search-wrap{ flex:1 1 auto; width:auto; }
   /* Раздел и так называется «Каталог» — надписи в шапке не нужно, остаются только
      переключатели вида, прижатые к правому краю. */
   .eyebrow.no-label{ justify-content:flex-end; }
@@ -320,8 +324,13 @@
   /* Ряд фильтров: одинаковый шаг между рядами и от сетки — раньше чипсы липли
      к поиску и друг к другу без отступа */
   /* Верх каталога — две строки по делу, без пустоты справа */
-  .cat-head-row{ display:flex; align-items:center; justify-content:flex-end; gap:12px;
+  .cat-head-row{ display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:2px 0 10px; }
+  /* Поиск живёт в той же строке, что фильтры и вид: отдельная строка с одной иконкой
+     оставляла справа пустую полосу. */
+  .cat-head-row .search-wrap{ margin:0; }
+  .cat-head-row.searching .cat-actions{ display:none; }
+  .cat-head-row.searching .search-wrap{ flex:1 1 auto; width:auto; }
   .cat-actions{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
   .cat-filter-btn{ position:relative; display:flex; align-items:center; gap:7px; height:36px; padding:0 14px;
     border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text);
@@ -378,11 +387,20 @@
   .wp-kind{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
   .wp-go{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--accent); flex:0 0 auto; }
   .wt-note{ margin-top:16px; font-size:12px; line-height:1.6; color:var(--text-dim); }
-  #filtersScreen .ov-head{ padding:calc(12px + var(--safe-top)) 20px 6px; }
-  #filtersScreen .ov-body{ padding-top:0; padding-bottom:20px; }
-  #filtersScreen .f-block{ margin-bottom:16px; }
+  /* Шапка фильтров была самой «дорогой» по пустоте: отступ под безопасную зону,
+     заголовок и ещё один отступ, а под ними ничего. Теперь заголовок и строка
+     «найдено N» стоят рядом одной строкой, отступы ужаты до минимума — окно
+     открывается сразу на чипах. */
+  #filtersScreen .ov-head{ padding:calc(6px + var(--safe-top)) 18px 4px; align-items:flex-start; }
+  #filtersScreen .ov-title-wrap{ flex:1; min-width:0; padding-top:6px; }
+  #filtersScreen .ov-title{ font-size:20px; }
+  #filtersScreen .ov-sub{ font-size:12pc; }
+  #filtersScreen .ov-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+  #filtersScreen .ov-close{ margin-top:4px; }
+  #filtersScreen .ov-body{ padding-top:0; padding-bottom:12px; }
+  #filtersScreen .f-block{ margin-bottom:12px; }
   #filtersScreen .f-block:first-child{ margin-top:0; }
-  .filters-foot{ display:flex; gap:10px; padding:12px 24px calc(16px + var(--safe-bottom));
+  .filters-foot{ display:flex; gap:10px; padding:10px 18px calc(12px + var(--safe-bottom));
     border-top:1px solid var(--border); background:var(--surface); }
   .filters-reset{ flex:0 0 auto; padding:14px 20px; border-radius:15px; background:var(--surface-2);
     border:1px solid var(--border); color:var(--text-dim); font-size:13.5px; font-weight:700; font-family:'Inter'; }
@@ -688,7 +706,9 @@
   .segmented{ display:flex; background:var(--surface); border-radius:12px; padding:4px; margin-top:14px; }
   .segmented button{ flex:1; padding:9px; border:none; background:none; color:var(--text-dim); border-radius:9px; font-size:13px; font-weight:600; }
   .segmented button.active{ background:var(--surface-2); color:var(--text); }
-  .empty-note{ text-align:center; color:var(--text-dim); font-size:13px; padding:40px 20px; }
+  /* Заглушка «здесь пусто» больше не отбирает почти экран: 40px сверху и снизу
+     выглядели как пустая полоса. */
+  .empty-note{ text-align:center; color:var(--text-dim); font-size:13px; padding:26px 20px; }
   .screen-hint{ font-size:12.5px; color:var(--text-dim); line-height:1.5; margin:2px 0 4px; }
 
   /* ===== Detail sheet ===== */
@@ -1587,6 +1607,7 @@
   .lv-row:not(:last-child)::after{ content:''; position:absolute; left:26px; top:41px; bottom:-11px; width:2px; background:var(--border); }
   .lv-row.done .lv-dot{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
   .lv-row.cur{ background:var(--surface); border-color:var(--accent-border); box-shadow:0 18px 44px -30px var(--accent-glow); }
+  .lv-row.sel{ background:var(--accent-soft); border-color:var(--accent-border); }
   .lv-row.cur .lv-dot{ background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent); border-color:transparent; }
   .lv-row-txt{ min-width:0; flex:1; }
   .lv-row-name{ font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
@@ -1752,10 +1773,16 @@
 
   <!-- CATALOG -->
   <section id="catalog" class="screen">
-    <!-- Верх каталога — только управление: кнопка фильтров со значком и
-         переключатель вида, прижатые вправо. Счётчик «N тайтлов» убран: он ничего
-         не решал, а место в шапке занимал. -->
+    <!-- Верх каталога — одна строка управления: поиск слева, фильтры со значком и
+         переключатель вида справа. Раньше поиск стоял отдельной строкой и занимал
+         полосу, где справа была пустота; счётчик «N тайтлов» убран ещё раньше. -->
     <div class="cat-head-row">
+      <div class="search-wrap" id="catSearchWrap">
+      <button class="search-btn" id="catSearchBtn" aria-label="Поиск по каталогу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
+      <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…"
+        enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <button class="search-clear" id="catSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
       <div class="cat-actions">
         <button class="cat-filter-btn" id="openCatFilters">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -1764,12 +1791,6 @@
         </button>
         <span class="view-toggle" data-section="catalog"><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></span>
       </div>
-    </div>
-    <div class="search-wrap" id="catSearchWrap">
-      <button class="search-btn" id="catSearchBtn" aria-label="Поиск по каталогу"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
-      <input type="text" id="catSearch" class="search-input" placeholder="Найти по названию…"
-        enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-      <button class="search-clear" id="catSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="chips cat-active" id="catActive"></div>
     <div class="grid2" id="catGrid"></div>
@@ -1782,7 +1803,7 @@
   <!-- ФИЛЬТРЫ КАТАЛОГА -->
   <div class="overlay-screen" id="filtersScreen">
     <div class="ov-head">
-      <div class="ov-title">Фильтры</div>
+      <div class="ov-title-wrap"><div class="ov-title">Фильтры</div><div class="ov-sub" id="filtersFound"></div></div>
       <button class="ov-close" id="closeFilters" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="ov-body" id="filtersBody"></div>
@@ -1794,13 +1815,13 @@
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
-    <div class="search-wrap" id="wishSearchWrap">
+    <div class="eyebrow"><div class="search-wrap" id="wishSearchWrap">
       <button class="search-btn" id="wishSearchBtn" aria-label="Поиск в «Хочу чекнуть»"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg></button>
       <input type="text" id="wishSearch" class="search-input" placeholder="Найти в «Хочу чекнуть»…"
         enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="wishSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><button class="cat-filter-btn" id="openWishFilters" aria-label="Фильтры чек-листа"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Фильтры</span><b class="cat-filter-badge" id="wishFilterBadge" style="display:none">0</b></button><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
+      <span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><button class="cat-filter-btn" id="openWishFilters" aria-label="Фильтры чек-листа"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Фильтры</span><b class="cat-filter-badge" id="wishFilterBadge" style="display:none">0</b></button><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="chips" id="wishSort"></div>
     <button class="roulette-btn" id="openRoulette"><span class="rl-ico"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></span> Рандомайзер</button>
     <div id="wishList"></div>
@@ -2076,16 +2097,12 @@
     <div class="set-level-bar"><i id="setLevelBar" style="width:0%"></i></div>
 
     <div class="set-group">
-      <div class="set-group-title">Оформление</div>
+      <div class="set-group-title">Внешний вид</div>
       <div class="set-row" id="setThemeRow" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H13a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-3.3-4-6-9-6z"/><circle cx="8" cy="10" r="1.2" fill="currentColor"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/><circle cx="16" cy="10" r="1.2" fill="currentColor"/></svg></div>
         <div class="set-text"><div class="set-label">Тема оформления</div><div class="set-sub" id="themeNameLabel">Синий</div></div>
         <button class="set-chip" id="openThemes">Все темы</button>
       </div>
-    </div>
-
-    <div class="set-group">
-      <div class="set-group-title">Отклик</div>
       <div class="set-row" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01"/></svg></div>
         <div class="set-text"><div class="set-label">Вибро-отклик</div><div class="set-sub">Лёгкая вибрация на действия</div></div>
@@ -2094,7 +2111,7 @@
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">Вкус и обучение</div>
+      <div class="set-group-title">Вкус и уровни</div>
       <div class="set-row" id="redoOnboarding" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg></div>
         <div class="set-text"><div class="set-label">Подобрать жанры заново</div><div class="set-sub">Заново выберем, что тебе нравится</div></div>
@@ -2105,10 +2122,7 @@
         <div class="set-text"><div class="set-label">Обучение заново</div><div class="set-sub">Шесть шагов, как всё работает</div></div>
         <div class="set-chevron">›</div>
       </div>
-    </div>
 
-    <div class="set-group">
-      <div class="set-group-title">LVL</div>
       <div class="set-row" id="setXpRow" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12z"/></svg></div>
         <div class="set-text"><div class="set-label">За что дают опыт</div><div class="set-sub">Правила и все уровни — в «Частых вопросах»</div></div>
@@ -2117,16 +2131,13 @@
     </div>
 
     <div class="set-group">
-      <div class="set-group-title">Помощь</div>
+      <div class="set-group-title">Данные и помощь</div>
       <div class="set-row" id="openFaq" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></div>
         <div class="set-text"><div class="set-label">Как всё работает</div><div class="set-sub">Что значат кнопки, «Вернуться», оценки и синхронизация</div></div>
         <div class="set-chevron">›</div>
       </div>
-    </div>
 
-    <div class="set-group">
-      <div class="set-group-title">Мои данные</div>
       <div class="set-row" style="cursor:default;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></svg></div>
         <div class="set-text"><div class="set-label">Связь с базой</div><div class="set-sub" id="setSyncState">Проверяю…</div></div>
@@ -2137,10 +2148,7 @@
         <div class="set-text"><div class="set-label">Отправить записи заново</div><div class="set-sub">Пригодится, если интернет пропадал</div></div>
         <div class="set-chevron">›</div>
       </div>
-    </div>
 
-    <div class="set-group">
-      <div class="set-group-title">Приложение</div>
       <div class="set-row" id="setShare" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></div>
         <div class="set-text"><div class="set-label">Пригласить друга</div><div class="set-sub">Ссылка со твоим профилем внутри</div></div>
@@ -2215,6 +2223,24 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.38 — телешоу убраны, обложки резкие, настройки короче:
+         • ток-шоу, новости и реалити-шоу больше не показываются: это не кино и
+           не сериал, и теперь такие тайтлы исключаются и в запросе к TMDB, и
+           при разборе ответа (уже сохранённые тоже вычищаются);
+         • обложка на главной карточке стала резкой: сначала показывается лёгкая
+           картинка, следом её место занимает крупная (w780 вместо w342), в
+           карточке фильма — до w1280, в колесе и ленте рулетки — тоже крупнее;
+         • настроек было восемь коробок с заголовками — стало четыре по смыслу:
+           «Внешний вид», «Вкус и уровни», «Данные и помощь» и опасное действие;
+         • строки настроек и заголовки стали компактнее — вертикальной пустоты
+           в них больше нет;
+         • окно фильтров открывается сразу на чипах: строка «найдено N» ушла в
+           шапку, отступы сверху и снизу ужаты;
+         • тап по уровню в окне уровней больше не уносит вниз по лестнице —
+           карточка уровня открывается там же, где плитки, а строка уровня
+           просто подсвечивается;
+         • заглушки «здесь пусто» и списки стали компактнее — пустых полос
+           на экранах больше нет.
    0.37 — уточнение фильтра: обычные 18+ остаются:
          • флаг adult у TMDB означает ровно порнографию, поэтому убираем только
            такие тайтлы. «50 оттенков серого» и прочее кино с рейтингом 18+ как
@@ -2523,7 +2549,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.37';
+const APP_VERSION = '0.38';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3323,7 +3349,7 @@ function openTitleList(title, movies, opts){
   document.getElementById('titleListCount').textContent = `${movies.length} ${pluralRu(movies.length, 'тайтл', 'тайтла', 'тайтлов')}`;
   const body = document.getElementById('titleListBody');
   if (!movies.length){
-    body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">${o.empty || 'Здесь пока пусто'}</div>`;
+    body.innerHTML = `<div class="empty-note" style="padding:28px 4px;">${o.empty || 'Здесь пока пусто'}</div>`;
   } else if (o.view === 'grid'){
     body.innerHTML = `<div class="common-grid">${movies.map(friendTile).join('')}</div>`;
   } else {
@@ -3391,7 +3417,7 @@ async function openFriendProfile(id){
      загрузка профиля. */
   if (body.dataset.uid !== String(id) || !body.children.length){
     body.dataset.uid = String(id);
-    body.innerHTML = `<div class="empty-note" style="padding:40px 4px;">Собираю статистику…</div>`;
+    body.innerHTML = `<div class="empty-note" style="padding:28px 4px;">Собираю статистику…</div>`;
   }
   let profile = null, lists = null, mine = null, myRatings = null;
   try{
@@ -4736,6 +4762,28 @@ function isAdultItem(item){
   if (!item) return false;
   return item.adult === true;
 }
+/* ===== Ток-шоу, новости и реалити в подборке не нужны =====
+   Это не кино и не сериал: у TMDB телевизионные форматы помечены отдельными жанрами —
+   «Ток-шоу» (10767), «Новости» (10763) и «Реалити-шоу» (10764). Раньше они попадали в
+   подборку сериалов наравне с художественными — и в ленте оказывались выпуски ток-шоу.
+   Исключаем их сразу в запросе (without_genres) и ещё раз по жанрам при разборе:
+   ответ TMDB может приехать через кэш, догрузку или чужой список.
+   Мыльную оперу (10766) не трогаем — это всё-таки сериал с сюжетом. */
+const NON_FILM_GENRES = [10767, 10763, 10764];
+const NON_FILM_GENRE_RE = /(ток-шоу|talk show|новости|\bnews\b|реалити|reality)/i;
+function isShowItem(item){
+  if (!item) return false;
+  const ids = [];
+  if (Array.isArray(item.genre_ids)) ids.push(...item.genre_ids);
+  if (Array.isArray(item.genres)) item.genres.forEach(g => {
+    if (typeof g === 'number') ids.push(g);
+    else if (typeof g === 'string'){ if (NON_FILM_GENRE_RE.test(g)) ids.push(0); }
+    else if (g && typeof g === 'object'){ if (g.id) ids.push(g.id); if (g.name && NON_FILM_GENRE_RE.test(g.name)) ids.push(0); }
+  });
+  return ids.some(id => id === 0 || NON_FILM_GENRES.includes(id));
+}
+/* Всё, что не должно попадать в приложение: порно и телевизионные шоу. */
+function isHiddenItem(item){ return isAdultItem(item) || isShowItem(item); }
 /* Теги, исключаемые на стороне TMDB (without_keywords соединяется через «или»):
    hentai (198385) и animated porn (378816). Именно они стоят на порнографической
    анимации — например, на «Переполнении» (в базе он помечен adult:false, и без тега
@@ -4746,7 +4794,7 @@ function isAdultItem(item){
 const ADULT_KEYWORDS = '198385|378816';
 async function fetchList(url, type, genreMap){
   const data = await fetch(url).then(r=>r.json());
-  return (data.results||[]).filter(item => !isAdultItem(item)).map(item => ({
+  return (data.results||[]).filter(item => !isHiddenItem(item)).map(item => ({
     id: item.id,
     type,
     title: item.title || item.name,
@@ -4777,7 +4825,7 @@ let titleFillBudget = 260;            // за сессию не больше 260
 /* Ответ TMDB → объект тайтла. Одним местом на весь файл: раньше это жило только
    внутри fillMissingTitles, и любая другая догрузка повторяла ту же логику. */
 function movieFromTmdb(data, kind){
-  if (isAdultItem(data)) return null;          // взрослое не описываем вообще
+  if (isHiddenItem(data)) return null;         // порно и ток-шоу не описываем вообще
   return {
     id: data.id, type: kind === 'tv' ? 'series' : 'movie',
     title: data.title || data.name, originalTitle: data.original_title || data.original_name || '',
@@ -5028,10 +5076,13 @@ function discoverUrls(page){
   // без перевода/постера мы потом отфильтруем сами (keepRussian). vote_count.gte отсекает
   // совсем безвестные записи, чтобы в ленте было узнаваемое кино.
   const base = `language=ru-RU&sort_by=popularity.desc&include_adult=false&vote_count.gte=40&without_keywords=${ADULT_KEYWORDS}`;
+  /* Телевизионные шоу отсекаем прямо в запросе — тогда они не приедут вообще.
+     Для фильмов этого не нужно: жанры ток-шоу и реалити бывают только у ТВ. */
+  const tvOnly = `${base}&without_genres=${NON_FILM_GENRES.join(',')}`;
   return {
     film:    `https://api.themoviedb.org/3/discover/movie?${base}&page=${page}&api_key=${K}`,
-    series:  `https://api.themoviedb.org/3/discover/tv?${base}&page=${page}&api_key=${K}`,
-    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false&vote_count.gte=10&without_keywords=${ADULT_KEYWORDS}&page=${page}&api_key=${K}`,
+    series:  `https://api.themoviedb.org/3/discover/tv?${tvOnly}&page=${page}&api_key=${K}`,
+    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false&vote_count.gte=10&without_keywords=${ADULT_KEYWORDS}&without_genres=${NON_FILM_GENRES.join(',')}&page=${page}&api_key=${K}`,
     cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=false&vote_count.gte=20&without_keywords=${ADULT_KEYWORDS}&page=${page}&api_key=${K}`,
   };
 }
@@ -5040,7 +5091,7 @@ function applyCatalog(cache){
   if (!cache) return false;
   // Даже в кэше на всякий случай прогоняем дедупликацию: раньше в нём могли
   // остаться двойники из разных discover-списков.
-  MOVIES = dedupeMovies((cache.movies || []).filter(m => !isAdultItem(m)));
+  MOVIES = dedupeMovies((cache.movies || []).filter(m => !isHiddenItem(m)));
   rebuildMovieIndex(); tutMoviesCache = null;
   Object.assign(GENRE_MOVIE, cache.genreMovie || {});
   Object.assign(GENRE_TV, cache.genreTv || {});
@@ -5305,6 +5356,31 @@ function posterBG(m){
 function posterIcon(m){ return TYPE_ICON[m.type] || GENRE_ICON[(m.genres||[])[0]] || 'film'; }
 function hasArt(m){ return !!m.posterPath; }
 function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.posterPath}`; }
+/* Размер обложки под место, а не «один на всех». Раньше карточка на главной тянула
+   w342 и растягивалась на всю ширину (430+ px, на ретине вдвое больше) — отсюда и
+   мыло. Теперь размер зависит от того, где картинка стоит. */
+const ART_SIZES = { deck:'w780', sheet:'w1280', card:'w342', thumb:'w185' };
+/* Тяжёлую версию обложки догружаем фоном поверх быстрой: сначала на экране появляется
+   лёгкая картинка (кадр без ожидания), потом её место занимает резкая. Так и старт
+   не тормозит, и качество в итоге полное. */
+const artUpgrades = new Set();
+function upgradeArt(el, m, size){
+  if (!el || !m || !hasArt(m)) return;
+  const url = posterUrl(m, size || ART_SIZES.deck);
+  const key = mid(m) + '|' + url;
+  if (artUpgrades.has(key)) return;
+  const img = new Image();
+  img.onload = () => {
+    if (!el.isConnected) return;
+    el.dataset.hi = url;
+    el.style.backgroundImage = `url('${url}')`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.classList.remove('art-loading');
+  };
+  img.src = url;
+  artUpgrades.add(key);
+}
 function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${esc(posterUrl(m, size))}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
 /* Ачивки. kind — по какому счётчику открывается: watched (смотрел), wishlist,
@@ -5408,7 +5484,7 @@ let movieStubs = {};
 try{
   const stored = JSON.parse(localStorage.getItem(STUBS_KEY) || '{}') || {};
   /* Копии из памяти телефона просеиваем: в прошлых версиях взрослое туда попадало. */
-  Object.keys(stored).forEach(k => { if (!isAdultItem(stored[k])) movieStubs[k] = stored[k]; });
+  Object.keys(stored).forEach(k => { if (!isHiddenItem(stored[k])) movieStubs[k] = stored[k]; });
   if (Object.keys(stored).length !== Object.keys(movieStubs).length) saveStubsSoon();
 }catch(e){ movieStubs = {}; }
 /* Память телефона сохраняем с задержкой: запись туда — самая дорогая операция, а
@@ -5418,7 +5494,7 @@ function saveStubsSoon(){
   saveStubsSoon._t = setTimeout(() => { try{ localStorage.setItem(STUBS_KEY, JSON.stringify(movieStubs)); }catch(e){} }, 400);
 }
 function rememberMovie(m){
-  if (!m || !m.id || isAdultItem(m)) return;      // взрослое не запоминаем вообще
+  if (!m || !m.id || isHiddenItem(m)) return;     // порно и телешоу не запоминаем вообще
   const k = mid(m);
   if (movieStubs[k]) return;
   movieStubs[k] = { id: m.id, type: m.type, title: m.title, originalTitle: m.originalTitle, year: m.year, adult: !!m.adult,
@@ -5632,7 +5708,7 @@ const Roulette = (function(){
     strip.style.transition = 'none';
     strip.style.transform = 'translateX(0)';
     strip.innerHTML = stripItemsHTML(items).map((m, i) => `
-      <div class="rl-item" data-i="${i}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w154'))}')` : `background:${posterBG(m)}`}">
+      <div class="rl-item" data-i="${i}" style="${hasArt(m) ? `background-image:url('${esc(posterUrl(m,'w185'))}')` : `background:${posterBG(m)}`}">
         <span>${esc(m.title)}</span>
       </div>`).join('');
   }
@@ -5685,7 +5761,7 @@ const Roulette = (function(){
       if (useArt) defs += `<clipPath id="rlSector${i}"><path d="${d}"/></clipPath>`;
       sectors += `<g class="rl-sec" data-i="${i}">`;
       if (useArt && hasArt(m)){
-        sectors += `<image href="${esc(posterUrl(m, 'w185'))}" x="8" y="8" width="184" height="184" preserveAspectRatio="xMidYMid slice" clip-path="url(#rlSector${i})" opacity="0.96"/>`;
+        sectors += `<image href="${esc(posterUrl(m, 'w500'))}" x="8" y="8" width="184" height="184" preserveAspectRatio="xMidYMid slice" clip-path="url(#rlSector${i})" opacity="0.96"/>`;
       } else {
         sectors += `<path d="${d}" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:${i % 2 ? '.5' : '.78'}"/>`;
       }
@@ -5859,12 +5935,16 @@ function initSearchExpand(inputId, wrapId){
     input.value = '';
     input.dispatchEvent(new Event('input', { bubbles: true }));
   };
+  const row = wrap.parentElement;          // строка управления: поиск + фильтры + вид
+  const mark = (on) => { if (row) row.classList.toggle('searching', on); };
   const open = () => {
     wrap.classList.add('open');
+    mark(true);
     setTimeout(() => { try{ input.focus({ preventScroll:true }); }catch(e){ try{ input.focus(); }catch(err){} } }, 170);
   };
   const close = () => {
     wrap.classList.remove('open');
+    mark(false);
     reset();
     try{ input.blur(); }catch(e){}
   };
@@ -5874,9 +5954,10 @@ function initSearchExpand(inputId, wrapId){
     if (wrap.classList.contains('open')) close(); else open();
   };
   input.addEventListener('focus', () => wrap.classList.add('open'));
-  input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()) wrap.classList.remove('open'); }, 120); });
+  input.addEventListener('blur', () => { setTimeout(() => { if (!input.value.trim()){ wrap.classList.remove('open'); mark(false); } }, 120); });
   input.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   wrap.classList.remove('open');
+  mark(false);
 }
 initSearchExpand('catSearch', 'catSearchWrap');
 initSearchExpand('wishSearch', 'wishSearchWrap');
@@ -6396,9 +6477,12 @@ function renderLevelsScreen(){
       </div>
       <div class="lv-pick-note">${tail}</div>`;
     haptic('selection');
+    /* Никаких прыжков к строке уровня в лестнице: человек хотел прочитать про уровень,
+       а его уносило вниз по списку. Карточка уровня открывается там же, где и плитки. */
     [...host.querySelectorAll('.lv-tile')].forEach(t => t.classList.toggle('sel', Number(t.dataset.lv) === L.level));
+    [...host.querySelectorAll('.lv-row.sel')].forEach(r => r.classList.remove('sel'));
     const row = host.querySelector(`.lv-row[data-lv="${L.level}"]`);
-    if (row && row.scrollIntoView) try{ row.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){}
+    if (row) row.classList.add('sel');
   };
   [...host.querySelectorAll('.lv-tile')].forEach(t => {
     t.onclick = () => showPick(Number(t.dataset.lv));
@@ -6605,6 +6689,7 @@ function renderStack(){
     /* Пустая обложка верхней карточки догружается сама: ждать прокрутки тут нечего. */
     requestPosters(visible.slice(0, 3));
     applyLazyArt(stackEl);
+    upgradeDeckArt();
   }catch(e){
     console.error('renderStack failed', e);
     if (!stackEl.querySelector('.card')){
@@ -6618,6 +6703,20 @@ function renderStack(){
     }
   }
   ensureDeckHeight();
+}
+/* Резкая версия обложки для верхних карточек колоды. Сначала на экране появляется
+   лёгкая картинка (кадр без ожидания), следом её место занимает крупная — на телефоне
+   с ретиной разница видна сразу. Берём две верхние: следующая должна быть готовой. */
+function upgradeDeckArt(){
+  const cards = [...stackEl.querySelectorAll('.card')];
+  const total = cards.length;
+  cards.forEach((card, idx) => {
+    const deckIdx = total - 1 - idx;              // последняя в DOM — верхняя карточка
+    if (deckIdx > 1) return;
+    const art = card.querySelector('.poster[data-art]');
+    const m = deck[deckIdx];
+    if (art && m && art.dataset.hi !== posterUrl(m, ART_SIZES.deck)) upgradeArt(art, m, ART_SIZES.deck);
+  });
 }
 /* Плавный подъём колоды: верхняя карточка уже уехала, остальные переезжают
    в новые позиции с анимацией, а на задний план въезжает новая карточка. */
@@ -6643,6 +6742,7 @@ function restackAfterTop(swipedEl){
       back.style.opacity = '1';
       back.style.transform = `translateY(${shown*DECK_DEPTH_Y}px) scale(${1 - shown*DECK_DEPTH_SCALE})`;
     });
+    upgradeDeckArt();
   }
 }
 /* Страховка от схлопывания колоды: если флекс-контейнер по какой-то причине
@@ -7698,7 +7798,7 @@ function renderFilters(){
       <div class="f-block-title"><span>Сортировка</span></div>
       <div class="f-chips">${sortChips}</div>
     </div>
-    <div class="lv-note" id="filtersFound"></div>`;
+    `;
   updateFiltersFound();
 }
 /* Сколько тайтлов попадёт в каталог при текущем черновике. Считается той же
@@ -7961,10 +8061,14 @@ function patchFilledArt(host){
     if (!m) return;
     const art = el.querySelector('.pc-art, .fw-poster, .thumb, .review-poster, .fpr-poster, .poster');
     if (art && hasArt(m)){
-      art.dataset.art = posterUrl(m, 'w185');
+      /* Размер по месту: карточка на главной больше не получает маленькую обложку. */
+      const size = art.classList.contains('poster') ? ART_SIZES.deck
+        : (art.classList.contains('sheet-poster') || art.classList.contains('pl-full')) ? ART_SIZES.sheet
+        : (art.classList.contains('pc-art') ? ART_SIZES.card : ART_SIZES.thumb);
+      art.dataset.art = posterUrl(m, size);
       clearArtPlaceholder(art);
       if (!art.style.backgroundImage || art.style.backgroundImage === 'none'){
-        art.style.backgroundImage = `url('${posterUrl(m, 'w185')}')`;
+        art.style.backgroundImage = `url('${posterUrl(m, size)}')`;
         art.style.backgroundSize = 'cover'; art.style.backgroundPosition = 'center';
         art.classList.remove('art-loading');
       }
@@ -8470,7 +8574,10 @@ function paintSheetPoster(movie){
   if (hasArt(movie)){
     const url = posterUrl(movie, 'w780');
     pl.style.cssText = '';
-    pl.innerHTML = `<div class="pl-blur" style="background-image:url('${esc(url)}');"></div><div class="pl-full" style="background-image:url('${esc(url)}');"></div>`;
+    pl.innerHTML = `<div class="pl-blur" style="background-image:url('${esc(url)}');"></div><div class="pl-full" data-art="${esc(url)}" style="background-image:url('${esc(url)}');"></div>`;
+    /* На большом экране и на ретине догружаем ещё более резкую версию. */
+    const full = pl.querySelector('.pl-full');
+    if (full) upgradeArt(full, movie, ART_SIZES.sheet);
   } else {
     pl.style.cssText = `background:${posterBG(movie)};`;
     pl.innerHTML = `<span class="sheet-poster-icon">${ICON(posterIcon(movie), 64)}</span>`;

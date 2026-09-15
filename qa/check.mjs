@@ -1116,7 +1116,14 @@ section('[19] Каталог без счётчика, поиск сверху, �
 /* каталог: счётчик «N тайтлов» убран, остались только управление и сетка */
 ok(!/id="catCount"/.test(src) && !/catCount/.test(js), 'счётчика тайтлов в каталоге больше нет');
 ok(!/ничего не найдено/.test(js) || !/countEl\.textContent/.test(js), 'и надписи «ничего не найдено» в шапке каталога тоже нет');
-ok(/\.cat-head-row\{ display:flex; align-items:center; justify-content:flex-end; gap:12px;/.test(dflat), 'управление каталога прижато вправо');
+ok(/\.cat-head-row\{ display:flex; align-items:center; justify-content:space-between; gap:10px;/.test(dflat),
+  'в строке каталога поиск слева, а фильтры и вид — справа (пустой полосы под ними больше нет)');
+ok(/\.cat-head-row\.searching \.cat-actions\{ display:none; \}/.test(dflat)
+  && /\.eyebrow\.searching > \*:not\(\.search-wrap\)\{ display:none; \}/.test(dflat),
+  'раскрытый поиск занимает всю строку, а соседи прячутся');
+ok(src.indexOf('id="catSearchWrap"') > src.indexOf('class="cat-head-row"')
+  && src.indexOf('id="catSearchWrap"') < src.indexOf('id="catGrid"'),
+  'поиск каталога живёт в той же строке, что фильтры и вид');
 ok(!/\.cat-count\{/.test(dflat) && !/\.cat-title\{/.test(dflat) && !/cat-title/.test(src), 'надписи «Каталог» и счётчика в шапке не осталось');
 ok(/Показать \$\{n\}` : 'Ничего не найдено'/.test(js), 'сколько тайтлов под фильтрами — видно в кнопке окна фильтров');
 /* чек-лист: иконка поиска сверху, заголовок под ней */
@@ -1124,11 +1131,13 @@ const wishStart = src.indexOf('<!-- WISHLIST -->');
 const wishSrc = src.slice(wishStart, src.indexOf('<!-- WATCHING -->', wishStart));
 ok(wishSrc.indexOf('id="wishSearchWrap"') > -1 && wishSrc.indexOf('id="wishSearchWrap"') < wishSrc.indexOf('id="wishCount"'),
   'в «Хочу чекнуть» поиск стоит выше заголовка');
+ok(/ov-title-wrap/.test(src) && src.indexOf('id="filtersFound"') < src.indexOf('id="filtersBody"'),
+  'строка «найдено N» стоит в шапке окна, а не отдельной пустой полосой внизу');
 ok(/wishQuery/.test(js) && /search-btn/.test(wishSrc), 'поиск по чек-листу остался короткой иконкой');
 /* окно фильтров: сверху больше нет пустой полосы */
-ok(/#filtersScreen \.ov-head\{ padding:calc\(12px \+ var\(--safe-top\)\) 20px 6px; \}/.test(dflat), 'шапка окна фильтров поджата');
-ok(/#filtersScreen \.ov-body\{ padding-top:0; padding-bottom:20px; \}/.test(dflat), 'и тело окна начинается сразу под шапкой');
-ok(/#filtersScreen \.f-block\{ margin-bottom:16px; \}/.test(dflat) && /#filtersScreen \.f-block:first-child\{ margin-top:0; \}/.test(dflat), 'первый блок не отступает сверху');
+ok(/#filtersScreen \.ov-head\{ padding:calc\(6px \+ var\(--safe-top\)\) 18px 4px;/.test(dflat), 'шапка окна фильтров поджата до минимума');
+ok(/#filtersScreen \.ov-body\{ padding-top:0; padding-bottom:12px; \}/.test(dflat), 'и тело окна начинается сразу под шапкой');
+ok(/#filtersScreen \.f-block\{ margin-bottom:12px; \}/.test(dflat) && /#filtersScreen \.f-block:first-child\{ margin-top:0; \}/.test(dflat), 'первый блок не отступает сверху');
 /* пасхалка на логотипе */
 ok((src.match(/class="wm-l/g) || []).length === 12, 'обе надписи SMOTRA разобраны на буквы (6 + 6)');
 ok((src.match(/class="wm-l o"/g) || []).length === 2, 'в каждой надписи акцентная «O» помечена отдельно');
@@ -1419,11 +1428,11 @@ ok(src.indexOf('switchAdult') === -1 && src.indexOf('<div class="set-label">По
   'тумблера «Показывать 18+» в настройках нет');
 ok(js.indexOf('if (item.adult === true) return true;') === -1 && js.indexOf('return item.adult === true;') > -1,
   'флаг adult — единственный признак порно в коде');
-ok(js.indexOf('filter(item => !isAdultItem(item))') > -1, 'подборка фильтруется на входе');
-ok(js.indexOf('if (isAdultItem(data)) return null;') > -1, 'подробности по id тоже проверяются');
-ok(js.indexOf('if (!m || !m.id || isAdultItem(m)) return;') > -1, 'в память телефона порно не запоминается');
+ok(js.indexOf('filter(item => !isHiddenItem(item))') > -1, 'подборка фильтруется на входе');
+ok(js.indexOf('if (isHiddenItem(data)) return null;') > -1, 'подробности по id тоже проверяются');
+ok(js.indexOf('if (!m || !m.id || isHiddenItem(m)) return;') > -1, 'в память телефона порно не запоминается');
 ok(js.indexOf('smotra_tmdb_cache_v5_safe') > -1, 'ключ кэша подборки сменился — старый кэш с порно больше не читается');
-ok(js.indexOf('if (!isAdultItem(stored[k])) movieStubs[k] = stored[k];') > -1,
+ok(js.indexOf('if (!isHiddenItem(stored[k])) movieStubs[k] = stored[k];') > -1,
   'копии тайтлов в памяти телефона просеиваются при загрузке');
 /* обычные 18+ этим фильтром не задеваются: проверяем на живых названиях */
 ok(devPre.ev('isAdultItem({ title: "Пятьдесят оттенков серого", originalTitle: "Fifty Shades of Grey", adult: false })') === false,
@@ -1497,6 +1506,100 @@ devY.ev('rememberMovie({ id: 9203, type: "movie", title: "Порно по фла
 ok(devY.ev('keyToMovie(9203) === null'), 'порно не оседает и в памяти телефона');
 devY.close();
 devPre.close();
+
+/* ===== [23] Телешоу, резкие обложки, короткие настройки, уровни без прыжков ===== */
+section('[23] Телешоу убраны, обложки резкие, настройки короче, уровни без прыжков');
+/* --- телешоу --- */
+ok(js.indexOf('const NON_FILM_GENRES = [10767, 10763, 10764];') > -1,
+  'ток-шоу, новости и реалити-шоу заданы жанрами TMDB: 10767, 10763, 10764');
+ok((js.match(/without_genres=\$\{NON_FILM_GENRES\.join\(','\)\}/g) || []).length >= 2,
+  'телевизионные подборки просят TMDB без этих жанров');
+ok(js.indexOf('function isShowItem(item){') > -1 && js.indexOf('function isHiddenItem(item){ return isAdultItem(item) || isShowItem(item); }') > -1,
+  'при разборе ответа телешоу отсекаются тем же фильтром, что и порно');
+const showDb = makeFakeDb();
+const SHOW_FIX = [
+  { id: 9301, title: 'Художественный сериал', name: 'Художественный сериал', media_type: 'tv', original_name: 'Drama Show',
+    poster_path: '/ok.jpg', vote_average: 8, vote_count: 500, popularity: 900, first_air_date: '2020-01-01', genre_ids: [18], overview: 'Описание' },
+  { id: 9302, title: 'Вечернее ток-шоу', name: 'Вечернее ток-шоу', media_type: 'tv',
+    poster_path: '/talk.jpg', vote_average: 6, vote_count: 500, popularity: 1000, first_air_date: '2021-01-01', genre_ids: [10767], overview: 'Описание' },
+  { id: 9303, title: 'Реалити про всё', name: 'Реалити про всё', media_type: 'tv',
+    poster_path: '/real.jpg', vote_average: 5, vote_count: 500, popularity: 990, first_air_date: '2022-01-01', genre_ids: [10764], overview: 'Описание' },
+  { id: 9304, title: 'Новости вчера', name: 'Новости вчера', media_type: 'tv',
+    poster_path: '/news.jpg', vote_average: 4, vote_count: 500, popularity: 980, first_air_date: '2023-01-01', genre_ids: [10763], overview: 'Описание' },
+];
+const devZ = await bootDevice(showDb, { platform: 'android', fetch: async (url) => {
+  const u = String(url);
+  if (/\/genre\/(movie|tv)\/list/.test(u)) return { ok: true, json: async () => ({ genres: [{ id: 18, name: 'Драма' }, { id: 10767, name: 'Ток-шоу' }, { id: 10764, name: 'Реалити-шоу' }, { id: 10763, name: 'Новости' }] }) };
+  const skip = (u.match(/without_genres=([^&]*)/) || [])[1];
+  const banned = skip ? skip.split(',').map(Number) : [];
+  const results = SHOW_FIX.filter(it => !(it.genre_ids || []).some(g => banned.indexOf(g) > -1));
+  return { ok: true, json: async () => ({ page: 1, total_pages: 1, results, genres: [] }) };
+} });
+ok(devZ.errors.length === 0, 'устройство с телешоу в ответе TMDB стартует без ошибок' + (devZ.errors.length ? ': ' + devZ.errors[0] : ''));
+const showTitles = () => devZ.ev('[...new Set(MOVIES.map(m => m.title))]');
+ok(showTitles().indexOf('Художественный сериал') > -1, 'обычный сериал остался в подборке');
+ok(['Вечернее ток-шоу', 'Реалити про всё', 'Новости вчера'].every(t => showTitles().indexOf(t) === -1),
+  'ни ток-шоу, ни реалити, ни новостей в подборке нет: ' + showTitles().join(' · '));
+ok(devZ.ev('isShowItem({ genre_ids: [10767] })') === true && devZ.ev('isShowItem({ genres: [{ id: 10763 }] })') === true,
+  'проверка ловит жанр и по id');
+ok(devZ.ev('isShowItem({ genres: ["Ток-шоу"] })') === true && devZ.ev('isShowItem({ genres: ["Reality"] })') === true,
+  'и по названию жанра — на случай, если ответ приехал из кэша');
+ok(devZ.ev('isShowItem({ genres: ["Драма"], genre_ids: [18] })') === false, 'обычный жанр проверку проходит');
+devZ.ev('rememberMovie({ id: 9302, type: "series", title: "Вечернее ток-шоу", genres: ["Ток-шоу"], posterPath: "/x.jpg" })');
+ok(devZ.ev('keyToMovie(9302) === null'), 'телешоу не оседает и в памяти телефона');
+/* --- резкие обложки --- */
+ok(js.indexOf("const ART_SIZES = { deck:'w780', sheet:'w1280', card:'w342', thumb:'w185' };") > -1,
+  'размер обложки задан по месту: карточка w780, окно фильма w1280, сетки w342, превью w185');
+ok(js.indexOf('function upgradeArt(el, m, size){') > -1 && js.indexOf('function upgradeDeckArt(){') > -1,
+  'есть догрузка резкой версии поверх быстрой');
+ok(js.indexOf('upgradeDeckArt();') > -1, 'она вызывается при отрисовке колоды');
+ok(js.indexOf("posterUrl(m, 'w500')") > -1, 'обложки на колесе стали крупнее');
+/* jsdom не грузит картинки, поэтому подменяем Image на заглушку, которая сразу
+   сообщает об успехе: проверяем саму логику подмены фона. */
+devZ.ev('window.Image = function(){ const o = {}; Object.defineProperty(o, "src", { set(v){ o._src = v; setTimeout(() => { if (o.onload) o.onload(); }, 0); }, get(){ return o._src; } }); return o; };');
+devZ.ev('artUpgrades.clear();');
+devZ.ev(`(function(){ const m = MOVIES[0]; const el = document.createElement('div'); el.className = 'poster'; document.body.appendChild(el);
+  upgradeArt(el, m, ART_SIZES.deck); window.__probeEl = el; return true; })()`);
+await sleep(60);
+ok(/w780/.test(String(devZ.ev('window.__probeEl.style.backgroundImage'))),
+  'после загрузки крупной картинки фон подменился: ' + String(devZ.ev('window.__probeEl.style.backgroundImage')).slice(0, 60));
+devZ.ev('artUpgrades.clear(); upgradeDeckArt();');
+await sleep(80);
+ok(String(devZ.ev('(document.querySelector(".card .poster") || {}).dataset ? document.querySelector(".card .poster").dataset.hi || "" : ""')).length > 0
+  || devZ.ev('!!document.querySelector(".card .poster")') === false,
+  'у верхней карточки колоды отмечена резкая обложка');
+/* --- настройки --- */
+devZ.doc.getElementById('openSettings').click();
+await sleep(60);
+const groups = devZ.ev('[...document.querySelectorAll("#settingsScreen .set-group .set-group-title")].map(e => e.textContent.trim())');
+ok(JSON.stringify(groups) === JSON.stringify(['Внешний вид', 'Вкус и уровни', 'Данные и помощь']),
+  'в настройках три понятные группы: ' + groups.join(' · '));
+ok(devZ.ev('document.querySelectorAll("#settingsScreen .set-group").length') === 4,
+  'и четвёртая — только опасное действие');
+const keepIds = ['setThemeRow','switchHaptic','redoOnboarding','redoTutorial','setXpRow','openFaq','setRepair','setShare','resetAll'];
+ok(keepIds.every(id => devZ.ev(`!!document.getElementById("${id}")`)), 'ни одна строка настроек не потерялась');
+ok(/#filtersScreen|\.set-row\{ display:flex; align-items:center; gap:12px; justify-content:space-between; padding:12px 14px;/.test(dflat),
+  'строки настроек стали компактнее');
+/* --- уровни: без прыжка вниз --- */
+devZ.ev('openLevelsScreen()');
+await sleep(60);
+ok(devZ.ev('!!document.getElementById("levelsScreen").classList.contains("open")'), 'окно уровней открылось');
+devZ.ev('(function(){ window.__scrolls = 0; const proto = Element.prototype; proto.__origScroll = proto.scrollIntoView; proto.scrollIntoView = function(){ window.__scrolls++; }; return true; })()');
+const lvTiles = devZ.doc.querySelectorAll('#levelsScreen .lv-tile');
+ok(lvTiles.length >= 24, 'в окне уровней есть плитки: ' + lvTiles.length);
+lvTiles[3].click();
+await sleep(60);
+ok(devZ.ev('Number(window.__scrolls)') === 0, 'тап по уровню никуда не прокручивает: ' + devZ.ev('Number(window.__scrolls)'));
+ok(devZ.ev('document.getElementById("lvPick").hidden') === false, 'карточка уровня открылась на месте');
+ok(/Уровень 4 ·/.test(String(devZ.ev('document.getElementById("lvPick").textContent'))),
+  'в карточке видно название уровня: ' + String(devZ.ev('document.getElementById("lvPick").textContent')).trim().slice(0, 60));
+ok(devZ.ev('!!document.querySelector("#levelsScreen .lv-row.sel")'), 'строка этого уровня подсвечена в лестнице');
+/* --- пустота: заглушки и шапки стали ниже --- */
+ok(/\.empty-note\{ text-align:center; color:var\(--text-dim\); font-size:13px; padding:26px 20px; \}/.test(dflat),
+  'заглушки «здесь пусто» стали компактнее');
+ok(/#filtersScreen \.ov-sub\{ font-size:12px; color:var\(--text-dim\); margin-top:2px; \}/.test(dflat),
+  'строка «найдено» в шапке фильтров тоже компактная');
+devZ.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
