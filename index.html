@@ -5663,13 +5663,15 @@ const Roulette = (function(){
       <circle cx="100" cy="100" r="93" fill="none" style="stroke:var(--accent); opacity:.55" stroke-width="2.5"/>
       <circle cx="100" cy="100" r="17" style="fill:var(--surface); stroke:var(--accent-border)"/>
       <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="700" style="fill:var(--accent)">SMOTRA</text>`;
-    /* Чем больше тайтлов, тем крупнее колесо — иначе сектора не разглядеть. */
-    const size = wheelSize(n);
+    /* Чем больше тайтлов, тем крупнее колесо — иначе сектора не разглядеть. Но за
+       рамку оно не вылезает: на узком телефоне берём размер по месту. */
+    const wrap = wheel.parentElement;
+    const wrapW = wrap ? (wrap.clientWidth || 0) : 0;
+    const size = Math.min(wheelSize(n), 340, wrapW ? Math.max(200, wrapW - 24) : 340);
     wheel.setAttribute('width', size);
     wheel.setAttribute('height', size);
     wheel.style.width = size + 'px';
     wheel.style.height = size + 'px';
-    const wrap = wheel.parentElement;
     if (wrap && wrap.classList.contains('rl-wheel-wrap')) wrap.style.height = Math.max(186, size + 20) + 'px';
     wheel.classList.remove('spinning');
     wheel.style.transition = 'none';
