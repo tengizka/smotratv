@@ -211,6 +211,8 @@ ok(/let pressLock = false/.test(js) && /document\.addEventListener\('touchmove'/
 ok(/const blocked = \(el\) => !!\s*\(el && el\.closest\('\.card, \.chips, input, textarea, \.rl-card, \.tut-demo, #undoBtn, \.undo-pill, \.sheet, \[data-no-swipe\]'\)\)/.test(js.replace(/\s+/g, ' ')), 'свайп раздела не срабатывает на карточке и на «Вернуться»');
 ok(/\.card \.veil\{[^}]*z-index:20/.test(cssClean.replace(/\n/g, ' ')), 'затемнение карточки лежит на 20-м слое');
 ok(/\.stamp\{ position:absolute; z-index:24;/.test(cssClean.replace(/\n\s+/g, ' ')), 'штампы ВЫШЕ затемнения — надписи «смотрел/мимо/чекнуть/смотрю» видно');
+ok(/#toast\{ position:absolute; top:auto; bottom:calc\(96px \+ var\(--safe-bottom\)\);/.test(cssClean.replace(/\n\s+/g, ' ')), 'подсказки выезжают снизу, «квадратика» сверху больше нет');
+ok(/#toast\.show\{ transform:translate\(-50%, 0\); \}/.test(cssClean), 'видимая подсказка поднимается на своё место');
 ok(/\.stamp\{[^}]*background:rgba\(9,10,18,\.9\)/.test(cssClean.replace(/\n\s+/g, ' ')), 'штамп идёт плотной плашкой, а не только обводкой');
 
 /* ============================ [11] Живое приложение ============================ */
@@ -284,7 +286,19 @@ ok(ev('document.querySelector(".tut-demo").dataset.tutMove') === '84x6', 'у д�
 ev('clampTutorial(); fitTutorial();');
 ok(ev('!!document.querySelector(".tut-stage") && !!document.querySelector(".tut-actions")'), 'после подгонки обе части туториала на месте');
 ok(ev('document.body.classList.contains("tut-open")'), 'во время обучения интерфейс приложения спрятан');
-ev('document.getElementById("tutorial").classList.remove("show"); document.body.classList.remove("tut-open");');
+/* живьём: высоты посчитаны, шаг видно, обучение доводится до конца */
+ok(/px$/.test(ev('document.getElementById("tutInner").style.getPropertyValue("--tut-vis")')), 'видимая высота туториала посчитана в пикселях');
+ok(/px$/.test(ev('document.querySelector(".tut-stage").style.height')), 'сцена получила высоту в пикселях, а не «авто»');
+ok(/px$/.test(ev('document.querySelector(".tut-caption").style.maxHeight')), 'подпись ограничена по высоте');
+ok(ev('TUTORIAL_STEPS.length') === 6, 'шагов в обучении ровно 6');
+ok(ev('document.getElementById("tutCount").textContent') === '1 / 6', 'видно, какой это шаг из скольких: ' + ev('document.getElementById("tutCount").textContent'));
+for (let i = 0; i < 6; i++) ev('document.getElementById("tutNext").click();');
+ok(!ev('document.getElementById("tutorial").classList.contains("show")'), 'шесть нажатий «Дальше» доводят обучение до конца — застрять нельзя');
+/* второй путь: тапом по сцене (страховка, если кнопку перекрыл системный бар) */
+ev('document.getElementById("tutorial").classList.add("show"); document.body.classList.add("tut-open"); tutStep = 0; renderTutStep();');
+for (let i = 0; i < 6; i++) ev('document.getElementById("tutStage").click();');
+ok(!ev('document.getElementById("tutorial").classList.contains("show")'), 'тапом по сцене обучение тоже проходится до конца');
+ev('localStorage.removeItem("smotra_tutorial_done"); document.getElementById("tutorial").classList.remove("show"); document.body.classList.remove("tut-open");');
 /* уровни */
 ok(ev('LEVELS.map(l => l.xp).join(",")') === '0,50,250,500,1000,2000,4000,8000,16000,32000', 'пороги уровней: ' + ev('LEVELS.map(l => l.xp).join(",")'));
 ok(ev('levelFor(0).level') === 1 && ev('levelFor(50).level') === 2 && ev('levelFor(2000).level') === 6, 'уровень считается верно');
@@ -626,6 +640,7 @@ ok(/#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'проф
 ok(/<div class="side-head" aria-hidden="true">SM<b>O<\/b>TRA<\/div>/.test(src), 'логотип есть в разметке панели');
 ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(168px, 1fr\)\); \}/.test(dflat), 'каталог занимает всю ширину: обложек помещается больше');
 ok(/#splash, #onboarding, #tutorial\{ position:fixed; inset:0; left:0; right:0; width:auto; max-width:none; margin:0; \}/.test(dflat), 'заставка, онбординг и обучение прибиты к окну — центрируются ровно, без сдвига от padding оболочки');
+ok(/#toast\{ bottom:26px; \}/.test(dflat), 'на большом экране подсказка садится чуть выше нижнего края');
 ok(/\.undo-pill, #toast\{ left:calc\(50% \+ var\(--side\) \/ 2\); \}/.test(dflat), 'пилюля и сообщение центрируются по содержимому, а не по окну');
 ok(/#askSheet, #badgeSheet\{ position:fixed/.test(deskBlock.replace(/\s+/g, ' ')), 'правила шторок лежат именно в десктопном блоке');
 /* код под раскладку */
