@@ -459,7 +459,7 @@ const onWinErr = (e) => clickErrors.push(String((e && e.error && e.error.message
 win.addEventListener('error', onWinErr);
 const SMOKE = ['openSettings','closeSettings','setThemeRow','closeThemes','openFaq','closeFaq','openXpRules',
   'openRoulette','rlClose','openHistory','closeHistory','openWatchingRow','openAchievements','closeAchievements',
-  'openFilters','filterBackdrop','catShowMoreBtn'];
+  'openFilters','filterBackdrop','catShowMoreBtn','openWishFilters'];
 const missing = SMOKE.filter(id => !doc.getElementById(id));
 for (const id of SMOKE){
   const el = doc.getElementById(id);
@@ -1258,6 +1258,149 @@ if (row) row.click();
 await sleep(80);
 ok(/themoviedb\.org\/movie\/7011\/watch/.test(openedUrl), 'кнопка сервиса открывает страницу со ссылками: ' + openedUrl);
 devW.close();
+
+/* ============ [21] Фильтры «Хочу чекнуть», длинная лента и полное колесо ============ */
+section('[21] Фильтры чек-листа, лента и колесо на весь список');
+const wishDb = makeFakeDb();
+/* Чек-лист: восемь фильмов и четыре сериала — хватает и на типы, и на жанры, и на годы. */
+const WISH_LIST = [
+  { id: 8101, type: 'movie',  title: 'Альфа', genres: ['Боевик'],          year: '2019', rating: 6.1 },
+  { id: 8102, type: 'movie',  title: 'Браво', genres: ['Драма'],           year: '2021', rating: 8.4 },
+  { id: 8103, type: 'movie',  title: 'Вираж', genres: ['Драма', 'Комедия'], year: '2015', rating: 7.2 },
+  { id: 8104, type: 'movie',  title: 'Гроза', genres: ['Боевик', 'Драма'],  year: '2022', rating: 5.9 },
+  { id: 8105, type: 'series', title: 'Дом',   genres: ['Драма'],           year: '1998', rating: 9.1 },
+  { id: 8106, type: 'series', title: 'Ель',   genres: ['Комедия'],         year: '2005', rating: 6.6 },
+  { id: 8107, type: 'series', title: 'Жара',  genres: ['Драма'],           year: '2019', rating: 7.8 },
+  { id: 8108, type: 'series', title: 'Зима',  genres: ['Боевик'],          year: '2023', rating: 8.9 },
+  { id: 8109, type: 'movie',  title: 'Ирис',  genres: ['Комедия'],         year: '2010', rating: 7.0 },
+  { id: 8110, type: 'movie',  title: 'Кипа',  genres: ['Драма'],           year: '2001', rating: 6.3 },
+  { id: 8111, type: 'movie',  title: 'Луна',  genres: ['Боевик'],          year: '2018', rating: 7.7 },
+  { id: 8112, type: 'movie',  title: 'Море',  genres: ['Комедия'],         year: '1996', rating: 8.0 },
+];
+WISH_LIST.forEach(m => wishDb.rows('wishlist').push({ telegram_id: 909090, movie_id: m.type === 'series' ? m.id + 1000000000 : m.id }));
+const devX = await bootDevice(wishDb, { platform: 'android' });
+devX.ev(`(function(){ ${JSON.stringify(WISH_LIST)}.forEach(m => rememberMovie({ id: m.id, type: m.type, title: m.title,
+  originalTitle: m.title + ' (orig)', year: m.year, rating: m.rating, poster: null, posterPath: '/w' + m.id + '.jpg',
+  overview: '', genres: m.genres })); renderWishlist(); return true; })()`);
+await sleep(40);
+ok(devX.errors.length === 0, 'чек-листное устройство стартует без ошибок' + (devX.errors.length ? ': ' + devX.errors[0] : ''));
+ok(devX.ev('state.wishlist.length') === 12, 'чек-лист загрузился из базы: ' + devX.ev('state.wishlist.length'));
+ok(devX.ev('wishVisibleMovies().length') === 12, 'без условий видно все двенадцать');
+/* отбор считается одной функцией — той же, что рисует экран */
+ok(devX.ev('wishFilterMovies({ types:["series"], genres:[], year:"any" }, "", "added").length') === 4,
+  'тип «Сериалы» оставляет четыре тайтла');
+ok(devX.ev('wishFilterMovies({ types:[], genres:["Драма"], year:"any" }, "", "added").length') === 6,
+  'жанр «Драма» оставляет шесть');
+ok(devX.ev('wishFilterMovies({ types:[], genres:[], year:"2020" }, "", "added").length') === 3,
+  'год 2020-е оставляет три');
+ok(devX.ev('wishFilterMovies({ types:[], genres:[], year:"old" }, "", "added").length') === 2,
+  '«до 2000» оставляет два: ' + devX.ev('wishFilterMovies({ types:[], genres:[], year:"old" }, "", "added").map(m => m.title).join(", ")'));
+ok(devX.ev('wishFilterMovies({ types:["series"], genres:["Драма"], year:"any" }, "", "added").length') === 2,
+  'условия складываются: сериалы-драмы');
+ok(devX.ev('wishFilterMovies({ types:[], genres:[], year:"any" }, "мор", "added").length') === 1,
+  'поиск работает вместе с условиями');
+ok(devX.ev('wishFilterMovies({ types:[], genres:[], year:"any" }, "", "rating").map(m => m.rating).join()') === '9.1,8.9,8.4,8,7.8,7.7,7.2,7,6.6,6.3,6.1,5.9',
+  'сортировка по рейтингу: ' + devX.ev('wishFilterMovies({ types:[], genres:[], year:"any" }, "", "rating").map(m => m.title).join(" > ")'));
+ok(devX.ev('wishFilterMovies({ types:[], genres:[], year:"any" }, "", "title").map(m => m.title).join()') === 'Альфа,Браво,Вираж,Гроза,Дом,Ель,Жара,Зима,Ирис,Кипа,Луна,Море',
+  'сортировка по названию работает');
+ok(devX.ev('WISH_SORTS.length') === 5, 'сортировок стало пять: ' + devX.ev('WISH_SORTS.map(x => x.label).join(", ")'));
+/* окно фильтров чек-листа */
+devX.doc.getElementById('openWishFilters').click();
+await sleep(30);
+ok(devX.doc.getElementById('filtersScreen').classList.contains('open'), 'кнопка над чек-листом открывает окно фильтров');
+ok(/чек-лист/i.test(String(devX.doc.querySelector('#filtersScreen .ov-title').textContent)),
+  'окно подписано как фильтры чек-листа: ' + devX.doc.querySelector('#filtersScreen .ov-title').textContent);
+ok(devX.ev('filtersDraft.genres.length + filtersDraft.types.length') === 0, 'черновик начинается пустым');
+ok(devX.doc.querySelectorAll('#filtersBody .f-chip[data-f="sort"]').length === 5, 'в окне вся сортировка чек-листа');
+ok(!devX.doc.querySelector('#filtersBody .f-chip[data-f="sort"][data-v="default"]'), 'каталожной сортировки «по умолчанию» тут нет');
+const wishGenreChips = devX.doc.querySelectorAll('#filtersBody .f-chip[data-f="genre"]').length;
+ok(wishGenreChips === 3, 'в окне только жанры из чек-листа: ' + wishGenreChips);
+devX.doc.querySelector('#filtersBody .f-chip[data-f="genre"][data-v="Драма"]').click();
+await sleep(20);
+ok(/Найдено[^0-9]*6/.test(String(devX.doc.getElementById('filtersFound').textContent)),
+  'окно сразу считает, сколько подойдёт: ' + devX.doc.getElementById('filtersFound').textContent);
+ok(/Показать 6/.test(String(devX.doc.getElementById('filtersApply').textContent)), 'и кнопка подписана числом');
+devX.doc.getElementById('filtersApply').click();
+await sleep(50);
+ok(devX.doc.querySelectorAll('#wishSort .chip.removable').length === 1, 'в шапке чек-листа виден активный фильтр с крестиком');
+ok(devX.ev('wishFilters.genres.length') === 1 && devX.ev('wishFilters.genres[0]') === 'Драма', 'условие применилось к чек-листу');
+ok(String(devX.ev('localStorage.getItem("smotra_wish_filters")')).indexOf('Драма') > 0, 'условие осталось в памяти телефона');
+ok(devX.doc.getElementById('wishFilterBadge').style.display !== 'none', 'на кнопке фильтров виден счётчик условий');
+const wishCards = () => devX.doc.querySelectorAll('#wishList .poster-card, #wishList .row-card').length;
+ok(wishCards() === 6, 'список на экране сузился до шести: ' + wishCards());
+await sleep(150);
+ok(wishDb.cfgValue('wishFilters') && wishDb.cfgValue('wishFilters').genres[0] === 'Драма',
+  'условия чек-листа уехали в базу: ' + JSON.stringify(wishDb.cfgValue('wishFilters')));
+devX.doc.querySelector('#wishSort .chip.removable').click();
+await sleep(40);
+ok(devX.ev('wishFilters.genres.length') === 0, 'крестик на чипе снимает условие');
+ok(wishCards() === 12, 'и список возвращается целиком');
+ok(devX.doc.getElementById('wishFilterBadge').style.display === 'none', 'счётчик исчез вместе с условием');
+/* сброс в окне чек-листа ничего не портит до «Показать» */
+devX.ev('openFilters("wishlist")');
+await sleep(20);
+devX.doc.querySelector('#filtersBody .f-chip[data-f="type"][data-v="series"]').click();
+await sleep(10);
+devX.doc.getElementById('filtersReset').click();
+await sleep(10);
+ok(devX.ev('filtersDraft.types.length + filtersDraft.genres.length') === 0 && devX.ev('filtersDraft.year') === 'any',
+  '«Сбросить» возвращает всё и в окне чек-листа');
+ok(devX.ev('wishFilters.types.length') === 0, 'черновик не трогает уже применённое');
+devX.ev('closeOverlay("filtersScreen")');
+await sleep(20);
+/* лента: длинная */
+devX.doc.getElementById('openRoulette').click();
+await sleep(60);
+ok(devX.doc.getElementById('roulette').classList.contains('show'), 'рулетка открывается');
+const stripTiles = () => devX.doc.querySelectorAll('#rlStrip .rl-item').length;
+ok(stripTiles() === 72, 'лента стала длинной: ' + stripTiles() + ' плиток на двенадцать тайтлов вместо 34');
+ok(/Выбери режим и нажми/.test(String(devX.doc.getElementById('rlResult').textContent)), 'подсказка обычная, пока условий нет');
+/* колесо: все тайтлы */
+devX.ev('Roulette.setMode("wheel")');
+await sleep(40);
+ok(devX.doc.querySelectorAll('#rlWheel .rl-sec').length === 12, 'на колесе столько секторов, сколько тайтлов: ' + devX.doc.querySelectorAll('#rlWheel .rl-sec').length);
+ok(devX.doc.querySelectorAll('#rlWheel image').length === 12, 'на каждом секторе своя обложка');
+ok(devX.doc.querySelectorAll('#rlWheel .rl-lbl text').length === 12, 'и подпись с названием');
+/* условия чек-листа действуют и в рулетке, и в колесе */
+devX.ev('openFilters("wishlist")');
+await sleep(20);
+devX.doc.querySelector('#filtersBody .f-chip[data-f="genre"][data-v="Драма"]').click();
+devX.doc.getElementById('filtersApply').click();
+await sleep(50);
+devX.ev('Roulette.setMode("strip")');
+await sleep(40);
+ok(stripTiles() === 54, 'лента пересобралась под условия: ' + stripTiles() + ' плиток на шесть тайтлов');
+ok(/В игре 6 тайтлов — по твоим условиям/.test(String(devX.doc.getElementById('rlResult').textContent)),
+  'рулетка честно говорит, что играет по условиям: ' + String(devX.doc.getElementById('rlResult').textContent).trim());
+devX.ev('Roulette.setMode("wheel")');
+await sleep(40);
+ok(devX.doc.querySelectorAll('#rlWheel .rl-sec').length === 6, 'и колесо сузилось до отобранных шести');
+devX.ev('Roulette.setSpeed(0.02); Roulette.spin();');
+await sleep(500);
+const winName = String(devX.doc.querySelector('#rlResult .rl-name').textContent);
+ok(devX.ev(`wishVisibleMovies().some(m => m.title === ${JSON.stringify(winName)})`), 'выиграл тайтл из отобранных условий: ' + winName);
+ok(devX.doc.querySelectorAll('#rlWheel .rl-sec:not(.dim)').length === 1, 'подсвечен ровно один сектор-победитель');
+/* очень большой чек-лист: колесо обязано вместить всех, а лента — упереться в свой максимум */
+devX.ev(`(function(){ for (let i = 0; i < 200; i++) rememberMovie({ id: 9000 + i, type: 'movie', title: 'Тайтл ' + i,
+  originalTitle: '', year: '2000', rating: 5, poster: null, posterPath: '/h' + i + '.jpg', overview: '', genres: ['Драма'] });
+  state.wishlist = Array.from({ length: 200 }, (_, i) => 9000 + i); wishFilters = { types: [], genres: [], year: 'any' }; renderWishHead(); renderWishlist(); return true; })()`);
+await sleep(80);
+devX.ev('Roulette.setMode("wheel")');
+await sleep(80);
+ok(devX.doc.querySelectorAll('#rlWheel .rl-sec').length === 200, 'колесо вмещает все двести тайтлов: ' + devX.doc.querySelectorAll('#rlWheel .rl-sec').length);
+devX.ev('Roulette.setMode("strip")');
+await sleep(80);
+ok(stripTiles() === 180, 'лента упирается в свой максимум, а не в 34: ' + stripTiles());
+devX.ev('Roulette.setSpeed(1); Roulette.close();');
+await sleep(20);
+/* статика: прежние ограничения сняты, новые на месте */
+ok(!/Math\.min\(Math\.max\(items\.length, 2\), 8\)/.test(js), 'обрезка колеса до восьми тайтлов убрана');
+ok(/const STRIP_MIN = 54, STRIP_MAX = 180;/.test(js), 'у ленты есть длинный размер по умолчанию');
+ok(/return wishVisibleMovies\(\);/.test(js), 'рулетка берёт список той же функцией, что и экран чек-листа');
+ok(/keys\.add\('wishFilters'\)/.test(js), 'условия чек-листа попадают в список настроек для отправки');
+ok(/let wf = take\('wishFilters'\)/.test(js), 'и приезжают на другое устройство');
+ok(/id="openWishFilters"/.test(src) && /id="wishFilterBadge"/.test(src), 'кнопка фильтров и счётчик есть в разметке');
+devX.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

@@ -307,6 +307,8 @@
   .rl-hint{ font-size:12.5px; color:var(--text-dim); text-align:center; line-height:1.4; }
   .rl-sec{ transition:opacity .3s ease; }
   .rl-sec.dim{ opacity:.3; }
+  .rl-lbl{ transition:opacity .3s ease; }
+  .rl-lbl.dim{ opacity:.25; }
   .rl-wheel.spinning{ filter:drop-shadow(0 0 12px var(--accent-glow)); }
   .rl-actions button:active{ transform:scale(.97); }
   .view-toggle{ display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; flex:0 0 auto; }
@@ -353,6 +355,13 @@
   /* Окно фильтров на телефоне было с пустой полосой сверху: шапка отступала
      на 16px под safe-area, а тело окна добавляло ещё 6px, плюс 18px поля блока.
      Поджимаем только это окно — остальные окна не трогаем. */
+  /* Кнопка фильтров в шапке «Хочу чекнуть»: прижата вправо к переключателю вида,
+     на телефоне остаётся короткой иконкой со значком. */
+  .eyebrow #openWishFilters{ margin-left:auto; height:32px; padding:0 11px; gap:6px; }
+  @media (max-width: 620px){
+    .eyebrow #openWishFilters span{ display:none; }
+    .eyebrow #openWishFilters{ padding:0 9px; }
+  }
   /* Окно «где смотреть»: плеер трейлера и сервисы, где тайтл лежит легально. */
   #watchBody{ padding-top:0; }
   .wt-frame{ position:relative; aspect-ratio:16 / 9; border-radius:18px; overflow:hidden; background:var(--surface); border:1px solid var(--border); }
@@ -1791,7 +1800,7 @@
         enterkeyhint="done" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="search-clear" id="wishSearchClear" aria-label="Очистить"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
+    <div class="eyebrow"><span>Хочу чекнуть <b class="wish-total" id="wishCount">0</b></span><button class="cat-filter-btn" id="openWishFilters" aria-label="Фильтры чек-листа"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Фильтры</span><b class="cat-filter-badge" id="wishFilterBadge" style="display:none">0</b></button><span class="view-toggle" data-section="wishlist"><button data-v="list"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button data-v="grid"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button></span></div>
     <div class="chips" id="wishSort"></div>
     <button class="roulette-btn" id="openRoulette"><span class="rl-ico"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></span> Рандомайзер</button>
     <div id="wishList"></div>
@@ -2211,6 +2220,20 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.35 — удобный чек-лист и большая рулетка:
+         • у «Хочу чекнуть» появились свои фильтры: тип, жанры, годы и пять
+           сортировок — окно то же, что у каталога, но считает по чек-листу;
+         • активные условия видно чипами прямо над списком, крестик на чипе
+           снимает условие, счётчик на кнопке показывает, сколько их всего;
+         • жанры в окне предлагаются только те, что есть в чек-листе, поэтому
+           пустого результата по несуществующему жанру не бывает;
+         • условия чек-листа действуют везде: список, поиск, лента рулетки и
+           колесо — что видно на экране, из того и выбираем;
+         • лента рулетки стала втрое длиннее и едет дольше — это уже не «раз-два»;
+         • колесо собирается из ВСЕХ тайтлов чек-листа: секторов столько же,
+           сколько карточек (было не больше восьми), обложки — пока сектора
+           крупные, дальше сектора красятся по очереди и подписываются названием,
+           а выигравший сектор подсвечивается.
    0.34 — пустых обложек больше нет, и фильм можно смотреть:
          • открытие карточки сразу тянет всё, чего в ней не хватает: обложку,
            описание, жанры, число серий — окно открывается мгновенно, а данные
@@ -2482,7 +2505,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.34';
+const APP_VERSION = '0.35';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2789,7 +2812,13 @@ function applyRemoteSettingsInner(remote){
   let ws = take('wishSort');
   if (typeof ws === 'string' && WISH_SORTS.some(x => x.key === ws) && ws !== wishSort){
     wishSort = ws;
-    try{ initWishSortChips(); renderWishlist(); }catch(e){}
+    try{ renderWishHead(); renderWishlist(); }catch(e){}
+  }
+  let wf = take('wishFilters');
+  if (wf && typeof wf === 'object'){
+    wishFilters = { types: Array.isArray(wf.types) ? wf.types : [], genres: Array.isArray(wf.genres) ? wf.genres : [], year: wf.year || 'any' };
+    saveWishFilters();
+    try{ renderWishHead(); renderWishlist(); }catch(e){}
   }
   let since = take('since');
   if (typeof since === 'string' && since){
@@ -2815,6 +2844,7 @@ function savedSettingKeys(){
     if (localStorage.getItem('smotra_tutorial_done')) keys.add('tutorial');
     if (localStorage.getItem(CAT_FILTER_KEY)) keys.add('catFilters');
     if (localStorage.getItem('smotra_wish_sort')) keys.add('wishSort');
+    if (localStorage.getItem(WISH_FILTER_KEY)) keys.add('wishFilters');
     ['catalog', 'wishlist', 'watching'].forEach(section => {
       if (localStorage.getItem('smotra_view_' + section)) keys.add('views');
     });
@@ -2843,6 +2873,7 @@ function currentSyncedSettings(){
     },
     catFilters,
     wishSort,
+    wishFilters,
     since: (() => { try{ return localStorage.getItem('smotra_since') || ''; }catch(e){ return ''; } })(),
   };
 }
@@ -5456,6 +5487,8 @@ const Roulette = (function(){
   const spinBtn = document.getElementById('rlAgain');
   const openBtn = document.getElementById('rlOpen');
   const TILE = 86, GAP = 10;
+  /* Лента длинная по умолчанию: чем больше тайтлов, тем дальше едет. */
+  const STRIP_MIN = 54, STRIP_MAX = 180;
   /* Two режима: привычная лента и колесо. Покер и автомат убраны — слишком много
      шума, а толку ноль. */
   const MODES = { strip:'Рулетка', wheel:'Колесо' };
@@ -5467,7 +5500,9 @@ const Roulette = (function(){
 
   function pool(){
     if (customPool) return customPool.slice();
-    return state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
+    /* В рулетке и колесе действуют те же условия, что и в списке «Хочу чекнуть»:
+       фильтры, поиск и сортировка. Что видно на экране — из того и выбираем. */
+    return wishVisibleMovies();
   }
   function close(){ overlay.classList.remove('show'); spinning = false; customPool = null; clearTimeout(spinTimer); }
   function setOpenEnabled(on){ if (openBtn){ openBtn.disabled = !on; } }
@@ -5486,8 +5521,11 @@ const Roulette = (function(){
     setSpinLabel(mode === 'wheel' ? 'Крутить колесо' : 'Крутить');
     if (mode === 'wheel') drawWheel(items);
     else drawStripIdle(items);
+    const narrowed = wishFilterCount() > 0 || !!wishQuery;
     resultEl.innerHTML = `<div class="rl-hint">${items.length > 1
-      ? 'Выбери режим и нажми «Крутить» — покажем, что посмотреть'
+      ? (narrowed
+          ? `В игре ${items.length} ${pluralRu(items.length, 'тайтл', 'тайтла', 'тайтлов')} — по твоим условиям`
+          : 'Выбери режим и нажми «Крутить» — покажем, что посмотреть')
       : 'Добавь побольше тайтлов в «Хочу чекнуть» — будет из чего выбирать'}</div>`;
   }
   function setMode(next, spinNow){
@@ -5503,7 +5541,11 @@ const Roulette = (function(){
     const head = overlay.querySelector('.rl-card h3');
     if (head) head.textContent = title || 'Что посмотреть?';
     const items = pool();
-    if (!items.length){ showToast('Сначала добавь тайтлы в «Хочу чекнуть»', 'star'); return; }
+    if (!items.length){
+      /* Чек-лист не пуст, а пусто из-за условий — и говорим об этом честно. */
+      showToast(state.wishlist.length ? 'Под твои условия в чек-листе ничего не подошло' : 'Сначала добавь тайтлы в «Хочу чекнуть»', 'star');
+      return;
+    }
     if (startMode && MODES[startMode]) mode = startMode;
     overlay.classList.add('show');
     renderModes();
@@ -5532,8 +5574,11 @@ const Roulette = (function(){
       <div class="rl-meta">${esc(winner.year)} · ${esc(TYPE_LABEL[winner.type] || 'Фильм')} · ${esc(winner.rating)}<span class="star"> ${ICON('starFill', 10)}</span></div>`;
   }
   /* --- режим 1: лента --- */
+  function stripLoop(items){
+    return Math.max(STRIP_MIN, Math.min(STRIP_MAX, items.length * 6));
+  }
   function stripItemsHTML(items){
-    const LOOP = 34;
+    const LOOP = stripLoop(items);
     const out = [];
     for (let i = 0; i < LOOP; i++) out.push(items[i % items.length]);
     return out;
@@ -5552,8 +5597,9 @@ const Roulette = (function(){
     const strip = document.getElementById('rlStrip');
     if (!strip) return;
     if (!strip.children.length) drawStripIdle(items);
-    const LOOP = 34;
-    const winIndex = Math.floor(Math.random() * (LOOP - 10)) + 5;
+    const LOOP = stripLoop(items);
+    /* Победитель — ближе к концу ленты: прокрутка выходит длинной, а не «раз-два». */
+    const winIndex = Math.min(LOOP - 2, Math.floor(LOOP * (0.55 + Math.random() * 0.35)));
     [...strip.querySelectorAll('.rl-item.win')].forEach(el => el.classList.remove('win'));
     strip.style.transition = 'none';
     strip.style.transform = 'translateX(0)';
@@ -5562,7 +5608,7 @@ const Roulette = (function(){
     const target = -(winIndex * (TILE + GAP) + TILE / 2 - center + 40);
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        strip.style.transition = `transform ${(3.4 * speed).toFixed(2)}s cubic-bezier(.12,.72,.06,1)`;
+        strip.style.transition = `transform ${(5.4 * speed).toFixed(2)}s cubic-bezier(.12,.72,.06,1)`;
         strip.style.transform = `translateX(${target}px)`;
       });
     });
@@ -5570,39 +5616,61 @@ const Roulette = (function(){
       const tile = strip.querySelector(`.rl-item[data-i="${winIndex}"]`);
       if (tile) tile.classList.add('win');
       finish(items[winIndex % items.length]);
-    }, 3550 * speed);
+    }, 5600 * speed);
   }
-  /* --- режим 2: колесо из обложек --- */
+  /* --- режим 2: колесо из всех тайтлов --- */
+  /* В колесе участвует каждый тайтл списка: секторов столько же, сколько карточек,
+     поэтому выиграть может любой, а не только первые восемь. Обложки рисуем, пока
+     сектора крупные; на большом колесе сектора красятся по очереди и подписываются —
+     иначе постеры превращаются в кашу. */
+  function wheelSize(n){ return Math.min(340, Math.round(176 + n * 1.3)); }
+  function shortTitle(t){ const v = String(t || ''); return v.length > 18 ? v.slice(0, 17) + '…' : v; }
   function drawWheel(items, opts){
     const wheel = document.getElementById('rlWheel');
     if (!wheel) return;
-    const n = Math.min(Math.max(items.length, 2), 8);
+    const n = Math.max(items.length, 2);
     const step = 360 / n;
     const rad = a => a * Math.PI / 180;
-    let defs = '', sectors = '';
+    const useArt = n <= 12;
+    let defs = '', sectors = '', labels = '';
     for (let i = 0; i < n; i++){
       const a0 = -90 + i * step, a1 = a0 + step;
       const x0 = (100 + 92 * Math.cos(rad(a0))).toFixed(2), y0 = (100 + 92 * Math.sin(rad(a0))).toFixed(2);
       const x1 = (100 + 92 * Math.cos(rad(a1))).toFixed(2), y1 = (100 + 92 * Math.sin(rad(a1))).toFixed(2);
       const d = `M100,100 L${x0},${y0} A92,92 0 0,1 ${x1},${y1} Z`;
       const m = items[i % items.length];
-      defs += `<clipPath id="rlSector${i}"><path d="${d}"/></clipPath>`;
+      if (useArt) defs += `<clipPath id="rlSector${i}"><path d="${d}"/></clipPath>`;
       sectors += `<g class="rl-sec" data-i="${i}">`;
-      sectors += hasArt(m)
-        ? `<image href="${esc(posterUrl(m, 'w185'))}" x="8" y="8" width="184" height="184" preserveAspectRatio="xMidYMid slice" clip-path="url(#rlSector${i})" opacity="0.96"/>`
-        : `<path d="${d}" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:.75"/>`;
-      sectors += `<path d="${d}" fill="none" style="stroke:var(--bg)" stroke-width="1.6"/>`;
+      if (useArt && hasArt(m)){
+        sectors += `<image href="${esc(posterUrl(m, 'w185'))}" x="8" y="8" width="184" height="184" preserveAspectRatio="xMidYMid slice" clip-path="url(#rlSector${i})" opacity="0.96"/>`;
+      } else {
+        sectors += `<path d="${d}" style="fill:var(--${i % 2 ? 'accent' : 'accent-2'}); opacity:${i % 2 ? '.5' : '.78'}"/>`;
+      }
+      sectors += `<path d="${d}" fill="none" style="stroke:var(--bg)" stroke-width="${n > 60 ? 0.5 : (n > 24 ? 0.9 : 1.6)}"/>`;
       sectors += `</g>`;
+      if (n <= 24){
+        const midA = a0 + step / 2;
+        labels += `<g class="rl-lbl" data-i="${i}" transform="translate(100,100) rotate(${midA.toFixed(2)})"><text x="50" y="3" text-anchor="middle" font-size="${n <= 12 ? 8 : 7}" font-weight="600" style="fill:var(--text); paint-order:stroke; stroke:rgba(0,0,0,.5); stroke-width:1.6px">${esc(shortTitle(m.title))}</text></g>`;
+      }
     }
     let rim = '';
-    for (let i = 0; i < 24; i++){
-      const a = i * 15;
-      rim += `<circle cx="${(100 + 96 * Math.cos(rad(a))).toFixed(1)}" cy="${(100 + 96 * Math.sin(rad(a))).toFixed(1)}" r="1.8" style="fill:var(--accent)"/>`;
+    const ticks = n <= 24 ? 24 : Math.min(n, 72);
+    for (let i = 0; i < ticks; i++){
+      const a = i * (360 / ticks);
+      rim += `<circle cx="${(100 + 96 * Math.cos(rad(a))).toFixed(1)}" cy="${(100 + 96 * Math.sin(rad(a))).toFixed(1)}" r="${n > 24 ? 1.2 : 1.8}" style="fill:var(--accent)"/>`;
     }
-    wheel.innerHTML = `<defs>${defs}</defs><circle cx="100" cy="100" r="93" style="fill:var(--surface-2)"/>${sectors}${rim}
+    wheel.innerHTML = `<defs>${defs}</defs><circle cx="100" cy="100" r="93" style="fill:var(--surface-2)"/>${sectors}${labels}${rim}
       <circle cx="100" cy="100" r="93" fill="none" style="stroke:var(--accent); opacity:.55" stroke-width="2.5"/>
       <circle cx="100" cy="100" r="17" style="fill:var(--surface); stroke:var(--accent-border)"/>
       <text x="100" y="100" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="700" style="fill:var(--accent)">SMOTRA</text>`;
+    /* Чем больше тайтлов, тем крупнее колесо — иначе сектора не разглядеть. */
+    const size = wheelSize(n);
+    wheel.setAttribute('width', size);
+    wheel.setAttribute('height', size);
+    wheel.style.width = size + 'px';
+    wheel.style.height = size + 'px';
+    const wrap = wheel.parentElement;
+    if (wrap && wrap.classList.contains('rl-wheel-wrap')) wrap.style.height = Math.max(186, size + 20) + 'px';
     wheel.classList.remove('spinning');
     wheel.style.transition = 'none';
     wheel.style.transform = 'rotate(0deg)';
@@ -5613,24 +5681,25 @@ const Roulette = (function(){
   function spinWheel(items){
     const wheel = document.getElementById('rlWheel');
     if (!wheel) return;
-    const n = Math.min(Math.max(items.length, 2), 8);
+    const n = Math.max(items.length, 2);
     const step = 360 / n;
     const winIndex = Math.floor(Math.random() * n);
-    if (!wheel.querySelector('.rl-sec')) drawWheel(items);
     drawWheel(items);
-    const target = 360 * 4 - (winIndex * step + step / 2);
+    const turns = 360 * (n > 24 ? 6 : 4);
+    const target = turns - (winIndex * step + step / 2);
     wheel.classList.add('spinning');
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        wheel.style.transition = `transform ${(3.8 * speed).toFixed(2)}s cubic-bezier(.15,.75,.05,1)`;
+        wheel.style.transition = `transform ${(4.6 * speed).toFixed(2)}s cubic-bezier(.15,.75,.05,1)`;
         wheel.style.transform = `rotate(${target}deg)`;
       });
     });
     spinTimer = setTimeout(()=>{
       wheel.classList.remove('spinning');
       [...wheel.querySelectorAll('.rl-sec')].forEach(g => g.classList.toggle('dim', +g.dataset.i !== winIndex));
+      [...wheel.querySelectorAll('.rl-lbl')].forEach(g => g.classList.toggle('dim', +g.dataset.i !== winIndex));
       finish(items[winIndex % items.length]);
-    }, 3900 * speed);
+    }, 4750 * speed);
   }
   modesEl.addEventListener('click', e => {
     const btn = e.target.closest('button[data-mode]');
@@ -7551,17 +7620,21 @@ function catFilterMovies(f, query){
 /* Черновик фильтров: в окне крутим его, а в каталог он попадает только после
    «Показать» — можно спокойно перебрать варианты и не дёргать сетку зря. */
 let filtersDraft = null;
+/* Окно фильтров одно на приложение: каталог и «Хочу чекнуть» отличаются только
+   списком, к которому применяются условия, и набором жанров. */
+let filterTarget = 'catalog';
 function renderFilters(){
   const host = document.getElementById('filtersBody');
   if (!host || !filtersDraft) return;
   const f = filtersDraft;
+  const wish = filterTarget === 'wishlist';
   const typeChips = TYPE_TABS.filter(t => t.key !== 'all').map(t =>
     `<button class="f-chip ${f.types.includes(t.key) ? 'on' : ''}" data-f="type" data-v="${t.key}">${ICON(TYPE_ICON[t.key] || 'film', 15)}${esc(t.label)}</button>`).join('');
-  const genreChips = catalogGenres().map(g =>
+  const genreChips = (wish ? wishlistGenres() : catalogGenres()).map(g =>
     `<button class="f-chip ${f.genres.includes(g) ? 'on' : ''}" data-f="genre" data-v="${esc(g)}">${esc(g)}</button>`).join('');
   const yearChips = CAT_YEARS.map(y =>
     `<button class="f-chip ${f.year === y.key ? 'on' : ''}" data-f="year" data-v="${y.key}">${esc(y.label)}</button>`).join('');
-  const sortChips = CAT_SORTS.map(o =>
+  const sortChips = (wish ? WISH_SORTS : CAT_SORTS).map(o =>
     `<button class="f-chip ${f.sort === o.key ? 'on' : ''}" data-f="sort" data-v="${o.key}">${esc(o.label)}</button>`).join('');
   host.innerHTML = `
     <div class="f-block">
@@ -7587,17 +7660,27 @@ function renderFilters(){
    функцией, что и сам каталог, поэтому цифры всегда совпадают. */
 function updateFiltersFound(){
   const el = document.getElementById('filtersFound');
-  const n = catFilterMovies(filtersDraft).length;
-  if (el) el.textContent = n ? `Найдено тайтлов: ${n}` : 'По этим условиям ничего нет — попробуй ослабить фильтры';
+  const n = filterTarget === 'wishlist'
+    ? wishFilterMovies(filtersDraft, wishQuery, filtersDraft.sort).length
+    : catFilterMovies(filtersDraft).length;
+  if (el) el.textContent = n ? `Найдено: ${n} ${pluralRu(n, 'тайтл', 'тайтла', 'тайтлов')}` : 'По этим условиям ничего нет — попробуй ослабить фильтры';
   const apply = document.getElementById('filtersApply');
   if (apply) apply.textContent = n ? `Показать ${n}` : 'Ничего не найдено';
   if (apply) apply.disabled = !n;
 }
-function openCatFilters(){
-  filtersDraft = { types: [...catFilters.types], genres: [...catFilters.genres], year: catFilters.year, sort: catFilters.sort };
+function openFilters(target){
+  filterTarget = target === 'wishlist' ? 'wishlist' : 'catalog';
+  const wish = filterTarget === 'wishlist';
+  const src = wish
+    ? { types: wishFilters.types, genres: wishFilters.genres, year: wishFilters.year, sort: wishSort }
+    : { types: catFilters.types, genres: catFilters.genres, year: catFilters.year, sort: catFilters.sort };
+  filtersDraft = { types: [...src.types], genres: [...src.genres], year: src.year, sort: src.sort };
+  const titleEl = document.querySelector('#filtersScreen .ov-title');
+  if (titleEl) titleEl.textContent = wish ? 'Фильтры чек-листа' : 'Фильтры';
   renderFilters();
   openOverlay('filtersScreen');
 }
+function openCatFilters(){ openFilters('catalog'); }
 const filtersBody = document.getElementById('filtersBody');
 if (filtersBody) filtersBody.addEventListener('click', e => {
   const clear = e.target.closest('[data-clear]');
@@ -7623,14 +7706,35 @@ if (filtersBody) filtersBody.addEventListener('click', e => {
   renderFilters();
 });
 document.getElementById('openCatFilters').onclick = () => { haptic('selection'); openCatFilters(); };
+document.getElementById('openWishFilters').onclick = () => { haptic('selection'); openFilters('wishlist'); };
 document.getElementById('closeFilters').onclick = () => closeOverlay('filtersScreen');
 document.getElementById('filtersReset').onclick = () => {
   haptic('selection');
+  if (filterTarget === 'wishlist'){
+    filtersDraft = { types: [], genres: [], year: 'any', sort: wishSort };
+    renderFilters();
+    return;
+  }
   filtersDraft = { ...CAT_FILTER_DEFAULTS, types: [], genres: [] };
   renderFilters();
 };
 document.getElementById('filtersApply').onclick = () => {
   if (!filtersDraft) return;
+  if (filterTarget === 'wishlist'){
+    wishFilters = { types: [...filtersDraft.types], genres: [...filtersDraft.genres], year: filtersDraft.year };
+    saveWishFilters();
+    if (filtersDraft.sort && filtersDraft.sort !== wishSort){
+      wishSort = filtersDraft.sort;
+      try{ localStorage.setItem('smotra_wish_sort', wishSort); }catch(e){}
+      syncSetting('wishSort', wishSort);
+    }
+    haptic('impact','light');
+    closeOverlay('filtersScreen');
+    renderWishHead();
+    renderWishlist();
+    showToast(wishFilterCount() ? `Фильтры чек-листа: ${wishFilterCount()}` : 'Фильтры чек-листа сброшены');
+    return;
+  }
   catFilters = { types: [...filtersDraft.types], genres: [...filtersDraft.genres], year: filtersDraft.year, sort: filtersDraft.sort };
   saveCatFilters();
   catalogRenderLimit = 60;
@@ -7945,21 +8049,92 @@ function renderCatalog(){
 }
 
 /* ============ WISHLIST ============ */
-const WISH_SORTS = [ {key:'added', label:'По добавлению'}, {key:'rating', label:'По рейтингу'}, {key:'type', label:'По типу'} ];
+const WISH_SORTS = [
+  { key:'added',  label:'По добавлению' },
+  { key:'rating', label:'По рейтингу' },
+  { key:'title',  label:'По названию' },
+  { key:'year',   label:'По году' },
+  { key:'type',   label:'По типу' },
+];
 let wishSort = (() => { try{ return localStorage.getItem('smotra_wish_sort') || 'added'; }catch(e){ return 'added'; } })();
 if (!WISH_SORTS.some(x => x.key === wishSort)) wishSort = 'added';
-function initWishSortChips(){
-  const host = document.getElementById('wishSort');
-  if (!host) return;
-  host.innerHTML = WISH_SORTS.map(s => `<div class="chip ${s.key===wishSort?'active':''}" data-s="${s.key}">${s.label}</div>`).join('');
+/* Фильтры чек-листа: тип, жанры и год. Живут отдельно от фильтров каталога —
+   «Хочу чекнуть» это свой список, и условия у него свои. */
+const WISH_FILTER_KEY = 'smotra_wish_filters';
+let wishFilters = (() => {
+  try{
+    const raw = JSON.parse(localStorage.getItem(WISH_FILTER_KEY) || 'null');
+    if (!raw) return { types: [], genres: [], year: 'any' };
+    return { types: Array.isArray(raw.types) ? raw.types : [], genres: Array.isArray(raw.genres) ? raw.genres : [], year: raw.year || 'any' };
+  }catch(e){ return { types: [], genres: [], year: 'any' }; }
+})();
+function wishFilterCount(f){
+  const w = f || wishFilters;
+  return w.types.length + w.genres.length + (w.year !== 'any' ? 1 : 0);
 }
-initWishSortChips();
+function saveWishFilters(){
+  try{ localStorage.setItem(WISH_FILTER_KEY, JSON.stringify(wishFilters)); }catch(e){}
+  syncSetting('wishFilters', wishFilters);      // фильтры чек-листа — тоже настройка
+}
+/* Жанры, которые реально есть в чек-листе: предлагать в окне то, чего в списке
+   нет, — значит обещать пустой результат. */
+function wishlistGenres(){
+  const set = new Set();
+  state.wishlist.map(keyToMovie).filter(Boolean).forEach(m => (m.genres || []).forEach(g => set.add(g)));
+  return [...set].sort((a, b) => a.localeCompare(b, 'ru'));
+}
+/* Одна функция отбора для списка, рулетки и колеса: что видно на экране, из того
+   и выбираем. Поэтому фильтры, поиск и сортировка действуют везде одинаково. */
+function wishFilterMovies(f, query, sort){
+  const w = f || wishFilters;
+  const q = ((query === undefined ? wishQuery : query) || '').toLowerCase();
+  let out = state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean).filter(m =>
+    (!w.types.length || movieTypes(m).some(t => w.types.includes(t))) &&
+    (!w.genres.length || (m.genres || []).some(g => w.genres.includes(g))) &&
+    catYearMatch(m, w.year) &&
+    (!q || (m.title || '').toLowerCase().includes(q) || (m.originalTitle || '').toLowerCase().includes(q))
+  );
+  const s = sort || wishSort;
+  if (s === 'rating') out = out.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  else if (s === 'title') out = out.slice().sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ru'));
+  else if (s === 'year') out = out.slice().sort((a, b) => (parseInt(b.year, 10) || 0) - (parseInt(a.year, 10) || 0));
+  else if (s === 'type') out = out.slice().sort((a, b) => String(a.type || '').localeCompare(String(b.type || '')));
+  return out;
+}
+function wishVisibleMovies(){ return wishFilterMovies(wishFilters); }
+/* Чипы чек-листа: сверху — активные условия с крестиком, дальше — сортировка. */
+function renderWishHead(){
+  const host = document.getElementById('wishSort');
+  if (host){
+    const chips = [];
+    wishFilters.types.forEach(t => chips.push(`<div class="chip removable" data-drop="type" data-v="${esc(t)}">${esc((TYPE_TABS.find(x => x.key === t) || {}).label || t)}<span class="chip-x">✕</span></div>`));
+    wishFilters.genres.forEach(g => chips.push(`<div class="chip removable" data-drop="genre" data-v="${esc(g)}">${esc(g)}<span class="chip-x">✕</span></div>`));
+    if (wishFilters.year !== 'any') chips.push(`<div class="chip removable" data-drop="year">${esc((CAT_YEARS.find(y => y.key === wishFilters.year) || {}).label || wishFilters.year)}<span class="chip-x">✕</span></div>`);
+    host.innerHTML = chips.join('') + WISH_SORTS.map(s => `<div class="chip ${s.key === wishSort ? 'active' : ''}" data-s="${s.key}">${s.label}</div>`).join('');
+  }
+  const btn = document.getElementById('openWishFilters');
+  const badge = document.getElementById('wishFilterBadge');
+  const n = wishFilterCount();
+  if (btn) btn.classList.toggle('on', n > 0);
+  if (badge){ badge.textContent = n; badge.style.display = n ? 'flex' : 'none'; }
+}
+renderWishHead();
 document.getElementById('wishSort').addEventListener('click', e=>{
-  const c = e.target.closest('.chip'); if (!c) return;
+  const drop = e.target.closest('.chip[data-drop]');
+  if (drop){
+    const kind = drop.dataset.drop, v = drop.dataset.v;
+    if (kind === 'type') wishFilters.types = wishFilters.types.filter(t => t !== v);
+    else if (kind === 'genre') wishFilters.genres = wishFilters.genres.filter(g => g !== v);
+    else if (kind === 'year') wishFilters.year = 'any';
+    haptic('selection');
+    saveWishFilters(); renderWishHead(); renderWishlist();
+    return;
+  }
+  const c = e.target.closest('.chip'); if (!c || !c.dataset.s) return;
   wishSort = c.dataset.s; haptic('selection');
   try{ localStorage.setItem('smotra_wish_sort', wishSort); }catch(e){}
   syncSetting('wishSort', wishSort);
-  [...document.querySelectorAll('#wishSort .chip')].forEach(x=>x.classList.toggle('active', x===c));
+  [...document.querySelectorAll('#wishSort .chip[data-s]')].forEach(x=>x.classList.toggle('active', x.dataset.s === wishSort));
   renderWishlist();
 });
 let wishQuery = '';
@@ -7969,17 +8144,15 @@ function renderWishlist(){
     renderWishlist._busy = true;
     fillMissingTitles(state.wishlist).then(changed => { renderWishlist._busy = false; if (changed) renderWishlist(); });
   }
-  let items = state.wishlist.slice().reverse().map(keyToMovie).filter(Boolean);
-  if (wishSort === 'rating') items = [...items].sort((a,b) => b.rating - a.rating);
-  else if (wishSort === 'type') items = [...items].sort((a,b) => a.type.localeCompare(b.type));
+  const items = wishFilterMovies(wishFilters);
   const el = document.getElementById('wishList');
-  if (wishQuery){
-    const q = wishQuery.toLowerCase();
-    items = items.filter(m => (m.title || '').toLowerCase().includes(q) || (m.originalTitle || '').toLowerCase().includes(q));
-  }
+  renderWishHead();
   if (!items.length){
     el.className = '';
-    el.innerHTML = `<div class="empty-note">${wishQuery ? 'Ничего не нашлось — попробуй другое название' : 'Свайпни карточку наверх — она попадёт сюда'}</div>`;
+    const note = wishFilterCount()
+      ? 'Под эти условия ничего не подошло — сними фильтры над списком'
+      : (wishQuery ? 'Ничего не нашлось — попробуй другое название' : 'Свайпни карточку наверх — она попадёт сюда');
+    el.innerHTML = `<div class="empty-note">${note}</div>`;
     return;
   }
   if (view === 'grid'){
