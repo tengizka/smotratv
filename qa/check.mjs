@@ -376,6 +376,167 @@ ev('switchTab("home");');
 ok(errors.length === 0, 'ошибок консоли за весь прогон: ' + errors.length + (errors.length ? ' — ' + errors.slice(0, 2).join(' | ') : ''));
 win.close();
 
+
+/* ============================ [12] Десктоп ============================ */
+section('[12] Десктоп: Telegram Desktop, мышь, данные профиля');
+/* --- вёрстка: колонка по центру, курсор и наведение --- */
+ok(/--col: 100%;/.test(cssClean), 'ширина колонки интерфейса вынесена в переменную');
+ok(/@media \(min-width: 760px\)\{[\s\S]{0,400}?--col: 700px/.test(cssClean), 'на широком экране колонка ограничена');
+ok(/\.topbar, \.lvl-strip, \.screens\{ width:100%; max-width:var\(--col\); margin-left:auto; margin-right:auto; \}/.test(cssClean.replace(/\s+/g, ' ')), 'шапка, уровень и лента экранов в одной колонке');
+ok(/\.sheet, \.overlay-screen, #tutorial, #onboarding, #splash\{ max-width:var\(--col\); margin-left:auto; margin-right:auto; \}/.test(cssClean.replace(/\s+/g, ' ')), 'полноэкранные слои тоже сужены и центрированы');
+ok(/\.stack\{ width:100%; max-width:430px; margin:0 auto; max-height:min\(62vh, 640px\); \}/.test(cssClean.replace(/\s+/g, ' ')), 'карточка на десктопе держит пропорции постера');
+ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(150px, 1fr\)\); \}/.test(cssClean.replace(/\s+/g, ' ')), 'обложки на широком экране идут в несколько столбцов');
+ok(/@media \(hover:hover\) and \(pointer:fine\)\{/.test(cssClean), 'для мыши отдельный блок стилей');
+ok(/cursor:pointer; \}\n[\s\S]{0,300}?\.icon-btn:hover/.test(cssClean), 'у нажимаемого появился курсор-рука и подсветка');
+/* --- данные: вход в профиль, оценки из базы, повторная загрузка --- */
+ok(/function enterProfile\(\)\{/.test(js), 'есть отдельный вход в профиль');
+ok(/if \(id === 'profile'\) enterProfile\(\);/.test(js), 'профиль считает статистику сразу при открытии вкладки');
+ok(/function enterProfile\(\)\{[\s\S]{0,600}?renderMyStats\(\);/.test(js), 'в нём рисуется блок статистики');
+ok(/function enterProfile\(\)\{[\s\S]{0,900}?renderWeekActivity\(\);/.test(js), 'и «активность за неделю»');
+ok(/async function loadMyRatings\(force\)\{/.test(js) && /sb\.from\('reviews'\)\.select\('movie_id,total'\)\.eq\('telegram_id', TG_ID\)/.test(js), 'оценки тянутся из базы');
+ok(/state\.reviews = Math\.max\(state\.reviews \|\| 0, map\.size\)/.test(js), 'счётчик оценок берётся из базы, а не только из памяти устройства');
+ok(/function enterProfile\(\)\{[\s\S]{0,1200}?loadMyRatings\(\)\.then/.test(js), 'при входе в профиль оценки догружаются и цифра обновляется');
+ok(/const stateLoadFailed = \[\];/.test(js) && /stateLoadFailed\.push\('swipes'\)/.test(js) && /stateLoadFailed\.push\('badges'\)/.test(js), 'запоминаем, какие таблицы не ответили');
+/* Главная причина «часть данных не подгружается»: списки свайпов и чек-листа
+   присваивались ДО ответа базы, то есть всегда пустыми. */
+ok(/stateJobs\.push\(\(async \(\) => \{[\s\S]{0,1800}?state\.watched = uniq\(\(sw\|\|\[\]\)\.filter\(r=>r\.action==='watched'\)/.test(js), 'списки свайпов раскладываются ПОСЛЕ ответа базы');
+ok(/state\.watched = \[\]; state\.skipped = \[\]; state\.wishlist = \[\];   \/\/ заполнятся из базы в задаче выше/.test(js), 'до ответа списки только обнуляются, а не затираются пустышкой');
+ok(/function scheduleStateRetry\(\)\{/.test(js) && /const wait = \[2000, 5000, 12000\]\[stateRetryCount\];/.test(js), 'неудачная загрузка повторяется сама');
+ok(/window\.addEventListener\('online', \(\) => \{ stateRetryCount = 0; if \(stateLoadFailed\.length\) scheduleStateRetry\(\); \}\)/.test(js), 'и повторяется при появлении связи');
+ok(/function refreshSyncState\(\)\{/.test(js), 'строка «связь с базой» говорит по делу');
+/* --- личность на десктопе --- */
+ok(/function tgUser\(\)\{/.test(js), 'данные о человеке берём помощником');
+ok(/const part = raw\.split\('&'\)\.find\(p => p\.indexOf\('user='\) === 0\);/.test(js), 'разбираем строку initData — на десктопе объекта пользователя может не быть');
+ok(/let TG_ID = getTelegramId\(\);\s*const TG_ID_IS_GUEST = !tgUser\(\)\?\.id;/.test(js), 'гостевой аккаунт помечен как временный');
+ok(/async function onIdentityReady\(\)\{/.test(js) && /TG_ID = u\.id;/.test(js), 'при появлении настоящего пользователя переключаемся на его данные');
+ok(/watchIdentity\(\);\s+\/\/ данные о человеке могут прийти позже/.test(js), 'за появлением данных следим после запуска');
+ok(/function watchIdentity\(\)\{[\s\S]{0,320}?if \(!TG_ID_IS_GUEST\) return;/.test(js), 'гостевой запуск проверяется по кругу несколько секунд');
+ok(/if \(u\?\.id\) return u\.id;/.test(js) && /localStorage\.getItem\('smotra_guest_id'\)/.test(js), 'гостевой ID остаётся последним запасным вариантом');
+/* --- клавиатура --- */
+ok(/document\.addEventListener\('keydown', e => \{/.test(js), 'клавиатура на десктопе поддерживается');
+ok(/const byKey = \{ ArrowRight:\['btnWatched','watched'\], ArrowLeft:\['btnSkip','skip'\], ArrowUp:\['btnWish','wish'\], ArrowDown:\['btnWatching','watching'\] \};/.test(js), 'стрелки листают колоду как кнопки');
+ok(/else if \(e\.key === 'Enter'\)\{\s*openSheet\(deck\[0\]\);/.test(js), 'Enter открывает карточку');
+ok(/if \(e\.key === 'Escape'\)\{\s*if \(sheetOpen\)\{ sheet\.classList\.remove\('open'\); backdrop\.classList\.remove\('open'\); e\.preventDefault\(\); \}/.test(js), 'Esc закрывает верхнее окно');
+ok(/if \(t && \(t\.tagName === 'INPUT' \|\| t\.tagName === 'TEXTAREA' \|\| t\.isContentEditable\)\) return;/.test(js), 'в полях ввода клавиши не перехватываются');
+
+/* --- живой прогон: десктопный Telegram с данными о человеке --- */
+const dErrors = [];
+const dvc = new VirtualConsole();
+dvc.on('jsdomError', e => dErrors.push('jsdomError: ' + (e && e.message)));
+dvc.on('error', (...a) => dErrors.push('console.error: ' + a.join(' ')));
+const DESK_USER = { id: 42424242, first_name: 'Тенгиз', last_name: '', username: 'tengizka' };
+const DESK_ROWS = {
+  swipes: [
+    { movie_id: 5000, action: 'watched' }, { movie_id: 5001, action: 'watched' },
+    { movie_id: 5002, action: 'watched' }, { movie_id: 5003, action: 'skipped' },
+  ],
+  wishlist: [{ movie_id: 5004 }],
+  watching: [{ movie_id: 5005 }],
+  badges: [{ badge_id: 'b1', created_at: '2026-08-01T10:00:00Z' }],
+  episodes_progress: [],
+  reviews: [{ movie_id: 5000, total: 61 }, { movie_id: 5001, total: 44 }, { movie_id: 5002, total: 70 }],
+  friends: [],
+  profiles: [],
+};
+const dSeen = [];
+function deskTable(name){
+  const rows = DESK_ROWS[name] || [];
+  const chain = (result) => {
+    const base = {
+      then: (res) => { if (name === 'swipes' || name === 'wishlist' || name === 'reviews') dSeen.push(name); return res(result); },
+      catch: () => base, finally: (f) => { try { f(); } catch (e) {} return base; },
+    };
+    return new Proxy(base, {
+      get(t, prop){ if (prop in t) return t[prop];
+        return () => (prop === 'single' || prop === 'maybeSingle')
+          ? chain({ data: rows[0] || null, error: null })
+          : chain({ data: rows, error: null, count: rows.length }); },
+    });
+  };
+  return chain({ data: rows, error: null, count: rows.length });
+}
+const dIo = [];
+const dHtml = src.replace(/<script src="[^"]*"><\/script>/g, '').replace(/<link[^>]*fonts\.googleapis[^>]*>/g, '');
+const ddom = new JSDOM(dHtml, {
+  runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://smotra.test/desktop', virtualConsole: dvc,
+  beforeParse(w){
+    /* Десктопный клиент: объекта пользователя нет, есть только строка initData —
+       ровно тот случай, из-за которого приложение уходило в гостевой аккаунт. */
+    const api = {
+      initData: 'query_id=AAA&user=' + encodeURIComponent(JSON.stringify(DESK_USER)) + '&auth_date=1&hash=x',
+      initDataUnsafe: { query_id: 'AAA' },
+      version: '8.0', platform: 'tdesktop', colorScheme: 'dark', themeParams: { bg_color: '#0c0e16', text_color: '#fff' },
+      viewportHeight: 900, viewportStableHeight: 900, isExpanded: true,
+      ready(){}, expand(){}, disableVerticalSwipes(){}, requestFullscreen(){ return Promise.resolve(); },
+      isVersionAtLeast: () => true, onEvent(){}, offEvent(){},
+      setHeaderColor(){}, setBackgroundColor(){}, setBottomBarColor(){}, enableClosingConfirmation(){},
+      HapticFeedback: { impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} },
+      openTelegramLink(){}, openLink(){}, showPopup(){}, close(){}, MainButton: { hide(){}, show(){}, setText(){} },
+    };
+    w.Telegram = { WebApp: api };
+    w.supabase = { createClient: () => ({ from: (n) => deskTable(n) }) };
+    w.fetch = async (url) => ({ ok: true, json: async () => (/genre\/(movie|tv)\/list/.test(String(url))
+      ? { genres: [{ id: 28, name: 'Боевик' }, { id: 35, name: 'Комедия' }] }
+      : { page: 1, total_pages: 1, results: FIX.slice(0, 12), genres: [] }) });
+    w.IntersectionObserver = class {
+      constructor(cb){ this.cb = cb; }
+      observe(el){ dIo.push({ el, cb: this.cb }); }
+      unobserve(){} disconnect(){} takeRecords(){ return []; }
+    };
+    w.__flushIO = () => dIo.splice(0).forEach(({ el, cb }) => { try { cb([{ target: el, isIntersecting: true, intersectionRatio: 1 }], {}); } catch (e) {} });
+  },
+});
+const dwin = ddom.window, ddoc = dwin.document;
+const dev = (code) => dwin.eval(code);
+const dt0 = Date.now();
+while (Date.now() - dt0 < 1400){ dwin.__flushIO(); await sleep(40); }
+ok(dErrors.length === 0, 'десктопный запуск без ошибок' + (dErrors.length ? ': ' + dErrors.slice(0, 2).join(' | ') : ''));
+ok(dev('TG_ID') === DESK_USER.id, 'личность взята из initData: ' + dev('TG_ID'));
+ok(dev('TG_ID_IS_GUEST') === false, 'гостевой аккаунт не включился, хотя объекта пользователя не было');
+ok(dSeen.includes('swipes') && dSeen.includes('wishlist'), 'данные запрошены под настоящим ID');
+ok(dev('state.watched.length') === 3 && dev('state.skipped.length') === 1, 'свайпы подтянулись из базы: ' + dev('state.watched.length') + ' просмотрено');
+ok(dev('state.wishlist.length') === 1 && dev('state.watching.length') === 1, 'чек-лист и «смотрю» тоже');
+ok(dev('state.unlocked.length') === 1, 'ачивки из базы');
+/* Просмотренное больше не должно возвращаться в колоду — раньше список «watched»
+   всегда был пустым, и колода заново показывала уже отсмотренные тайтлы. */
+ok(dev('deck.length') > 0 && dev('deck.every(m => !state.watched.includes(mid(m)) && !state.skipped.includes(mid(m)))'), 'в колоде нет уже просмотренного и пропущенного');
+/* профиль: цифры должны быть на месте сразу после открытия вкладки */
+dev('document.querySelector(\'nav button[data-tab="profile"]\').click();');
+await sleep(120);
+const statsHtml = dev('document.getElementById("myStats").innerHTML');
+ok(statsHtml.length > 200, 'вход в профиль рисует статистику (' + statsHtml.length + ' символов разметки)');
+ok(/просмотрено тобой/.test(statsHtml), 'в статистике есть счётчик просмотра');
+ok(/Любимые жанры/.test(statsHtml), 'и разбор по жанрам');
+ok(dev('document.getElementById("statWatched").textContent') === '3', 'карточка «просмотрено» показывает данные из базы');
+ok(dev('document.getElementById("statSkipped").textContent') === '1', 'карточка «пропущено» тоже');
+ok(dev('state.reviews') === 3, 'оценки посчитаны из базы: ' + dev('state.reviews'));
+ok(/оценок/.test(statsHtml) && /\b3\b/.test(statsHtml), 'плитка оценок показывает 3, а не ноль');
+ok(dev('document.getElementById("userName").textContent') === 'Тенгиз', 'имя из initData подставлено в профиль');
+ok(dev('!!document.getElementById("weekChart").innerHTML') === true, '«активность за неделю» отрисована');
+/* клавиатура: стрелка вправо = «смотрел» */
+dev('switchTab("home");');
+await sleep(60);
+const watchedBefore = dev('state.watched.length');
+dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+await sleep(150);
+ok(dev('state.watched.length') === watchedBefore + 1, 'стрелка вправо отмечает «смотрел» (' + watchedBefore + ' → ' + dev('state.watched.length') + ')');
+dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+await sleep(150);
+ok(dev('state.skipped.length') >= 1, 'стрелка влево отмечает «мимо»');
+dev('openSheet(deck[0]);');
+await sleep(60);
+ok(dev('document.getElementById("sheet").classList.contains("open")'), 'шторка тайтла открыта');
+dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+await sleep(60);
+ok(!dev('document.getElementById("sheet").classList.contains("open")'), 'Esc закрывает шторку');
+dev('openOverlay("settingsScreen");');
+await sleep(40);
+dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+await sleep(40);
+ok(!dev('document.getElementById("settingsScreen").classList.contains("open")'), 'Esc закрывает окно настроек');
+ok(dErrors.length === 0, 'ошибок консоли на десктопном прогоне: ' + dErrors.length + (dErrors.length ? ' — ' + dErrors.slice(0, 2).join(' | ') : ''));
+dwin.close();
+
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
 process.exit(fail ? 1 : 0);

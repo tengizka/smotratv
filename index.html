@@ -43,6 +43,10 @@
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
     --app-h: 100%;
+    /* Ширина колонки интерфейса. На телефоне это вся ширина экрана, на десктопе —
+       ограниченная (см. медиазапрос ниже): иначе строки текста растягиваются на
+       полтора метра, а постеры становятся размером с окно. */
+    --col: 100%;
   }
   /* Изумруд: спокойный зелёный с бирюзой */
   body.theme-emerald{
@@ -1188,6 +1192,48 @@
 
   #toast.show{ transform:translate(-50%,0); }
 
+  /* ===== Десктоп: Telegram Desktop и браузер =====
+     Телефонная вёрстка занимает всю ширину окна, поэтому на большом экране
+     интерфейс разъезжался. Собираем всё в колонку по центру (фон темы остаётся
+     во всю ширину — он декоративный) и добавляем мышиные подсказки. */
+  @media (min-width: 760px){
+    :root{ --col: 700px; }
+    /* Шапка, название уровня, лента экранов и панель вкладок — в одной колонке */
+    .topbar, .lvl-strip, .screens{ width:100%; max-width:var(--col); margin-left:auto; margin-right:auto; }
+    nav{ width:100%; max-width:var(--col); margin:0 auto; border-radius:22px 22px 0 0;
+      border-left:1px solid var(--border); border-right:1px solid var(--border); }
+    /* Полноэкранные слои тоже сужаем и центрируем: на телефоне это весь экран,
+       на десктопе — та же колонка, поэтому окна не «размазываются». */
+    .sheet, .overlay-screen, #tutorial, #onboarding, #splash{ max-width:var(--col); margin-left:auto; margin-right:auto; }
+    .undo-pill, #toast{ max-width:calc(var(--col) - 24px); }
+    /* Колода: карточка держит пропорции постера, а не растягивается на всю высоту */
+    .stack{ width:100%; max-width:430px; margin:0 auto; max-height:min(62vh, 640px); }
+    /* Обложки в разделах: на широком экране их помещается четыре, а не две */
+    .grid2{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); }
+    .grid2 .poster-card, .grid2 .row-card{ contain-intrinsic-size:230px 345px; }
+    /* Текст длинных подписей не растягиваем на всю колонку */
+    .tut-caption .tc-desc, .ov-body p, .faq-a, .set-sub{ max-width:56ch; }
+  }
+  /* Мышь: у всего нажимаемого должен быть курсор-рука и подсветка при наведении.
+     Без этого на десктопе непонятно, что вообще нажимается. */
+  @media (hover:hover) and (pointer:fine){
+    .card, .poster-card, .row-card, .chip, .ms-tile, .ms-hero-main, .ms-hero-side > div,
+    .rank-row, .badge, .menu-row, .set-row, .rl-card, .row-card, .search-btn, .icon-btn,
+    .act-item button, .surprise-btn, .view-toggle, .view-toggle button, nav button,
+    .theme-swatch, .ob-chip, .member-row{ cursor:pointer; }
+    .icon-btn:hover, .search-btn:hover{ background:var(--surface-2); color:var(--text); border-color:var(--accent-border); }
+    .chip:hover{ border-color:var(--accent-border); color:var(--text); }
+    .ms-tile:hover, .ms-hero-main:hover, .rank-row:hover, .badge:hover, .menu-row:hover, .set-row:hover,
+    .poster-card:hover, .row-card:hover, .rl-card:hover, .theme-swatch:hover{ background:var(--surface-2); border-color:var(--accent-border); }
+    .poster-card:hover, .row-card:hover{ transform:translateY(-2px); }
+    nav button:hover{ color:var(--text); }
+    .act-item button:hover{ transform:translateY(-2px); }
+    .set-row:hover{ background:var(--surface-2); }
+    /* На десктопе нет «нажатия пальцем» — оставляем подсветку вместо scale */
+    .poster-card:active, .ms-tile:active, .icon-btn:active{ transform:none; }
+    .poster-card:active, .ms-tile:active{ background:var(--surface-2); }
+  }
+
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
      Telegram и выглядели как экраны приложения, а не сайта. */
@@ -1730,6 +1776,24 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.25 — десктопная версия Telegram и починка загрузки данных:
+         • ГЛАВНОЕ: списки просмотренного, пропущенного и «хочу чекнуть» заполнялись
+           ДО ответа базы — то есть всегда оставались пустыми. На телефоне это
+           скрывала память устройства, а на новом устройстве видно сразу: статистика
+           по нулям, а колода заново предлагает уже отсмотренные тайтлы. Теперь
+           списки раскладываются после ответа базы;
+         • профиль открывается сразу с цифрами — статистика и «Активность за неделю»
+           считаются при входе в раздел, а не после первого свайпа;
+         • оценки подтягиваются из базы: на новом устройстве счётчик больше не ноль;
+         • если часть таблиц не ответила, данные догружаются сами (через 2, 5 и 12
+           секунд) и при появлении связи — раньше экран так и оставался полупустым;
+         • личность берём ещё и из строки initData: на десктопе бывает, что объект
+           пользователя приходит позже или не приходит вовсе — раньше приложение
+           молча уходило в гостевой аккаунт и не тянуло данные человека;
+         • интерфейс собран в колонку по центру: строки больше не растягиваются на
+           всю ширину монитора, обложки помещаются в четыре столбца;
+         • мышь: курсор-рука и подсветка у всего нажимаемого, стрелки листают колоду,
+           Enter открывает карточку, Esc закрывает верхнее окно.
    0.24 — приложение просит полноэкранный режим (Bot API 8.0) и живёт во весь экран:
          учитывает обе безопасные зоны Telegram (системную и контентную), поэтому
          ничто не лезет под кнопку «Закрыть», вырез и «домашнюю» полоску; в
@@ -1885,7 +1949,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.24';
+const APP_VERSION = '0.25';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2044,20 +2108,28 @@ if (tg) {
   window.addEventListener('touchstart', fsRetry, true);
   applySafeArea();
   syncTelegramColors();
-  const u = tg.initDataUnsafe?.user;
-  if (u) {
-    document.getElementById('userName').textContent = [u.first_name, u.last_name].filter(Boolean).join(' ');
-    const av = document.getElementById('avatarInit');
-    av.textContent = (u.first_name || 'Г')[0].toUpperCase();
+  applyMyUser();
+}
+/* Имя и аватар из данных Telegram. Вызываем и при запуске, и когда клиент
+   отдаст данные позже (на десктопе это бывает не сразу). */
+function applyMyUser(){
+  const u = tgUser();
+  if (!u) return false;
+  const nameEl = document.getElementById('userName');
+  if (nameEl) nameEl.textContent = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'Гость';
+  const av = document.getElementById('avatarInit');
+  if (av){
+    av.textContent = (u.first_name || u.username || 'Г')[0].toUpperCase();
     const setAv = document.getElementById('setAvatar');
     if (setAv){ setAv.textContent = av.textContent; if (u.photo_url) setAv.style.backgroundImage = `url('${u.photo_url}')`; }
     const setName = document.getElementById('setName');
-    if (setName) setName.textContent = document.getElementById('userName').textContent;
-    if (u.photo_url) {
+    if (setName && nameEl) setName.textContent = nameEl.textContent;
+    if (u.photo_url){
       av.style.backgroundImage = `url('${u.photo_url}')`;
       av.textContent = '';
     }
   }
+  return true;
 }
 // Вне Telegram (браузер, десктоп) держим ту же стабильную высоту приложения.
 window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial(); if (Radial.active) Radial.fit(); });
@@ -2086,14 +2158,67 @@ const SUPABASE_URL = 'https://loebspydbrxffotrskcb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZWJzcHlkYnJ4ZmZvdHJza2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MDU5NTQsImV4cCI6MjEwNDM4MTk1NH0.ImuxE2aZJvuNP_bt-7_SUwF-gV1ROB6_OaDZ1-dpgzY';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+/* Данные о человеке. `initDataUnsafe.user` есть не всегда: на десктопе, когда
+   приложение открывают по ссылке или из инлайн-кнопки, клиент отдаёт только
+   строку initData — а в ней user лежит закодированным JSON. Раньше мы в этом
+   случае молча уходили в гостевой аккаунт: записи человека лежали в базе, но
+   приложение их не запрашивало (отсюда «не вся инфа подгружается»). */
+function tgUser(){
+  const direct = tg?.initDataUnsafe?.user;
+  if (direct?.id) return direct;
+  try{
+    const raw = tg?.initData;
+    if (typeof raw === 'string' && raw){
+      const part = raw.split('&').find(p => p.indexOf('user=') === 0);
+      if (part){
+        const u = JSON.parse(decodeURIComponent(part.slice(5)));
+        if (u && u.id) return u;
+      }
+    }
+  }catch(e){}
+  return direct || null;
+}
 function getTelegramId(){
-  const u = tg?.initDataUnsafe?.user;
+  const u = tgUser();
   if (u?.id) return u.id;
   let guest = localStorage.getItem('smotra_guest_id');
   if (!guest){ guest = String(900000000 + Math.floor(Math.random()*99999999)); localStorage.setItem('smotra_guest_id', guest); }
   return Number(guest);
 }
-const TG_ID = getTelegramId();
+/* Может оказаться, что в момент запуска данных ещё не было (десктоп отдаёт их
+   чуть позже) — тогда гостевая запись временная, и при появлении настоящего
+   пользователя мы переключаемся на его аккаунт. */
+let TG_ID = getTelegramId();
+const TG_ID_IS_GUEST = !tgUser()?.id;
+
+/* Десктоп иногда отдаёт данные о человеке не в момент запуска, а через секунду-две
+   после него. Если мы из-за этого успели уйти в гостевой аккаунт, при появлении
+   настоящего пользователя переключаемся на него и заново тянем его данные —
+   иначе человек видит пустую статистику, хотя всё лежит в базе. */
+async function onIdentityReady(){
+  const u = tgUser();
+  if (!u?.id || u.id === TG_ID) return;
+  TG_ID = u.id;
+  try{ localStorage.removeItem('smotra_guest_id'); }catch(e){}
+  state.watched = []; state.skipped = []; state.wishlist = []; state.watching = [];
+  state.unlocked = []; state.badgeDates = {}; state.episodes = {}; state.reviews = 0;
+  ratedIds = new Set(); myRatingsCache = null; rankLoaded = false; profileCache.clear();
+  stateLoadFailed.length = 0;
+  applyMyUser();
+  await Promise.all([loadState(), loadMyRatings(true)]);
+  persistState(); updateStats(); renderBadges(); renderRank(); renderStack();
+  if (screenIsVisible('profile')) enterProfile();
+  upsertProfile();
+}
+function watchIdentity(){
+  if (!TG_ID_IS_GUEST) return;
+  let tries = 0;
+  const tick = () => {
+    if (tgUser()?.id){ onIdentityReady(); return; }
+    if (++tries < 8) setTimeout(tick, 1000);
+  };
+  setTimeout(tick, 1000);
+}
 
 /* supabase-js не бросает исключение — он возвращает {data, error}. Раньше проверка была
    только в паре мест, и неудачная запись выглядела как успешная. Теперь один помощник. */
@@ -2159,6 +2284,7 @@ async function dbSaveReview(movieId, big, small, text){
     // приложение рапортовало «опубликовано», даже когда запись отклонялась.
     const { error } = await sb.from('reviews').upsert({ telegram_id: TG_ID, movie_id: movieId, big, small, total, text: text || '', updated_at: new Date().toISOString() }, { onConflict: 'telegram_id,movie_id' });
     if (error){ console.error('[supabase] reviews upsert', error); return false; }
+    if (myRatingsCache) myRatingsCache.set(Number(movieId), total);
     bumpReviewCount(movieId);   // счётчик оценок для ачивок
     return true;
   }catch(e){ console.error(e); return false; }
@@ -2185,8 +2311,8 @@ function parseJsonField(v){
 
 /* ============ ДРУЗЬЯ И ПРОФИЛИ ============ */
 async function upsertProfile(){
-  const u = tg?.initDataUnsafe?.user;
-  if (!u) return;
+  const u = tgUser();
+  if (!u || !u.id) return;
   try{
     sbFail(await sb.from('profiles').upsert({
       telegram_id: TG_ID,
@@ -2361,7 +2487,30 @@ function computeMatch(mine, theirs, myRatings, theirRatings){
     compared,
   };
 }
+/* Оценки лежат в базе, а в памяти устройства их может ещё не быть (свежий
+   десктоп, новый телефон) — из-за этого счётчик оценок показывал ноль, а список
+   «Мои оценки» открывался пустым. Тянем один раз и держим в памяти. */
+let myRatingsCache = null;
+async function loadMyRatings(force){
+  if (myRatingsCache && !force) return myRatingsCache;
+  try{
+    const { data, error } = await sb.from('reviews').select('movie_id,total').eq('telegram_id', TG_ID);
+    if (error) throw error;
+    const map = new Map();
+    (data || []).forEach(r => map.set(Number(r.movie_id), Number(r.total) || 0));
+    myRatingsCache = map;
+    if (map.size){
+      state.reviews = Math.max(state.reviews || 0, map.size);
+      map.forEach((_, id) => ratedIds.add(id));
+      try{ localStorage.setItem(REVIEWS_COUNT_KEY, String(state.reviews)); }catch(e){}
+      try{ localStorage.setItem(REVIEWS_IDS_KEY, JSON.stringify([...ratedIds])); }catch(e){}
+    }
+  }catch(e){ /* связи нет — показываем то, что уже знаем */ }
+  return myRatingsCache;
+}
 async function myRatingMap(){
+  const cached = await loadMyRatings();
+  if (cached) return cached;
   const map = new Map();
   try{
     const { data } = await sb.from('reviews').select('movie_id,total').eq('telegram_id', TG_ID);
@@ -2686,22 +2835,30 @@ async function loadState(){
      очереди, и открытие приложения растягивалось на лишние секунды. */
   let sw = [], wl = [];
   const stateJobs = [];
+  stateLoadFailed.length = 0;
   stateJobs.push((async () => {
     try{
       const [a, b] = await Promise.all([
         sb.from('swipes').select('movie_id,action').eq('telegram_id', TG_ID),
         sb.from('wishlist').select('movie_id').eq('telegram_id', TG_ID),
       ]);
-      if (a.error) console.error('[supabase] swipes', a.error); else sw = a.data || [];
-      if (b.error) console.error('[supabase] wishlist', b.error); else wl = b.data || [];
-    }catch(e){ console.error('[supabase] state load failed', e); }
+      if (a.error){ console.error('[supabase] swipes', a.error); stateLoadFailed.push('swipes'); } else sw = a.data || [];
+      if (b.error){ console.error('[supabase] wishlist', b.error); stateLoadFailed.push('wishlist'); } else wl = b.data || [];
+      /* Раскладываем ответ в состояние ЗДЕСЬ — после await. Раньше эти три строки
+         стояли выше задачи и выполнялись до прихода ответа: списки каждый раз
+         обнулялись пустыми значениями, «просмотрено» и «мимо» показывали ноль,
+         а колода заново предлагала уже просмотренное. Всё это было незаметно на
+         телефоне, где списки подтягивались из памяти устройства, и вылезало на
+         новом устройстве (десктоп, новый телефон). */
+      state.watched = uniq((sw||[]).filter(r=>r.action==='watched').map(r=>normalizeStoredKey(r.movie_id)));
+      state.skipped = uniq((sw||[]).filter(r=>r.action==='skipped').map(r=>normalizeStoredKey(r.movie_id)));
+      state.wishlist = uniq((wl||[]).map(r=>normalizeStoredKey(r.movie_id)));
+    }catch(e){ console.error('[supabase] state load failed', e); stateLoadFailed.push('связь'); }
   })());
   // Set — потому что до 0.7 один и тот же фильм мог лежать в базе и как «фильм»,
   // и как «мультфильм»: нормализация сводит их в один ключ, а дубль ключа ломает счётчики.
   const uniq = arr => [...new Set(arr)];
-  state.watched = uniq((sw||[]).filter(r=>r.action==='watched').map(r=>normalizeStoredKey(r.movie_id)));
-  state.skipped = uniq((sw||[]).filter(r=>r.action==='skipped').map(r=>normalizeStoredKey(r.movie_id)));
-  state.wishlist = uniq((wl||[]).map(r=>normalizeStoredKey(r.movie_id)));
+  state.watched = []; state.skipped = []; state.wishlist = [];   // заполнятся из базы в задаче выше
   state.unlocked = [];
   state.badgeDates = {};
   stateJobs.push((async () => {
@@ -2714,8 +2871,8 @@ async function loadState(){
     if (!sbFail(res, 'badges select')){
       state.unlocked = (res.data||[]).map(r=>r.badge_id);
       (res.data||[]).forEach(r => { if (r.created_at) state.badgeDates[r.badge_id] = r.created_at; });
-    }
-  }catch(e){ console.error(e); }
+    } else stateLoadFailed.push('badges');
+  }catch(e){ console.error(e); stateLoadFailed.push('badges'); }
   })());
   state.episodes = {};
   stateJobs.push((async () => {
@@ -2726,7 +2883,7 @@ async function loadState(){
       res = await sb.from('episodes_progress').select('movie_id,watched_count').eq('telegram_id', TG_ID);
       if (!sbFail(res, 'episodes select (без сезонов)')){
         (res.data||[]).forEach(r => state.episodes[normalizeStoredKey(r.movie_id)] = { seasons: { '1': r.watched_count || 0 } });
-      }
+      } else stateLoadFailed.push('episodes');
     } else {
       (res.data||[]).forEach(r=>{
         let seasons = {};
@@ -2741,10 +2898,48 @@ async function loadState(){
       const { data: wa, error } = await sb.from('watching').select('movie_id').eq('telegram_id', TG_ID);
       if (error) throw error;
       state.watching = [...new Set((wa||[]).map(r=>normalizeStoredKey(r.movie_id)))];
-    }catch(e){ /* таблицы watching может ещё не быть */ }
+    }catch(e){ /* таблицы watching может ещё не быть */ stateLoadFailed.push('watching'); }
   })());
   await Promise.all(stateJobs);
   mergeLocalAndRemote();
+  if (stateLoadFailed.length){
+    // Что-то из таблиц не ответило. Не оставляем экраны полупустыми: тихо
+    // догружаем через пару секунд, потом ещё раз — база обычно отвечает со второго.
+    scheduleStateRetry();
+  } else {
+    stateRetryCount = 0;
+  }
+  refreshSyncState();
+}
+/* Какие части состояния не догрузились — из этого собирается строка в настройках
+   («Связь с базой») и повторная попытка. */
+const stateLoadFailed = [];
+let stateRetryCount = 0, stateRetryTimer = null;
+function scheduleStateRetry(){
+  if (stateRetryTimer) return;
+  const wait = [2000, 5000, 12000][stateRetryCount];
+  if (!wait) return;
+  stateRetryTimer = setTimeout(async () => {
+    stateRetryTimer = null; stateRetryCount++;
+    await loadState();
+    await loadMyRatings(true);
+    updateStats();
+    refreshVisibleScreens();
+    if (screenIsVisible('profile')) enterProfile();
+    refreshSyncState();
+  }, wait);
+}
+window.addEventListener('online', () => { stateRetryCount = 0; if (stateLoadFailed.length) scheduleStateRetry(); });
+/* Строка «Связь с базой» в настройках: говорим по делу, без вины клиента. */
+function refreshSyncState(){
+  let el = null;
+  try{ el = document.getElementById('setSyncState'); }catch(e){}
+  if (!el) return;
+  if (stateLoadFailed.length){
+    el.textContent = stateRetryCount < 3
+      ? 'База не ответила по части данных — догружаю ещё раз'
+      : 'Часть данных не подтянулась: нажми «Отправить записи заново»';
+  }
 }
 /* База и телефон могли разойтись: пока связи не было, свайпы легли только в
    память телефона. Объединяем списки (ничего не теряем) и досылаем в базу то,
@@ -5578,6 +5773,46 @@ document.getElementById('btnSkip').onclick = function(){ pulseBtn(this); const c
 document.getElementById('btnWish').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'wish'); };
 document.getElementById('btnWatching').onclick = function(){ pulseBtn(this); const c = stackEl.querySelector('.card:last-child'); if (c && deck[0]) resolveSwipe(c, deck[0], 'watching'); };
 
+/* ===== КЛАВИАТУРА (десктоп) =====
+   На большом экране карточки удобнее листать клавишами: стрелки делают то же, что
+   четыре кнопки под колодой, Enter открывает шторку тайтла, Escape закрывает
+   верхний слой. В полях ввода и при открытых окнах клавиши не перехватываем, чтобы
+   ничего не сломать. На телефоне это не мешает: там клавиатуры нет. */
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const sheetOpen = sheet.classList.contains('open');
+  const openOverlays = [...document.querySelectorAll('.overlay-screen.open')];
+  if (e.key === 'Escape'){
+    if (sheetOpen){ sheet.classList.remove('open'); backdrop.classList.remove('open'); e.preventDefault(); }
+    else if (openOverlays.length){
+      // закрываем самый верхний слой: темы/FAQ из настроек закрываются первыми
+      const top = openOverlays.sort((a,b) => (+b.style.zIndex||0) - (+a.style.zIndex||0))[0];
+      closeOverlay(top);
+      e.preventDefault();
+    }
+    return;
+  }
+  if (sheetOpen || openOverlays.length) return;
+  if (!document.getElementById('home').classList.contains('active')) return;
+  if (document.getElementById('tutorial').classList.contains('show')) return;
+  if (!deck[0]) return;
+  const byKey = { ArrowRight:['btnWatched','watched'], ArrowLeft:['btnSkip','skip'], ArrowUp:['btnWish','wish'], ArrowDown:['btnWatching','watching'] };
+  const hit = byKey[e.key];
+  if (hit){
+    const card = stackEl.querySelector('.card:last-child');
+    if (!card) return;
+    const btn = document.getElementById(hit[0]);
+    if (btn) pulseBtn(btn);
+    resolveSwipe(card, deck[0], hit[1]);
+    e.preventDefault();
+  } else if (e.key === 'Enter'){
+    openSheet(deck[0]);
+    e.preventDefault();
+  }
+});
+
 /* Перерисовываем только то, что реально видно: иначе каждый свайп пересобирал
    весь каталог (60 карточек), чек-лист, «Смотрю» и рейтинг друзей с сетью.
    Остальные экраны помечаем «устаревшими» и обновляем при входе в них. */
@@ -5734,6 +5969,31 @@ function renderLevelCard(){
 }
 /* Статистика в моём профиле: герой-число, плитки и полосы любимых жанров.
    Считается на лету из состояния — ничего не грузим из сети. */
+/* Профиль открывают ради цифр. Раньше блок статистики собирался только при
+   свайпе (обновлении счётчиков), поэтому при заходе в профиль он мог быть
+   пустым — «статистика своего аккаунта не подгружается». Считаем при входе. */
+function enterProfile(){
+  statsDirty = false;
+  renderMyStats();
+  renderLevelCard();
+  renderBadges();
+  renderWeekActivity();
+  if (watchingStale){ watchingStale = false; renderWatching(); }
+  if (rankStale){ rankStale = false; renderRank(); }
+  document.getElementById('statWatched').textContent = state.watched.length;
+  document.getElementById('statSkipped').textContent = state.skipped.length;
+  document.getElementById('statStreak').textContent = currentStreak;
+  renderHomeLevel();
+  /* Оценки могли появиться с другого устройства: подтягиваем из базы и
+     перерисовываем, только если цифра действительно изменилась. */
+  const shown = state.reviews || 0;
+  loadMyRatings().then(() => {
+    if ((state.reviews || 0) !== shown && screenIsVisible('profile')){ renderMyStats(); renderBadges(); }
+  });
+  // Если часть состояния не подтянулась при запуске — пробуем ещё раз прямо сейчас
+  if (stateLoadFailed.length){ stateRetryCount = 0; scheduleStateRetry(); }
+}
+
 function renderMyStats(){
   const el = document.getElementById('myStats');
   if (!el) return;
@@ -5876,7 +6136,10 @@ function renderWatching(){
 }
 
 /* ============ АКТИВНОСТЬ ЗА НЕДЕЛЮ (реальные данные из swipes) ============ */
+let weekLoadedAt = 0;
 async function renderWeekActivity(){
+  if (Date.now() - weekLoadedAt < 20000) return;   // цифра свежая — не дёргаем базу зря
+  weekLoadedAt = Date.now();
   const dayLetters = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   const days = [];
   for (let i = 6; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); d.setHours(0,0,0,0); days.push(d); }
@@ -6945,7 +7208,7 @@ function switchTab(id){
   // Экран мог «протухнуть», пока мы были на другом табе — обновляем при входе.
   if (id === 'catalog' && catalogStale){ catalogStale = false; renderCatalog(); }
   if (id === 'wishlist' && wishlistStale){ wishlistStale = false; renderWishlist(); }
-  if (id === 'profile' && rankStale){ rankStale = false; renderRank(); }
+  if (id === 'profile') enterProfile();
 }
 document.querySelectorAll('nav button').forEach(btn=>{
   btn.addEventListener('click', () => { haptic('selection'); switchTab(btn.dataset.tab); });
@@ -7150,7 +7413,8 @@ document.getElementById('catalog').addEventListener('scroll', async (e) => {
   // Если туториал уже открыт — дорисовываем его с реальными постерами вместо градиентов.
   if (document.getElementById('tutorial').classList.contains('show')) renderTutStep();
 
-  upsertProfile();
+  upsertProfile();          // профиль в базе — имя и аватар для рейтинга друзей
+  watchIdentity();          // данные о человеке могут прийти позже (десктоп)
   const startParam = tg?.initDataUnsafe?.start_param || '';
   if (startParam.startsWith('ref_')){
     const refId = startParam.slice(4);
