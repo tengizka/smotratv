@@ -2767,9 +2767,31 @@ function applyRemoteSettingsInner(remote){
     try{ initSinceLabel(); }catch(e){}
   }
 }
+/* Что на этом устройстве человек реально настроил. Значение по умолчанию
+   отправлять нельзя: свежее устройство перебило бы им выбор, сделанный на
+   другом, — например, вернуло бы синюю тему вместо выбранной янтарной. */
+function savedSettingKeys(){
+  const keys = new Set();
+  try{
+    if (localStorage.getItem('smotra_theme')) keys.add('theme');
+    if (localStorage.getItem('smotra_genres')) keys.add('genres');
+    if (localStorage.getItem('smotra_adult') !== null) keys.add('adult');
+    if (localStorage.getItem('smotra_tutorial_done')) keys.add('tutorial');
+    if (localStorage.getItem(CAT_FILTER_KEY)) keys.add('catFilters');
+    if (localStorage.getItem('smotra_wish_sort')) keys.add('wishSort');
+    ['catalog', 'wishlist', 'watching'].forEach(section => {
+      if (localStorage.getItem('smotra_view_' + section)) keys.add('views');
+    });
+  }catch(e){}
+  return keys;
+}
 function pushAllSettings(){
   const all = currentSyncedSettings();
-  Object.keys(all).forEach(key => { if (all[key] !== undefined && all[key] !== null) syncSetting(key, all[key]); });
+  const saved = savedSettingKeys();
+  Object.keys(all).forEach(key => {
+    if (key !== 'since' && !saved.has(key)) return;    // чужие значения по умолчанию не навязываем
+    if (all[key] !== undefined && all[key] !== null) syncSetting(key, all[key]);
+  });
 }
 /* Все настройки, которые имеют смысл на другом устройстве. */
 function currentSyncedSettings(){

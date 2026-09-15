@@ -1021,6 +1021,9 @@ async function bootDevice(fake, opts){
   const dom = new JSDOM(src.replace(/<script src="[^"]*"><\/script>/g, '').replace(/<link[^>]*fonts\.googleapis[^>]*>/g, ''), {
     runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://smotra.test/sync', virtualConsole: vc,
     beforeParse(w){
+      if (o.storage){
+        Object.keys(o.storage).forEach(k => { try{ w.localStorage.setItem(k, o.storage[k]); }catch(e){} });
+      }
       w.Telegram = { WebApp: { initDataUnsafe: { user: { id: 909090, first_name: 'Тенгиз', username: 'tengizka' } },
         initData: 'user=%7B%22id%22%3A909090%7D', version: '8.0', platform: o.platform || 'android', colorScheme: 'dark',
         themeParams: {}, viewportStableHeight: 900, ready(){}, expand(){}, onEvent(){}, isVersionAtLeast: () => true,
@@ -1046,9 +1049,12 @@ syncDb.rows('badges').push({ telegram_id: SYNC_ID, badge_id: 'b999-выдума�
 const devA = await bootDevice(syncDb, { platform: 'android' });
 ok(devA.errors.length === 0, 'телефон запускается без ошибок' + (devA.errors.length ? ': ' + devA.errors[0] : ''));
 ok(devA.ev('state.unlocked.length') === 1 && devA.ev('state.unlocked[0]') === 'b1', 'чужая строка в badges не считается ачивкой — иначе достижения завышались');
-const cfgKeys = [...new Set(syncDb.cfgRows().map(r => String(r.badge_id).split('=')[0]))];
-ok(['cfg.theme','cfg.genres','cfg.adult','cfg.views','cfg.catFilters','cfg.wishSort','cfg.since'].every(k => cfgKeys.indexOf(k) > -1),
-  'при первом входе настройки уезжают в базу (' + cfgKeys.length + ' ключей)');
+ok(devA.ev('cfgRemoteEmpty') === true && syncDb.cfgValue('theme') === undefined, 'значения по умолчанию в базу не уезжают — чужой выбор ими не перебить');
+ok(syncDb.cfgRows().every(r => String(r.badge_id).startsWith('cfg.since=')), 'при пустой базе уходит только дата «в SMOTRA с»: ' + syncDb.cfgRows().length + ' строк');
+/* устройство, на котором тема и вид каталога уже выбраны, делится ими при первом входе */
+const seedDb = makeFakeDb();
+const devD = await bootDevice(seedDb, { platform: 'android', storage: { smotra_theme: 'emerald', 'smotra_view_catalog': 'list' } });
+await sleep(200);
 /* меняем настройки на телефоне как обычный человек */
 devA.ev('pickTheme("amber"); pickTheme("rose")');   // тот же путь, что по тапу по карточке темы
 devA.doc.getElementById('switchAdult').click();
@@ -1066,6 +1072,9 @@ ok(syncDb.cfgValue('catFilters') && syncDb.cfgValue('catFilters').genres[0] === 
 ok(syncDb.cfgValue('tutorial') === true, 'пройденное обучение синхронизировано');
 /* второе устройство: тот же аккаунт, чистая память */
 const devB = await bootDevice(syncDb, { platform: 'tdesktop' });
+const cfgKeys = [...new Set(syncDb.cfgRows().map(r => String(r.badge_id).split('=')[0]))];
+ok(['cfg.theme','cfg.adult','cfg.views','cfg.catFilters','cfg.wishSort','cfg.since'].every(k => cfgKeys.indexOf(k) > -1),
+  'выбранные настройки уезжают в базу (' + cfgKeys.length + ' ключей)');
 ok(devB.errors.length === 0, 'десктоп запускается без ошибок' + (devB.errors.length ? ': ' + devB.errors[0] : ''));
 ok(devB.ev('themeId()') === 'rose', 'тема с телефона приехала на десктоп: ' + devB.ev('themeId()'));
 ok(devB.ev('localStorage.getItem("smotra_theme")') === 'rose', 'и записалась в память устройства');
@@ -1093,6 +1102,13 @@ ok(syncDb.writes === writesBefore, 'применение чужих настро
 devB.ev('syncSetting("theme", "emerald")');
 await sleep(120);
 ok(devB.ev('cfgPending.has("theme")') === false && syncDb.cfgValue('theme') === 'emerald', 'после успешной отправки пометка снимается, в базе свежее значение');
+ok(devD.ev('themeId()') === 'emerald', 'устройство с выбранной темой видит её и у себя: ' + devD.ev('themeId()'));
+ok(devD.ev('getView("catalog", "grid")') === 'list', 'и выбранный вид каталога');
+ok(seedDb.cfgValue('theme') === 'emerald' && seedDb.cfgValue('views') && seedDb.cfgValue('views').catalog === 'list',
+  'выбранные настройки уезжают в базу при первом входе');
+ok(seedDb.cfgValue('adult') === undefined && seedDb.cfgValue('tutorial') === undefined && seedDb.cfgValue('wishSort') === undefined,
+  'а нетронутые настройки — нет');
+devD.close();
 devA.close();
 devB.close();
 
