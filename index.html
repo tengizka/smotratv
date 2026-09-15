@@ -2222,6 +2222,8 @@
            жёстко), а помеченные флагом adult отбрасываются сразу;
          • вторая, строгая проверка по названию (hentai / porn / хентай / порн)
            ловит непомеченное — лучше убрать спорный тайтл, чем показать его;
+         • вместе с запросом уходит without_keywords: теги hentai, pornography,
+           porn и softcore исключаются ещё на стороне TMDB;
          • тумблер «Показывать 18+» из настроек убран: настройки, включающей
            взрослое, в приложении больше нет;
          • память устройства и кэш подборки просеиваются при загрузке, поэтому
@@ -4715,6 +4717,10 @@ function hasCyrillic(s){ return /[а-яё]/i.test(s || ''); }
    намеренно строгая проверка по названию: лучше убрать спорный тайтл, чем показать
    его человеку. */
 const ADULT_TITLE_RE = /(^|[^a-zа-яё])(hentai|porn|хентай|порн)/i;
+/* Теги TMDB, которыми помечают взрослое: hentai, pornography, porn, softcore.
+   without_keywords соединяется через «или» — тайтл с любым из этих тегов в ответ
+   не попадает, и до приложения он уже не доезжает. */
+const ADULT_KEYWORDS = '198385|445|356759|155477';
 function isAdultItem(item){
   if (!item) return false;
   if (item.adult === true) return true;
@@ -5004,12 +5010,12 @@ function discoverUrls(page){
   // language=ru-RU — TMDB отдаёт русские названия и описания, где они есть. Мусорные тайтлы
   // без перевода/постера мы потом отфильтруем сами (keepRussian). vote_count.gte отсекает
   // совсем безвестные записи, чтобы в ленте было узнаваемое кино.
-  const base = `language=ru-RU&sort_by=popularity.desc&include_adult=false&vote_count.gte=40`;
+  const base = `language=ru-RU&sort_by=popularity.desc&include_adult=false&vote_count.gte=40&without_keywords=${ADULT_KEYWORDS}`;
   return {
     film:    `https://api.themoviedb.org/3/discover/movie?${base}&page=${page}&api_key=${K}`,
     series:  `https://api.themoviedb.org/3/discover/tv?${base}&page=${page}&api_key=${K}`,
-    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false&vote_count.gte=10&page=${page}&api_key=${K}`,
-    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=false&vote_count.gte=20&page=${page}&api_key=${K}`,
+    anime:   `https://api.themoviedb.org/3/discover/tv?language=ru-RU&with_genres=16&with_origin_country=JP&sort_by=popularity.desc&include_adult=false&vote_count.gte=10&without_keywords=${ADULT_KEYWORDS}&page=${page}&api_key=${K}`,
+    cartoon: `https://api.themoviedb.org/3/discover/movie?language=ru-RU&with_genres=16&sort_by=popularity.desc&include_adult=false&vote_count.gte=20&without_keywords=${ADULT_KEYWORDS}&page=${page}&api_key=${K}`,
   };
 }
 /* Каталог из кэша применяем синхронно: от этого зависит первый кадр приложения. */

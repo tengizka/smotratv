@@ -1409,6 +1409,10 @@ section('[22] Ни порно, ни хентая');
 ok(js.indexOf('include_adult=${') === -1 && js.indexOf('include_adult=true') === -1,
   'запросы к TMDB больше не просят взрослое ни при каких настройках');
 ok((js.match(/include_adult=false/g) || []).length >= 4, 'и все четыре подборки просят только обычное');
+ok(js.indexOf("const ADULT_KEYWORDS = '198385|445|356759|155477';") > -1,
+  'в запрос уходят теги взрослого: hentai, pornography, porn, softcore');
+ok((js.match(/without_keywords=\$\{ADULT_KEYWORDS\}/g) || []).length >= 3,
+  'и они приклеены ко всем подборкам, включая аниме и мультфильмы');
 ok(src.indexOf('switchAdult') === -1 && src.indexOf('<div class="set-label">Показывать 18+</div>') === -1,
   'тумблера «Показывать 18+» в настройках нет');
 ok(js.indexOf("getFlag('smotra_adult'") === -1 && js.indexOf("syncSetting('adult'") === -1,
