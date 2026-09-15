@@ -113,18 +113,23 @@ ok(/window\.scrollTo\(0, 0\)/.test(js), 'страница не «скатыва�
 section('[4] Туториал: ничего не вылезает за экран');
 ok(src.indexOf('<div class="tut-stage"') < src.indexOf('<div class="tut-caption"'), 'сцена стоит выше подписи');
 ok(src.indexOf('<div class="tut-caption"') < src.indexOf('<div class="tut-actions"'), 'кнопка «Дальше» — последняя строка, внизу');
-ok(/grid-template-rows:auto minmax\(0,1fr\) minmax\(0,auto\) auto/.test(cssClean), 'сетка: шапка, сцена, подпись, кнопка');
+ok(/grid-template-rows:auto minmax\(0,1fr\) auto auto/.test(cssClean), 'сетка контейнера: шапка, сцена, подпись, кнопка');
 ok(/height:var\(--tut-h, var\(--app-h, 100%\)\)/.test(cssClean), 'слой туториала кроет всё приложение');
 ok(!/#tutorial\{[^}]*height:100dvh/.test(cssClean), 'жёсткой height:100dvh (она роняла низ за экран) больше нет');
 ok(/min\(var\(--safe-top\), 90px\)/.test(cssClean), 'верхний отступ туториала ограничен — inset не съедает пол-экрана');
-ok(/--tut-pad-bottom, 0px/.test(cssClean), 'нижняя невидимая часть экрана уходит в отступ, а не в обрезку контента');
+ok(!/--tut-pad-bottom/.test(cssClean), 'отступа под невидимую часть больше нет — она вне контейнера');
+ok(/\.tut-inner\{ position:absolute; left:0; right:0; top:0; height:var\(--tut-vis, 100%\);/.test(cssClean.replace(/\n\s+/g, ' ')), 'содержимое ограничено высотой ВИДИМОЙ части экрана');
+ok(/\.tut-inner\{ position:absolute; left:0; right:0; top:0; height:var\(--tut-vis, 100%\); box-sizing:border-box; overflow:hidden;/.test(cssClean.replace(/\n\s+/g, ' ')), 'лишнее просто обрезается: кнопка не может оказаться ниже');
 ok(/body\.tut-open nav, body\.tut-open \.lvl-strip|body\.tut-open \.topbar/.test(cssClean), 'во время обучения интерфейс приложения спрятан');
 ok(/classList\.add\('tut-open'\)/.test(js) && /classList\.remove\('tut-open'\)/.test(js), 'класс показывается и снимается вместе с туториалом');
 ok(/function tutPlan\(inner, fixed, capNatural\)/.test(js), 'высоты считает отдельная функция — её можно проверить без браузера');
-ok(/stage\.style\.height = plan\.stageH/.test(js), 'сцена получает ровно остаток места');
-ok(/cap\.style\.maxHeight = Math\.max\(48, Math\.round\(plan\.capH\)\)/.test(js), 'подпись подрезается по плану');
-ok(/const layerH = Math\.round\(appH/.test(js) && /const hiddenBottom = Math\.max\(0, Math\.round\(layerH - visH\)\)/.test(js), 'высота слоя и скрытая снизу часть считаются отдельно');
-ok(/const inner = Math\.max\(120, Math\.min\(t\.clientHeight - padTop - padBot, \(visH \|\| t\.clientHeight\) - padTop - padBot\)\)/.test(js), 'содержимое обязано влезть в видимую часть экрана');
+ok(/stage\.style\.height = Math\.max\(90, plan\.stageH\) \+ 'px'/.test(js), 'сцена получает ровно остаток места');
+ok(/cap\.style\.maxHeight = Math\.max\(48, plan\.capH\) \+ 'px'/.test(js), 'подпись подрезается по плану');
+ok(/const layerH = Math\.round\(appH/.test(js) && /const visH = Math\.max\(260, Math\.round\(\(visBottom \|\| box\.bottom \|\| 0\) - \(innerBox\.top \|\| box\.top\)\)\)/.test(js), 'высота слоя и видимая часть считаются по факту');
+ok(/inner\.style\.setProperty\('--tut-vis', visH \+ 'px'\)/.test(js), 'видимая высота уходит в переменную контейнера');
+ok(/const innerH = Math\.max\(140, Math\.round\(\(innerEl\.clientHeight \|\| visH\) - padTop - padBot\)\)/.test(js), 'внутренняя высота считается по контейнеру видимой части');
+ok(/document\.getElementById\('tutStage'\)\.onclick = \(\) => \{/.test(js), 'тап по сцене тоже ведёт вперёд — обучение нельзя застрять');
+ok(/document\.getElementById\('tutCount'\)/.test(js) && /\$\{tutStep \+ 1\} \/ \$\{steps\.length\}/.test(js), 'видно, какой это шаг из скольких');
 ok(/function clampTutorial/.test(js) && /for \(let pass = 0; pass < 3; pass\+\+\)/.test(js), 'есть финальная посадка с перемером');
 ok(/document\.fonts\.ready\.then/.test(js), 'раскладка пересобирается после загрузки Unbounded');
 /* ключевое: путь демо-карточки должен влезать в сцену */
@@ -204,7 +209,9 @@ ok(/visibilitychange/.test(radial) && /setInterval/.test(radial), 'уход из
 ok(/body\.radial-open\{ overflow:hidden; overscroll-behavior:none/.test(cssClean), 'фон под кружком не скроллится');
 ok(/let pressLock = false/.test(js) && /document\.addEventListener\('touchmove'/.test(js), 'во время удержания прокрутка гасится на уровне документа');
 ok(/const blocked = \(el\) => !!\s*\(el && el\.closest\('\.card, \.chips, input, textarea, \.rl-card, \.tut-demo, #undoBtn, \.undo-pill, \.sheet, \[data-no-swipe\]'\)\)/.test(js.replace(/\s+/g, ' ')), 'свайп раздела не срабатывает на карточке и на «Вернуться»');
-ok(/\.card \.veil\{[^}]*z-index:20/.test(cssClean.replace(/\n/g, ' ')), 'затемнение при удержании поверх штампов');
+ok(/\.card \.veil\{[^}]*z-index:20/.test(cssClean.replace(/\n/g, ' ')), 'затемнение карточки лежит на 20-м слое');
+ok(/\.stamp\{ position:absolute; z-index:24;/.test(cssClean.replace(/\n\s+/g, ' ')), 'штампы ВЫШЕ затемнения — надписи «смотрел/мимо/чекнуть/смотрю» видно');
+ok(/\.stamp\{[^}]*background:rgba\(9,10,18,\.9\)/.test(cssClean.replace(/\n\s+/g, ' ')), 'штамп идёт плотной плашкой, а не только обводкой');
 
 /* ============================ [11] Живое приложение ============================ */
 section('[11] Живое приложение (jsdom)');
@@ -549,6 +556,18 @@ ok(dev('document.getElementById("undoBtn").classList.contains("show")'), 'пос
 ok(/^\d+px$/.test(undoStyle) && parseFloat(undoStyle) > 60, 'пилюля поднята над панелью вкладок: ' + undoStyle);
 ok(dev('getComputedStyle(document.getElementById("undoBtn")).position') === 'absolute', 'пилюля позиционируется абсолютно');
 
+/* --- шапка с иконками уезжает в боковую панель: проверяем живьём --- */
+const dbar = dwin.document.querySelector('.topbar');
+ok(!!dbar && typeof dwin.window.deskTopbarInNav === 'function', 'перенос шапки доступен из приложения');
+const mqStub = (matches) => (q) => ({ matches, media: q, onchange: null,
+  addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} });
+dwin.window.matchMedia = mqStub(true);
+dwin.window.deskTopbarInNav();
+ok(dbar.parentElement && dbar.parentElement.tagName === 'NAV' && dbar.classList.contains('topbar-in-nav'), 'на широком экране шапка стоит в панели, а не под кнопками Telegram');
+dwin.window.matchMedia = mqStub(false);
+dwin.window.deskTopbarInNav();
+ok(dbar.parentElement && dbar.parentElement.tagName !== 'NAV' && !dbar.classList.contains('topbar-in-nav'), 'на телефоне шапка возвращается на своё место');
+
 dwin.close();
 
 /* ============================ [13] «Вернуться» поверх «Перемешать» ============================ */
@@ -579,8 +598,16 @@ ok(deskBlock.length > 800, 'есть отдельный блок расклад�
 ok(/:root\{ --side: 236px; \}/.test(dflat), 'ширина боковой панели задана');
 ok(/body\{ display:grid; padding-left:0; padding-right:0;\s*grid-template-columns:var\(--side\) auto minmax\(0, 1fr\);\s*grid-template-rows:auto minmax\(0, 1fr\); \}/.test(dflat), 'вся страница — сетка: панель слева, шапка и экраны справа');
 ok(/nav\{ grid-area:1 \/ 1 \/ 3 \/ 2; position:relative; width:auto;/.test(dflat), 'разделы занимают первый столбец сетки во всю высоту');
-ok(/\.topbar\{ grid-area:1 \/ 3 \/ 2 \/ 4;/.test(dflat) && /\.lvl-strip\{ grid-area:1 \/ 2 \/ 2 \/ 3;/.test(dflat) && /\.screens\{ grid-area:2 \/ 2 \/ 3 \/ 4; \}/.test(dflat), 'шапка, строка уровня и экраны расставлены по клеткам сетки');
-ok(/\.side-head\{ display:block; position:absolute; left:24px; top:calc\(26px \+ var\(--safe-top\)\);/.test(dflat), 'логотип лежит в боковой панели как обычный элемент');
+ok(/\.topbar\.topbar-in-nav\{ grid-area:auto; align-self:stretch; justify-content:flex-start;/.test(dflat), 'шапка прижата к низу панели (класс ставит скрипт)');
+ok(/function deskTopbarInNav\(\)\{/.test(js), 'переносом шапки в панель занимается отдельная функция');
+ok(/if \(bar\.parentElement !== nav\) nav\.appendChild\(bar\);/.test(js) && /bar\.classList\.add\('topbar-in-nav'\)/.test(js), 'на широком экране шапка переезжает в панель');
+ok(/if \(bar\.parentElement === nav\) document\.body\.insertBefore\(bar, anchor\);/.test(js), 'на узком — возвращается на место');
+ok(/deskTopbarInNav\(\);        \/\/ на десктопе шапка уезжает в боковую панель/.test(js), 'перенос выполняется при запуске');
+ok(/\.topbar\.topbar-in-nav \.topbar-icons\{ flex-direction:column; align-items:stretch; gap:8px; width:100%; \}/.test(dflat), 'иконки в панели идут колонкой');
+ok(/\.topbar-icons\{ flex-direction:column; align-items:stretch; gap:8px; width:100%; \}/.test(dflat) && /#openSettings::after\{ content:'Настройки'; \}/.test(dflat), 'настройки переехали вниз боковой панели и подписаны');
+ok(/\.topbar\.topbar-in-nav\{/.test(cssClean.replace(/\s+/g, ' ')), 'в десктопном блоке есть правило для шапки внутри панели (а не в правом верхнем углу)');
+ok(/\.side-head\{ display:block; margin:0 10px 18px; padding-bottom:16px; border-bottom:1px solid var\(--border\);/.test(dflat), 'логотип лежит в потоке панели и не может наложиться на кнопку «Каталог»');
+ok(!/\.side-head\{ display:block; position:absolute/.test(dflat), 'абсолютного логотипа больше нет — он и ложился на «Каталог»');
 ok(/\.topbar \.wordmark\{ display:none; \}/.test(dflat), 'в шапке логотип на десктопе скрыт');
 ok(/nav button\{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;/.test(dflat), 'кнопки разделов стали строками с подписями');
 ok(/nav button\.active\{ color:var\(--text\); background:var\(--accent-soft\); \}/.test(dflat), 'активный раздел подсвечен');
@@ -639,10 +666,12 @@ section('[15] Каскад десктопных правил (вычисленн
   ok(g('nav', 'position') === 'relative' && g('nav', 'flexDirection') === 'column' && g('nav', 'gridArea') === '1 / 1 / 3 / 2', 'панель разделов стала боковой колонкой в первой клетке сетки');
   ok(g('nav', 'zIndex') === '20', 'панель под окнами и затемнением (z-index 20)');
   ok(g('body', 'paddingLeft') === '0px', 'сдвиг заменён сеткой: отступ больше не нужен');
-  ok(g('.topbar .wordmark', 'display') === 'none' && g('.side-head', 'position') === 'absolute' && g('.side-head', 'display') === 'block', 'логотип ушёл из шапки в боковую панель');
+  ok(g('.topbar .wordmark', 'display') === 'none' && g('.side-head', 'position') === 'static' && g('.side-head', 'display') === 'block', 'логотип ушёл из шапки в боковую панель');
+  ok(g('.topbar', 'gridArea') === 'auto' || g('.topbar', 'gridArea') === '', 'шапка вынута из сетки: её место — панель');
   ok(g('.lvl-strip', 'gridArea') === '1 / 2 / 2 / 3', 'строка уровня стоит в своей клетке сетки (не растягивается)');
   ok(g('body', 'display') === 'grid', 'оболочка действительно стала сеткой');
-  ok(g('.topbar', 'justifyContent') === 'flex-end', 'иконки в шапке уходят вправо (логотип вышел из потока)');
+  ok(/\.topbar\.topbar-in-nav\{/.test(deskBlock.replace(/\s+/g, ' ')), 'правило для шапки внутри панели лежит в десктопном блоке');
+  ok(/\.topbar\.topbar-in-nav\{/.test(deskBlock.replace(/\s+/g, ' ')), 'правило для шапки внутри панели лежит в десктопном блоке');
   ok(g('#sheet', 'position') === 'fixed' && px(g('#sheet', 'right')) === 0 && px(g('#sheet', 'width')) > 400, 'карточка фильма — панель справа (' + g('#sheet', 'width') + ')');
   ok(/translateX\(100%\)/.test(g('#sheet', 'transform')), 'и прячется за правым краем, а не под низом');
   ok(g('#askSheet', 'position') === 'fixed' && g('#askSheet', 'left') === '50%' && /translate\(-50%,-50%\)/.test(g('#askSheet', 'transform')), 'малая шторка стала окошком по центру');
