@@ -166,7 +166,8 @@ ok(!/<span>Каталог<\/span>/.test(src) && /\.eyebrow\.no-label\{ justify-c
 
 /* ======================= [7] Кубки, лента, долгое нажатие ======================= */
 section('[7] Кубки ачивок, лента, долгое нажатие');
-ok((src.match(/data-ach-open/g) || []).length === 2, 'кубок ачивок только на главной и в профиле');
+ok((src.match(/data-ach-open/g) || []).length === 1, 'кубок ачивок остался только в профиле (из шапки убран)');
+ok(!/ach-chip-top/.test(src) && !/id="achievementsChip"/.test(src), 'иконки достижений рядом с настройками нет');
 ok(!/eyebrow"><span>Оценки<\/span>[\s\S]{0,200}ach-chip/.test(src), 'в разделе оценок кубка нет');
 ok(/id="openAchievements"/.test(src) && /badgesGrid/.test(src), 'ачивки остались в профиле');
 ok(/\[.catGrid.,.wishList.,.watchingList.,.histList.,.feedBody.,.titleListBody.,.friendProfileBody.\]\.forEach\(initLongPress\)/.test(js), 'долгое нажатие работает во всех списках, включая окна');
@@ -294,7 +295,7 @@ ok(ev('document.querySelectorAll("#achievementsGrid .badge").length') === ev('BA
 ok(ev('document.getElementById("achievementsBar").style.width') !== '', 'полоса прогресса заполнена');
 ev('closeOverlay("achievementsScreen");');
 ok(!ev('document.getElementById("achievementsScreen").classList.contains("open")'), 'окно ачивок закрывается');
-ok(ev('document.querySelectorAll("[data-ach-open]").length') === 1, 'кубок ачивок на главной один');
+ok(ev('document.querySelectorAll(".topbar [data-ach-open], .topbar .ach-chip-top").length') === 0, 'в шапке нет иконки достижений');
 /* шторка выше окна */
 ev('openAchievementsScreen(); openSheet(MOVIES[0]);');
 await sleep(40);
@@ -576,11 +577,16 @@ const dflat = cssClean.replace(/\s+/g, ' ');
 const deskBlock = (cssClean.match(/@media \(min-width: 1024px\)\{[\s\S]*?\n  \}/) || [''])[0];
 ok(deskBlock.length > 800, 'есть отдельный блок раскладки от 1024px (' + deskBlock.length + ' символов)');
 ok(/:root\{ --side: 236px; \}/.test(dflat), 'ширина боковой панели задана');
-ok(/body\{ padding-left:var\(--side\); padding-right:0; \}/.test(dflat), 'содержимое сдвинуто вправо от панели');
-ok(/nav\{ position:fixed; left:0; top:0; bottom:0; width:var\(--side\); max-width:none; height:auto;/.test(dflat), 'разделы живут в боковой панели во всю высоту');
+ok(/body\{ display:grid; padding-left:0; padding-right:0;\s*grid-template-columns:var\(--side\) auto minmax\(0, 1fr\);\s*grid-template-rows:auto minmax\(0, 1fr\); \}/.test(dflat), 'вся страница — сетка: панель слева, шапка и экраны справа');
+ok(/nav\{ grid-area:1 \/ 1 \/ 3 \/ 2; position:relative; width:auto;/.test(dflat), 'разделы занимают первый столбец сетки во всю высоту');
+ok(/\.topbar\{ grid-area:1 \/ 3 \/ 2 \/ 4;/.test(dflat) && /\.lvl-strip\{ grid-area:1 \/ 2 \/ 2 \/ 3;/.test(dflat) && /\.screens\{ grid-area:2 \/ 2 \/ 3 \/ 4; \}/.test(dflat), 'шапка, строка уровня и экраны расставлены по клеткам сетки');
+ok(/\.side-head\{ display:block; position:absolute; left:24px; top:calc\(26px \+ var\(--safe-top\)\);/.test(dflat), 'логотип лежит в боковой панели как обычный элемент');
+ok(/\.topbar \.wordmark\{ display:none; \}/.test(dflat), 'в шапке логотип на десктопе скрыт');
 ok(/nav button\{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;/.test(dflat), 'кнопки разделов стали строками с подписями');
 ok(/nav button\.active\{ color:var\(--text\); background:var\(--accent-soft\); \}/.test(dflat), 'активный раздел подсвечен');
-ok(/\.topbar \.wordmark\{ position:fixed; left:24px; top:calc\(22px \+ var\(--safe-top\)\); z-index:21; font-size:20px; \}/.test(dflat), 'логотип переехал в боковую панель');
+ok(!/\.topbar \.wordmark\{ position:fixed/.test(dflat), 'никаких fixed-логотипов внутри анимированной шапки (из-за них он и вставал криво)');
+ok(/\.lvl-strip\{ grid-area:1 \/ 2 \/ 2 \/ 3; align-self:start; justify-self:start; margin:16px 0 0 28px;\s*max-width:560px; padding:9px 16px;/.test(dflat), 'строка уровня стала компактной карточкой, а не полосой во всю ширину');
+ok(/#home\{ max-width:430px; margin:0 auto; \}/.test(dflat) && /#home \.stack-filter\{ right:-56px; top:14px; \}/.test(dflat), 'колода по центру и фильтр у её верхнего правого угла');
 ok(/#sheet\{ position:fixed; top:0; right:0; bottom:0; left:auto; width:min\(470px, 44vw\);/.test(dflat), 'карточка фильма — панель справа');
 ok(/#sheet\.open\{ transform:translateX\(0\); \}/.test(dflat), 'панель выезжает слева направо, а не снизу');
 ok(/#askSheet, #badgeSheet\{ position:fixed; left:50%; top:50%; right:auto; bottom:auto;\s*width:min\(440px, 92vw\);/.test(dflat), 'небольшие шторки стали окошками по центру');
@@ -589,9 +595,10 @@ ok(/\.overlay-screen\.open\{ transform:translate\(-50%,-50%\) scale\(1\); opacit
 ok(/\.ov-scrim\{ display:block; position:fixed; inset:0; z-index:24;/.test(dflat), 'под окнами появилось затемнение');
 ok(/body\.ov-open \.ov-scrim\{ opacity:1; pointer-events:auto; \}/.test(dflat), 'затемнение включается классом на body');
 ok(/\.ov-scrim\{ display:none; \}/.test(dflat), 'на телефоне затемнение не показывается (там окна полноэкранные)');
-ok(/#home\{ max-width:780px; margin:0 auto; \}/.test(dflat) && /#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'колода, профиль и лента держатся колонкой по центру');
+ok(/#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'профиль и лента держатся колонкой по центру');
+ok(/<div class="side-head" aria-hidden="true">SM<b>O<\/b>TRA<\/div>/.test(src), 'логотип есть в разметке панели');
 ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(168px, 1fr\)\); \}/.test(dflat), 'каталог занимает всю ширину: обложек помещается больше');
-ok(/#splash, #onboarding, #tutorial\{ max-width:none; \}/.test(dflat), 'заставка и обучение на десктопе кроют всё окно (их содержимое центрирует flex)');
+ok(/#splash, #onboarding, #tutorial\{ position:fixed; inset:0; left:0; right:0; width:auto; max-width:none; margin:0; \}/.test(dflat), 'заставка, онбординг и обучение прибиты к окну — центрируются ровно, без сдвига от padding оболочки');
 ok(/\.undo-pill, #toast\{ left:calc\(50% \+ var\(--side\) \/ 2\); \}/.test(dflat), 'пилюля и сообщение центрируются по содержимому, а не по окну');
 ok(/#askSheet, #badgeSheet\{ position:fixed/.test(deskBlock.replace(/\s+/g, ' ')), 'правила шторок лежат именно в десктопном блоке');
 /* код под раскладку */
@@ -629,10 +636,12 @@ section('[15] Каскад десктопных правил (вычисленн
   const cdom = new JSDOM(patched, { url: 'https://smotra.test/' });
   const g = (sel, prop) => { const el = cdom.window.document.querySelector(sel); return el ? cdom.window.getComputedStyle(el)[prop] : 'НЕТ'; };
   const px = (v) => parseFloat(v) || 0;
-  ok(g('nav', 'position') === 'fixed' && g('nav', 'flexDirection') === 'column', 'панель разделов стала боковой колонкой');
+  ok(g('nav', 'position') === 'relative' && g('nav', 'flexDirection') === 'column' && g('nav', 'gridArea') === '1 / 1 / 3 / 2', 'панель разделов стала боковой колонкой в первой клетке сетки');
   ok(g('nav', 'zIndex') === '20', 'панель под окнами и затемнением (z-index 20)');
-  ok(g('body', 'paddingLeft') === 'var(--side)', 'содержимое сдвинуто от панели');
-  ok(g('.topbar .wordmark', 'position') === 'fixed' && g('.topbar .wordmark', 'left') === '24px', 'логотип закреплён в панели');
+  ok(g('body', 'paddingLeft') === '0px', 'сдвиг заменён сеткой: отступ больше не нужен');
+  ok(g('.topbar .wordmark', 'display') === 'none' && g('.side-head', 'position') === 'absolute' && g('.side-head', 'display') === 'block', 'логотип ушёл из шапки в боковую панель');
+  ok(g('.lvl-strip', 'gridArea') === '1 / 2 / 2 / 3', 'строка уровня стоит в своей клетке сетки (не растягивается)');
+  ok(g('body', 'display') === 'grid', 'оболочка действительно стала сеткой');
   ok(g('.topbar', 'justifyContent') === 'flex-end', 'иконки в шапке уходят вправо (логотип вышел из потока)');
   ok(g('#sheet', 'position') === 'fixed' && px(g('#sheet', 'right')) === 0 && px(g('#sheet', 'width')) > 400, 'карточка фильма — панель справа (' + g('#sheet', 'width') + ')');
   ok(/translateX\(100%\)/.test(g('#sheet', 'transform')), 'и прячется за правым краем, а не под низом');
@@ -640,12 +649,108 @@ section('[15] Каскад десктопных правил (вычисленн
   ok(g('.overlay-screen', 'position') === 'fixed' && px(g('.overlay-screen', 'width')) > 800 && px(g('.overlay-screen', 'width')) <= 1024, 'окна приложения — окно по центру, а не во всю ширину (' + g('.overlay-screen', 'width') + ')');
   ok(g('.overlay-screen', 'visibility') === 'hidden', 'закрытое окно не мешает нажимать');
   ok(g('.ov-scrim', 'display') === 'block' && g('.ov-scrim', 'position') === 'fixed', 'затемнение под окнами включено');
-  ok(px(g('#home', 'maxWidth')) === 780 && px(g('#profile', 'maxWidth')) === 900, 'колода и профиль держатся колонкой');
+  ok(px(g('#home', 'maxWidth')) === 430 && px(g('#profile', 'maxWidth')) === 900, 'колода ровно по ширине карточки, профиль — шире');
   ok(px(g('#splash', 'maxWidth')) === 0 && px(g('#tutorial', 'maxWidth')) === 0 && px(g('.screens', 'maxWidth')) === 0, 'полноэкранные слои и ленты не зажаты в колонку');
   ok(/calc\(50% \+ var\(--side\) \/ 2\)/.test(g('.undo-pill', 'left')) && /calc\(50% \+ var\(--side\) \/ 2\)/.test(g('#toast', 'left')), 'пилюля и сообщение смещены к центру содержимого');
   ok(g('.grain', 'position') === 'fixed', 'зерно кроет и боковую панель');
   cdom.window.close();
 }
+
+
+/* ============================ [16] Окно уровней ============================ */
+section('[16] Окно уровней: шкала сверху, вся лестница, откуда опыт');
+ok(/<div class="overlay-screen" id="levelsScreen">/.test(src), 'окно уровней есть в разметке');
+ok(/<div class="ov-body" id="levelsBody"><\/div>/.test(src), 'и у него есть тело для содержимого');
+ok(/<button class="icon-btn" id="closeLevels">/.test(src), 'закрывается кнопкой «назад»');
+ok(/<span class="lv-total" id="levelsTotal">/.test(src), 'в шапке окна видно общий опыт');
+ok(/document\.getElementById\('homeLevelStrip'\)\.onclick = openLevelsScreen;/.test(js), 'тап по шкале уровня открывает окно');
+ok(/document\.getElementById\('closeLevels'\)\.onclick = \(\) => closeOverlay\('levelsScreen'\);/.test(js), 'крестик закрывает окно');
+ok(/el\.onclick = openLevelsScreen;\s*\/\/ из профиля — в ту же лестницу уровней/.test(js), 'карточка уровня в профиле открывает то же окно');
+ok(/function myXPBreakdown\(\)\{/.test(js), 'опыт раскладывается по источникам');
+ok(/\{ icon:'check',    label:'Смотрел',        count: state\.watched\.length,      per: XP_RULES\.watched \}/.test(js), 'в разборе есть «смотрел» со своей ставкой');
+ok(/const total = rows\.reduce\(\(sum, r\) => sum \+ r\.count \* r\.per, 0\);/.test(js), 'сумма складывается из тех же ставок, что и myXP()');
+ok(/function renderLevelsScreen\(\)\{/.test(js) && /const lv = levelFor\(myXP\(\)\);/.test(js), 'окно считает уровень тем же levelFor()');
+ok(/LEVELS\.map\(\(L, i\) => \{/.test(js) && /const done = lv\.xp >= L\.xp && num < lv\.level;/.test(js) && /const cur = num === lv\.level;/.test(js), 'в лестнице размечены пройденные, текущий и будущие уровни');
+ok(/нужно ещё \$\{need\} XP/.test(js), 'у будущих уровней написано, сколько до них не хватает');
+ok(/Пройдено <b>\$\{lv\.pct\}%<\/b> уровня/.test(js), 'в шапке окна — процент пройденного уровня');
+ok(/Опыт капает сам: \$\{XP_RULES\.watched\}/.test(js), 'внизу окна — правила опыта из тех же ставок');
+ok(!/\[data-ach-open\]'\]\.forEach\(btn => \{ btn\.onclick = openAchievementsScreen/.test(js) || /document\.getElementById\('openAchievements'\)\.onclick = openAchievementsScreen;/.test(js), 'ачивки по-прежнему открываются из профиля');
+/* вид окна */
+ok(/\.lv-hero\{ position:relative; overflow:hidden; border-radius:22px; padding:20px;/.test(dflat), 'в окне есть большая карточка текущего уровня');
+ok(/\.lv-row\.cur\{ background:var\(--surface\); border-color:var\(--accent-border\)/.test(dflat), 'текущий уровень выделен');
+ok(/\.lv-row:not\(:last-child\)::after\{ content:''; position:absolute; left:26px; top:41px; bottom:-11px; width:2px; background:var\(--border\); \}/.test(dflat), 'уровни соединены линией лестницы');
+ok(/\.lv-src-bar i\{ display:block; height:100%; border-radius:4px; background:linear-gradient\(90deg, var\(--accent\), var\(--accent-2\)\); \}/.test(dflat), 'у источников опыта есть полосы вклада');
+
+/* живой прогон: тап по шкале открывает окно с лестницей */
+const lErrors = [];
+const lvc = new VirtualConsole();
+lvc.on('jsdomError', e => lErrors.push('jsdomError: ' + (e && e.message)));
+lvc.on('error', (...a) => lErrors.push('console.error: ' + a.join(' ')));
+const lRows = {
+  swipes: [{ movie_id: 5000, action: 'watched' }, { movie_id: 5001, action: 'watched' }],
+  wishlist: [{ movie_id: 5002 }], watching: [], badges: [], episodes_progress: [], reviews: [], friends: [], profiles: [],
+};
+function lTable(name){
+  const rows = lRows[name] || [];
+  const chain = (result) => {
+    const base = { then: (res) => res(result), catch: () => base, finally: (f) => { try { f(); } catch (e) {} return base; } };
+    return new Proxy(base, { get(t, prop){ if (prop in t) return t[prop];
+      return () => (prop === 'single' || prop === 'maybeSingle') ? chain({ data: rows[0] || null, error: null }) : chain({ data: rows, error: null, count: rows.length }); } });
+  };
+  return chain({ data: rows, error: null, count: rows.length });
+}
+const lIo = [];
+const ldom = new JSDOM(src.replace(/<script src="[^"]*"><\/script>/g, '').replace(/<link[^>]*fonts\.googleapis[^>]*>/g, ''), {
+  runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://smotra.test/levels', virtualConsole: lvc,
+  beforeParse(w){
+    w.Telegram = { WebApp: { initDataUnsafe: { user: { id: 777, first_name: 'Тенгиз' } }, initData: 'user=%7B%22id%22%3A777%7D',
+      version: '8.0', platform: 'tdesktop', colorScheme: 'dark', themeParams: {}, viewportStableHeight: 900,
+      ready(){}, expand(){}, onEvent(){}, isVersionAtLeast: () => true, disableVerticalSwipes(){}, requestFullscreen(){ return Promise.resolve(); },
+      setHeaderColor(){}, setBackgroundColor(){}, setBottomBarColor(){}, HapticFeedback: { impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} }, openTelegramLink(){} } };
+    w.supabase = { createClient: () => ({ from: (n) => lTable(n) }) };
+    w.fetch = async () => ({ ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX.slice(0, 10), genres: [] }) });
+    w.IntersectionObserver = class { constructor(cb){ this.cb = cb; } observe(el){ lIo.push({ el, cb: this.cb }); } unobserve(){} disconnect(){} takeRecords(){ return []; } };
+    w.__flushIO = () => lIo.splice(0).forEach(({ el, cb }) => { try { cb([{ target: el, isIntersecting: true, intersectionRatio: 1 }], {}); } catch (e) {} });
+  },
+});
+const lwin = ldom.window, ldoc = lwin.document;
+const lev = (code) => lwin.eval(code);
+const lt0 = Date.now();
+while (Date.now() - lt0 < 1200){ lwin.__flushIO(); await sleep(40); }
+ok(lErrors.length === 0, 'запуск с окном уровней без ошибок' + (lErrors.length ? ': ' + lErrors.slice(0, 2).join(' | ') : ''));
+ldoc.getElementById('homeLevelStrip').click();
+await sleep(80);
+ok(ldoc.getElementById('levelsScreen').classList.contains('open'), 'тап по шкале уровня открывает окно');
+const lvHtml = ldoc.getElementById('levelsBody').innerHTML;
+ok(lvHtml.length > 1200, 'окно заполнено (' + lvHtml.length + ' символов разметки)');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-row") || []).length') === lev('LEVELS.length'), 'в лестнице все ' + lev('LEVELS.length') + ' уровней');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-row.cur") || []).length') === 1, 'текущий уровень один');
+ok(/Зритель/.test(lvHtml) && /Живая легенда/.test(lvHtml), 'видны первый и последний уровни');
+ok(/Откуда опыт/.test(lvHtml), 'есть блок «Откуда опыт»');
+ok(lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') >= 2, 'источники опыта показаны (' + lev('(document.querySelectorAll("#levelsBody .lv-src") || []).length') + ')');
+ok(lev('document.getElementById("levelsTotal").textContent') === lev('myXP()') + ' XP', 'в шапке окна — тот же опыт, что считает myXP(): ' + lev('document.getElementById("levelsTotal").textContent'));
+ok(lev('myXP()') >= 2 * lev('XP_RULES.watched') + lev('XP_RULES.wishlist'), 'опыт включает и свайпы, и чек-лист: ' + lev('myXP()'));
+ok(lev('myXPBreakdown().total') === lev('myXP()'), 'разбор по источникам сходится с myXP()');
+ldoc.getElementById('closeLevels').click();
+await sleep(60);
+ok(!ldoc.getElementById('levelsScreen').classList.contains('open'), 'окно закрывается');
+/* шкала вверху показывает тот же уровень */
+const lvName = ldoc.getElementById('homeLevelName').textContent;
+ok(/^LVL \d+ · /.test(lvName), 'шкала вверху показывает уровень: ' + lvName);
+ok(/^\d+\/\d+$/.test(ldoc.getElementById('homeLevelXP').textContent), 'и опыт со порогом уровня: ' + ldoc.getElementById('homeLevelXP').textContent);
+ok(!ldoc.querySelector('.topbar [data-ach-open]'), 'в шапке нет иконки достижений');
+ok(!ldoc.getElementById('themeArt') && !ldoc.querySelector('.theme-art'), 'фоновых анимированных SVG в дереве нет');
+lwin.close();
+
+
+/* ============================ [17] Убрано и приведено в порядок ============================ */
+section('[17] Убрано: фоновые svg, кубок в шапке, анимации превью тем');
+ok(!/class="theme-art"/.test(src) && !/id="themeArt"/.test(src), 'слоя с фоновыми SVG нет в разметке');
+ok(!/function applyThemeArt/.test(js) && !/applyThemeArt\(\);/.test(js), 'и код, который его рисовал, тоже убран');
+ok(!/\.theme-art\{/.test(cssClean) && !/\.theme-art /.test(cssClean), 'правил для него не осталось');
+ok(/\.theme-swatch \.sw-art svg, \.theme-swatch \.sw-art svg \*\{ animation:none !important; \}/.test(dflat), 'превью тем в окне выбора — статичные');
+ok(/const THEME_ART = \{/.test(js) && /THEME_ART\[t\.id\]/.test(js), 'рисунок темы остался только как картинка превью');
+ok(!/ach-chip-top/.test(cssClean) && !/ach-chip-top/.test(src), 'кубка достижений в шапке больше нет');
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

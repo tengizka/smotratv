@@ -349,17 +349,10 @@
   .toy-star{ transform-origin:50% 50%; animation:toyPulse 3s ease-in-out infinite; }
   @keyframes toyPulse{ 0%,100%{ transform:scale(1) rotate(0); } 50%{ transform:scale(1.12) rotate(7deg); } }
   /* Строка уровня вверху главной: тонкая, с именем уровня и полосой прогресса */
-  /* Декорации темы: два слоя SVG (дальний со своими звёздами/кадрами и
-     ближний с орбитами и вспышками). Дальний дышит, ближний медленно плывёт. */
-  /* Фон строго под интерфейсом: нулевой слой, а контент поднят выше (см. .topbar,
-     .screens, nav). Раньше декор был z-index:1 и мог оказаться поверх текста. */
-  .theme-art{ position:fixed; inset:0; pointer-events:none; z-index:0; color:var(--accent); overflow:hidden; }
+  /* Фоновых SVG-декораций больше нет: большие орбиты и звёзды поверх экрана
+     выглядели странно (особенно на десктопе, где они обрезались краями окна) и
+     жгли кадры. Фон темы — это только мягкие градиенты из body. */
   body.app-hidden *, body.app-hidden *::before, body.app-hidden *::after{ animation-play-state:paused !important; }
-  .theme-art svg.ta-layer{ position:absolute; inset:0; width:100%; height:100%; }
-  /* Двигаем только половину звёзд: остальные стоят и не жгут кадры */
-  .theme-art .ta-twinkle:nth-child(even), .theme-art .ta-flare{ animation:none; }
-  .theme-art .ta-orbit{ animation-duration:64s; }
-  @media (prefers-reduced-motion: reduce){ .theme-art *{ animation:none !important; } }
   .ta-far{ opacity:.65; animation:artBreathe 9s ease-in-out infinite; }
   .ta-near{ opacity:.75; animation:artDrift 34s ease-in-out infinite alternate; }
   @keyframes artBreathe{ 0%,100%{ opacity:.45; } 50%{ opacity:.8; } }
@@ -384,6 +377,8 @@
   .theme-swatch{ position:relative; overflow:hidden; }
   .theme-swatch .sw-art{ position:absolute; inset:0; opacity:.75; }
   .theme-swatch .sw-art svg{ width:100%; height:100%; }
+  /* Превью темы — статичная картинка: анимации SVG мы убрали, они выглядели странно */
+  .theme-swatch .sw-art svg, .theme-swatch .sw-art svg *{ animation:none !important; }
   /* Полоска уровня живёт в самой верхней строке — над словом SMOTRA и шестерёнкой,
      поэтому карточка фильма поднимается выше и получает больше места. */
   .lvl-strip{ position:relative; z-index:4; display:flex; align-items:center; gap:10px;
@@ -1252,16 +1247,26 @@
 
   @media (min-width: 1024px){
     :root{ --side: 236px; }
-    body{ padding-left:var(--side); padding-right:0; }
+    /* Вся страница — сетка: слева боковая панель, справа шапка со строкой уровня
+       и лента экранов. Раньше это собиралось отступами и position:fixed, из-за чего
+       логотип и полоса уровня вставали криво (fixed внутри анимированной шапки
+       считается от неё, а не от окна). Сетка убирает саму возможность такого сдвига. */
+    body{ display:grid; padding-left:0; padding-right:0;
+      grid-template-columns:var(--side) auto minmax(0, 1fr);
+      grid-template-rows:auto minmax(0, 1fr); }
     /* планшетное правило ограничивало всё колонкой 700px — здесь у окон своя ширина */
     .overlay-screen, #sheet, #askSheet, #badgeSheet{ max-width:none; margin-left:0; margin-right:0; }
 
     /* --- разделы: боковая панель вместо нижней --- */
-    nav{ position:fixed; left:0; top:0; bottom:0; width:var(--side); max-width:none; height:auto;
+    nav{ grid-area:1 / 1 / 3 / 2; position:relative; width:auto; max-width:none; height:auto;
       margin:0; border-radius:0; border-top:none; border-left:none; border-right:1px solid var(--border);
       flex-direction:column; align-items:stretch; justify-content:flex-start; gap:4px;
-      padding:78px 14px calc(16px + var(--safe-bottom)); z-index:20; }
-    nav::before{ content:''; position:absolute; left:14px; right:14px; top:66px; height:1px; background:var(--border); }
+      padding:84px 14px calc(16px + var(--safe-bottom)); z-index:20; }
+    /* Логотип живёт в панели как обычный элемент — никаких fixed и наложений */
+    .side-head{ display:block; position:absolute; left:24px; top:calc(26px + var(--safe-top));
+      font-family:'Unbounded',sans-serif; font-weight:800; font-size:20px; letter-spacing:-.5px; color:var(--text); }
+    .side-head b{ color:var(--accent); font-weight:800; }
+    .side-head::after{ content:''; position:absolute; left:0; right:-10px; bottom:-18px; height:1px; background:var(--border); }
     nav button{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;
       padding:12px 14px; border-radius:14px; font-size:14px; font-weight:600; }
     nav button:active{ transform:none; background:var(--accent-soft); }
@@ -1270,16 +1275,25 @@
     nav button.active::before{ top:50%; left:-14px; width:3px; height:22px; border-radius:0 3px 3px 0; transform:translateY(-50%); }
     nav button.nav-home{ transform:none; }
     nav button.nav-home .nav-home-circle{ width:34px; height:34px; }
-    /* логотип переезжает в боковую панель — как в веб-приложении */
-    .topbar .wordmark{ position:fixed; left:24px; top:calc(22px + var(--safe-top)); z-index:21; font-size:20px; }
+    /* логотип живёт в панели (см. .side-head) — в шапке он не нужен */
+    .topbar .wordmark{ display:none; }
 
-    /* --- шапка и содержимое --- */
+    /* --- шапка, строка уровня и содержимое --- */
     .topbar, .lvl-strip, .screens{ max-width:none; width:auto; margin:0; }
-    .topbar{ padding:14px 28px 6px; justify-content:flex-end; }
-    .lvl-strip{ padding:calc(12px + var(--safe-top)) 28px 0; }
+    .topbar{ grid-area:1 / 3 / 2 / 4; padding:14px 28px 0; justify-content:flex-end; align-self:start; }
+    .lvl-strip{ grid-area:1 / 2 / 2 / 3; align-self:start; justify-self:start; margin:16px 0 0 28px;
+      max-width:560px; padding:9px 16px; gap:12px;
+      background:var(--surface); border:1px solid var(--border); border-radius:14px;
+      transition:border-color .18s ease, background .18s ease; }
+    .lvl-strip:hover{ background:var(--surface-2); border-color:var(--accent-border); }
+    .lvl-strip-bar{ flex:0 0 150px; }
+    .lvl-strip-name{ font-size:12px; }
+    .lvl-strip-xp{ font-size:11px; }
+    .screens{ grid-area:2 / 2 / 3 / 4; }
     .screen{ padding:0 28px 22px; }
-    #home{ max-width:780px; margin:0 auto; }
-    #home .actions, #home .home-bottom{ max-width:480px; margin:0 auto; }
+    #home{ max-width:430px; margin:0 auto; }
+    #home .stack-filter{ right:-56px; top:14px; }
+    #home .actions, #home .home-bottom{ max-width:100%; margin:0; }
     #profile, #feed{ max-width:900px; margin:0 auto; }
     .grid2{ grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); }
     .grid2 .poster-card, .grid2 .row-card{ contain-intrinsic-size:252px 378px; }
@@ -1319,7 +1333,7 @@
        непокрытыми боковую панель и края окна (фон слоя не дошёл бы до них), поэтому
        слои снова растягиваются на всё окно, а их содержимое уже центрируется
        собственным flex — выглядит так же, но без «дыр» по краям. */
-    #splash, #onboarding, #tutorial{ max-width:none; }
+    #splash, #onboarding, #tutorial{ position:fixed; inset:0; left:0; right:0; width:auto; max-width:none; margin:0; }
     /* зерно — на всё окно, вместе с боковой панелью */
     .grain{ position:fixed; }
     /* Содержимое живёт справа от панели, поэтому центрированные плавающие штуки
@@ -1327,6 +1341,55 @@
        иначе они висят левее колоды на пол-панели. */
     .undo-pill, #toast{ left:calc(50% + var(--side) / 2); }
   }
+
+  /* ===== Окно «Уровни» =====
+     Своя маленькая страница: где я сейчас, сколько до следующего, вся лестница
+     уровней и из чего складывается опыт. Считается из того же myXP(), что и строка
+     вверху, поэтому цифры нигде не расходятся. */
+  .lv-total{ margin-left:auto; font-family:'Unbounded',sans-serif; font-weight:700; font-size:13px; color:var(--accent); }
+  .lv-hero{ position:relative; overflow:hidden; border-radius:22px; padding:20px;
+    background:linear-gradient(150deg, var(--accent-soft), var(--surface)); border:1px solid var(--accent-border); }
+  .lv-hero-top{ display:flex; align-items:center; gap:14px; }
+  .lv-hero-badge{ width:54px; height:54px; border-radius:17px; flex:0 0 auto;
+    background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent);
+    display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px -14px var(--accent-glow); }
+  .lv-hero-level{ font-family:'Unbounded',sans-serif; font-size:19px; font-weight:800; }
+  .lv-hero-sub{ font-size:12px; color:var(--text-dim); margin-top:4px; }
+  .lv-hero-xp{ margin-left:auto; text-align:right; }
+  .lv-hero-xp b{ display:block; font-family:'Unbounded',sans-serif; font-size:24px; font-weight:800; }
+  .lv-hero-xp span{ font-size:10.5px; color:var(--text-dim); }
+  .lv-hero-bar{ margin-top:16px; height:9px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+  .lv-hero-bar i{ display:block; height:100%; border-radius:6px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); transition:width .4s ease; }
+  .lv-hero-foot{ display:flex; justify-content:space-between; gap:10px; margin-top:8px; font-size:11.5px; color:var(--text-dim); }
+  .lv-hero-foot b{ color:var(--text); }
+  .lv-sect{ margin:22px 0 10px; font-size:12px; font-weight:700; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase; }
+  .lv-ladder{ display:flex; flex-direction:column; }
+  .lv-row{ position:relative; display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:16px; border:1px solid transparent; }
+  .lv-row .lv-dot{ position:relative; z-index:1; width:30px; height:30px; border-radius:50%; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700;
+    background:var(--surface-2); color:var(--text-dim); border:1px solid var(--border); }
+  /* нить, соединяющая уровни */
+  .lv-row:not(:last-child)::after{ content:''; position:absolute; left:26px; top:41px; bottom:-11px; width:2px; background:var(--border); }
+  .lv-row.done .lv-dot{ background:var(--accent-soft); border-color:var(--accent-border); color:var(--accent); }
+  .lv-row.cur{ background:var(--surface); border-color:var(--accent-border); box-shadow:0 18px 44px -30px var(--accent-glow); }
+  .lv-row.cur .lv-dot{ background:linear-gradient(145deg, var(--accent), var(--accent-2)); color:var(--on-accent); border-color:transparent; }
+  .lv-row-name{ font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; }
+  .lv-row-name svg{ width:15px; height:15px; color:var(--accent); }
+  .lv-row.neon-ahead .lv-row-name svg{ color:var(--text-dim); }
+  .lv-row-sub{ font-size:11px; color:var(--text-dim); margin-top:3px; }
+  .lv-row-state{ margin-left:auto; text-align:right; font-size:11.5px; color:var(--text-dim); white-space:nowrap; }
+  .lv-row-state b{ display:block; font-size:12.5px; color:var(--text); font-weight:700; }
+  .lv-row.done .lv-row-state b{ color:var(--accent); }
+  .lv-src{ display:flex; align-items:center; gap:12px; padding:9px 4px; }
+  .lv-src-ico{ width:34px; height:34px; border-radius:12px; background:var(--surface-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; color:var(--accent); flex:0 0 auto; }
+  .lv-src-mid{ flex:1; min-width:0; }
+  .lv-src-name{ font-size:13px; }
+  .lv-src-bar{ height:5px; border-radius:4px; background:var(--surface-2); overflow:hidden; margin-top:6px; }
+  .lv-src-bar i{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .lv-src-num{ font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; white-space:nowrap; }
+  .lv-src-num small{ display:block; font-family:'Inter'; font-size:10.5px; font-weight:500; color:var(--text-dim); }
+  .lv-note{ font-size:12px; color:var(--text-dim); line-height:1.5; margin-top:10px; }
 
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
@@ -1354,7 +1417,6 @@
 <div class="grain"></div>
 <!-- Фон рисуем сами: у каждой темы свой узор из SVG (звёзды, орбиты, плёнка,
      вспышки), он подхватывает акцентный цвет темы и оживает на глазах. -->
-<div class="theme-art" id="themeArt" aria-hidden="true"></div>
 <div class="action-flash-layer" id="actionFlash" aria-hidden="true"></div>
 <div id="shuffleSlides" class="shuffle-slides" aria-hidden="true"><div class="shuffle-reel"></div></div>
 
@@ -1421,7 +1483,7 @@
 <div class="topbar">
   <div class="wordmark">SM<b>O</b>TRA</div>
   <div class="topbar-icons">
-    <button class="icon-btn ach-chip-top" data-ach-open aria-label="Ачивки" title="Ачивки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M6 4H4v2a4 4 0 0 0 4 4M18 4h2v2a4 4 0 0 1-4 4"/><path d="M12 13v4M9 20h6"/></svg></button>
+    
     <div class="streak" id="streakBadge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" fill="currentColor" stroke="none"/></svg> <span id="streakNum">0</span></div>
     <button class="icon-btn" id="openSettings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.6-2.6c.7-.3 1.4-.7 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
@@ -1543,6 +1605,9 @@
 </div>
 
 <nav>
+  <!-- На десктопе панель разделов становится боковой, и логотип переезжает сюда.
+       Раньше он был position:fixed внутри шапки — из-за этого и вставал криво. -->
+  <div class="side-head" aria-hidden="true">SM<b>O</b>TRA</div>
   <button data-tab="catalog">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
     Каталог
@@ -1673,6 +1738,16 @@
     <div class="wordmark">Профиль друга</div>
   </div>
   <div class="ov-body" id="friendProfileBody"></div>
+</div>
+
+<!-- УРОВНИ (тап по строке уровня вверху) -->
+<div class="overlay-screen" id="levelsScreen">
+  <div class="ov-head">
+    <button class="icon-btn" id="closeLevels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="wordmark">Уровни</div>
+    <span class="lv-total" id="levelsTotal">0 XP</span>
+  </div>
+  <div class="ov-body" id="levelsBody"></div>
 </div>
 
 <!-- ПОЛНЫЙ СПИСОК (открывается по «Показать все» из профилей и статистики) -->
@@ -1875,6 +1950,20 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.28 — прибрано по твоим замечаниям:
+         • десктопная раскладка пересобрана на сетке, а не на отступах и position:fixed.
+           Из-за fixed внутри анимированной шапки логотип и строка уровня вставали криво;
+           теперь логотип живёт в боковой панели, строка уровня — компактная карточка
+           слева в шапке, иконки справа, а содержимое ровно по центру своей области.
+           Колода держит ширину карточки (430px), кнопка фильтра стоит у её угла.
+         • фоновые анимированные SVG (орбиты, звёзды, вспышки поверх экрана) убраны:
+           они обрезались краями и выглядели странно. Фон темы — мягкие градиенты.
+           В окне выбора тем превью остались, но статичные, без анимаций.
+         • иконка достижений рядом с настройками убрана: ачивки открываются из профиля.
+         • тап по шкале уровня сверху открывает отдельное окно «Уровни» — там текущий
+           уровень с процентом прохождения, вся лестница из 10 уровней (пройденные,
+           текущий, сколько не хватает до каждого следующего) и разбор «откуда опыт»:
+           по источникам, с полосами вклада и той же арифметикой, что и в счётчике.
    0.27 — десктопная раскладка: приложение выглядит как сайт, а не как телефон,
          растянутый на монитор. Разделы переехали в левую панель (там же логотип),
          карточка фильма открывается панелью справа, а окна — настройки, FAQ,
@@ -2058,7 +2147,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.27';
+const APP_VERSION = '0.28';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3749,14 +3838,6 @@ function applyWordmarkShades(){
     st.setProperty('--splash-ink-' + i, shadeColor(accent, 1 - i * 0.075));
   }
 }
-function applyThemeArt(){
-  const host = document.getElementById('themeArt');
-  if (!host) return;
-  const name = themeId();                       // тем стало пять — у каждой свой рисунок
-  if (host.dataset.theme === name) return;
-  host.dataset.theme = name;
-  host.innerHTML = THEME_ART[name];
-}
 /* Полный список тем: имя, подпись и порядок в окне выбора */
 const THEMES = [
   { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', bg:'#0c0e16' },
@@ -3779,7 +3860,6 @@ function applyTheme(name){
   });
   const label = document.getElementById('themeNameLabel');
   if (label) label.textContent = THEME_NAMES[name] || THEME_NAMES.neon;
-  applyThemeArt();
   applyWordmarkShades();
   syncTelegramColors();
 }
@@ -5161,11 +5241,102 @@ function openAchievementsScreen(){
 }
 [...document.querySelectorAll('[data-ach-open]')].forEach(btn => { btn.onclick = openAchievementsScreen; });
 document.getElementById('openAchievements').onclick = openAchievementsScreen;
-document.getElementById('homeLevelStrip').onclick = () => {
+/* Тап по строке уровня вверху открывает отдельное окно со всей лестницей. */
+function openLevelsScreen(){
   haptic('selection');
-  switchTab('profile');
-  setTimeout(() => { const el = document.getElementById('levelCard'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior:'smooth', block:'center' }); }, 260);
-};
+  renderLevelsScreen();
+  openOverlay('levelsScreen');
+}
+document.getElementById('homeLevelStrip').onclick = openLevelsScreen;
+document.getElementById('closeLevels').onclick = () => closeOverlay('levelsScreen');
+
+/* Из чего складывается опыт: тот же XP_RULES, что и в myXP(), но по полочкам.
+   Так в окне уровней видно не только «сколько», но и «откуда». */
+function myXPBreakdown(){
+  const rows = [
+    { icon:'check',    label:'Смотрел',        count: state.watched.length,      per: XP_RULES.watched },
+    { icon:'star',     label:'Хочу чекнуть',   count: state.wishlist.length,     per: XP_RULES.wishlist },
+    { icon:'play',     label:'Смотрю сейчас',  count: state.watching.length,     per: XP_RULES.watching },
+    { icon:'cross',    label:'Мимо',           count: state.skipped.length,      per: XP_RULES.skipped },
+    { icon:'clapper',  label:'Оценок',         count: state.reviews || 0,        per: XP_RULES.review },
+    { icon:'trophy',   label:'Ачивок',         count: state.unlocked.length,     per: XP_RULES.badge },
+    { icon:'fire',     label:'Дней стрика',    count: currentStreak,             per: XP_RULES.streakDay },
+  ];
+  const total = rows.reduce((sum, r) => sum + r.count * r.per, 0);
+  return { rows, total };
+}
+function pluralRu(n, one, few, many){
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b === 1) return one;
+  if (b >= 2 && b <= 4) return few;
+  return many;
+}
+function renderLevelsScreen(){
+  const host = document.getElementById('levelsBody');
+  if (!host) return;
+  const lv = levelFor(myXP());
+  const { rows, total } = myXPBreakdown();
+  const maxRow = Math.max(1, ...rows.map(r => r.count * r.per));
+  document.getElementById('levelsTotal').textContent = total + ' XP';
+
+  const hero = `
+    <div class="lv-hero">
+      <div class="lv-hero-top">
+        <div class="lv-hero-badge">${ICON(lv.icon, 26)}</div>
+        <div>
+          <div class="lv-hero-level">Уровень ${lv.level} · ${esc(lv.name)}</div>
+          <div class="lv-hero-sub">${lv.next
+            ? `Следующий — «${esc(lv.next.name)}» на ${lv.next.xp} XP`
+            : 'Это последний уровень: выше уже некуда'}</div>
+        </div>
+        <div class="lv-hero-xp"><b>${lv.xp}</b><span>XP всего</span></div>
+      </div>
+      <div class="lv-hero-bar"><i style="width:${lv.pct}%"></i></div>
+      <div class="lv-hero-foot">
+        <span>${lv.next ? `Пройдено <b>${lv.pct}%</b> уровня` : 'Уровень пройден полностью'}</span>
+        <span>${lv.next ? `до «${esc(lv.next.name)}» — <b>${lv.toNext} XP</b>` : `<b>${LEVELS.length}</b> уровней из ${LEVELS.length}`}</span>
+      </div>
+    </div>`;
+
+  const ladder = LEVELS.map((L, i) => {
+    const num = i + 1;
+    const done = lv.xp >= L.xp && num < lv.level;
+    const cur = num === lv.level;
+    const need = Math.max(0, L.xp - lv.xp);
+    const state = cur
+      ? `<b>сейчас</b>${lv.next ? `осталось ${lv.toNext} XP` : 'максимум'}`
+      : done
+        ? '<b>пройден</b>уровень открыт'
+        : `<b>впереди</b>нужно ещё ${need} XP`;
+    return `<div class="lv-row ${done ? 'done' : ''} ${cur ? 'cur' : ''} ${(!done && !cur) ? 'neon-ahead' : ''}">
+      <div class="lv-dot">${done ? ICON('check', 14) : num}</div>
+      <div>
+        <div class="lv-row-name">${ICON(L.icon, 15)} ${esc(L.name)}</div>
+        <div class="lv-row-sub">от ${L.xp} XP</div>
+      </div>
+      <div class="lv-row-state">${state}</div>
+    </div>`;
+  }).join('');
+
+  const sources = rows.filter(r => r.count > 0).sort((a, b) => b.count * b.per - a.count * a.per).map(r => {
+    const gain = r.count * r.per;
+    return `<div class="lv-src">
+      <div class="lv-src-ico">${ICON(r.icon, 16)}</div>
+      <div class="lv-src-mid">
+        <div class="lv-src-name">${r.label}</div>
+        <div class="lv-src-bar"><i style="width:${Math.round(gain / maxRow * 100)}%"></i></div>
+      </div>
+      <div class="lv-src-num">+${gain}<small>${r.count} × ${r.per}</small></div>
+    </div>`;
+  }).join('');
+
+  host.innerHTML = hero
+    + `<div class="lv-sect">Лестница уровней</div><div class="lv-ladder">${ladder}</div>`
+    + `<div class="lv-sect">Откуда опыт</div>`
+    + (sources || `<div class="lv-note">Пока пусто: смахни пару карточек, отметь «смотрю» или поставь оценку — опыт появится здесь.</div>`)
+    + `<div class="lv-note">Опыт капает сам: ${XP_RULES.watched} — за «смотрел», ${XP_RULES.wishlist} — за «чекнуть», ${XP_RULES.watching} — за «смотрю», ${XP_RULES.skipped} — за «мимо», ${XP_RULES.review} — за оценку, ${XP_RULES.badge} — за ачивку и ${XP_RULES.streakDay} — за каждый день стрика. Он не сгорает: цифра только растёт.</div>`;
+}
 document.getElementById('closeAchievements').onclick = () => closeOverlay('achievementsScreen');
 
 /* ============ SHARE ============ */
@@ -6127,6 +6298,7 @@ function renderLevelCard(){
   const el = document.getElementById('levelCard');
   if (!el) return;
   el.innerHTML = levelCardHTML(levelFor(myXP()));
+  el.onclick = openLevelsScreen;      // из профиля — в ту же лестницу уровней
 }
 /* Статистика в моём профиле: герой-число, плитки и полосы любимых жанров.
    Считается на лету из состояния — ничего не грузим из сети. */
