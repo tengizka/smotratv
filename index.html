@@ -32,10 +32,6 @@
     --accent-soft:rgba(124,107,255,0.16);
     --accent-border:rgba(124,107,255,0.45);
     --accent-glow:rgba(124,107,255,0.65);
-    /* Заставка: ровно один цвет на надпись, букву O, слоган и подпись.
-       В синей теме это чистый синий без фиолетового. */
-    --splash-ink:#4f8bff;
-    --splash-ink-glow:rgba(79,139,255,0.5);
     --bg-glow-1:rgba(124,107,255,0.10);
     --bg-glow-2:rgba(79,139,255,0.08);
     --watched:#43b88a;
@@ -52,7 +48,6 @@
     --border:rgba(190,255,225,0.10); --text:#e8fff6; --text-dim:#87a89a;
     --accent:#2fc08d; --accent-2:#19a7b8; --on-accent:#04170f;
     --accent-soft:rgba(47,192,141,0.16); --accent-border:rgba(47,192,141,0.45); --accent-glow:rgba(47,192,141,0.62);
-    --splash-ink:#2fc08d; --splash-ink-glow:rgba(47,192,141,0.5);
     --bg-glow-1:rgba(47,192,141,0.10); --bg-glow-2:rgba(25,167,184,0.07);
     --watched:#4fd8a4; --skip:#e0655c; --wish:#ffb1e0; --watching:#58c8ff;
   }
@@ -62,7 +57,6 @@
     --border:rgba(255,205,235,0.10); --text:#ffedf7; --text-dim:#b1899f;
     --accent:#ff5fa2; --accent-2:#c05cff; --on-accent:#1b0714;
     --accent-soft:rgba(255,95,162,0.16); --accent-border:rgba(255,95,162,0.45); --accent-glow:rgba(255,95,162,0.62);
-    --splash-ink:#ff5fa2; --splash-ink-glow:rgba(255,95,162,0.5);
     --bg-glow-1:rgba(255,95,162,0.10); --bg-glow-2:rgba(192,92,255,0.08);
     --watched:#57c9a1; --skip:#ff6b6b; --wish:#ffd166; --watching:#6cc7ff;
   }
@@ -72,7 +66,6 @@
     --border:rgba(226,228,235,0.10); --text:#f3f3f7; --text-dim:#97979f;
     --accent:#a3adbd; --accent-2:#6f7b8d; --on-accent:#0f1116;
     --accent-soft:rgba(163,173,189,0.16); --accent-border:rgba(163,173,189,0.42); --accent-glow:rgba(163,173,189,0.55);
-    --splash-ink:#a3adbd; --splash-ink-glow:rgba(163,173,189,0.45);
     --bg-glow-1:rgba(163,173,189,0.08); --bg-glow-2:rgba(111,123,141,0.06);
     --watched:#7fbf9a; --skip:#cf7b7b; --wish:#d3b3d6; --watching:#7fb6d6;
   }
@@ -90,7 +83,6 @@
     --accent-soft:rgba(227,166,62,0.16);
     --accent-border:rgba(227,166,62,0.42);
     --accent-glow:rgba(227,166,62,0.7);
-    --splash-ink:#e3a63e; --splash-ink-glow:rgba(227,166,62,0.55);
     --bg-glow-1:rgba(227,166,62,0.07);
     --bg-glow-2:rgba(76,154,118,0.05);
     --watched:#4c9a76;
@@ -914,7 +906,9 @@
     transform:translate(-50%,-50%);
     /* Раньше было filter:blur(26px) — на телефоне это одна из самых дорогих
        операций; мягкого радиального градиента для свечения достаточно */
-    background:radial-gradient(closest-side, var(--splash-ink-glow, rgba(79,139,255,.5)) 0%, transparent 74%);
+    /* Свечение за надписью — нейтральное белое: цвет темы на заставке остаётся
+       только акцентом (буква O и слова слогана), иначе экран снова «синеет». */
+    background:radial-gradient(closest-side, rgba(255,255,255,.22) 0%, transparent 74%);
     opacity:.8; animation:glowPulse 4.2s ease-in-out infinite; }
   @keyframes glowPulse{
     0%,100%{ opacity:.24; transform:translate(-50%,-50%) scale(.94); }
@@ -923,24 +917,33 @@
   #splash .s-title{ display:flex; align-items:flex-end; gap:.014em; perspective:800px;
     font-family:'Unbounded', sans-serif; font-weight:900; font-size:clamp(44px, 16vw, 66px);
     letter-spacing:-.015em; line-height:1; }
-  /* Буквы: ровно ОДИН цвет темы на всю заставку — и у надписи, и у буквы O,
-     и у слогана, и у подписи. Никаких белых вкраплений и второго оттенка:
-     объём делают слои тени того же цвета (--wmo-*), свечение — тот же цвет.
-     Цвет живёт в --splash-ink: его считает скрипт из таблицы тем. */
+  /* Буквы — белый глянец: светлый градиент по буквам и нейтральный торец.
+     Цвет темы остаётся АКЦЕНТОМ: буква O, слоган «и вайбуй» и подпись tengizka
+     красятся акцентом ровно того же оттенка, что тема в настройках
+     (--accent). Ни надпись, ни свечение больше не заливаются цветом. */
   #splash .s-title span{
     display:inline-block;
-    color:var(--splash-ink, var(--accent));
-    -webkit-text-fill-color:currentColor; background-image:none;
+    background-image:linear-gradient(180deg, #ffffff 0%, #ffffff 46%, #e6e9f3 58%, #ffffff 72%, #eff1f7 88%, #d9dce8 100%);
+    background-size:100% 100%; background-position:0 0;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+    /* Объём — выдавленный торец из нейтральных серых слоёв (дёшево и без второго цвета) */
     text-shadow:
-      0 1px 0 var(--wmo-1), 0 2px 0 var(--wmo-2), 0 3px 0 var(--wmo-3), 0 4px 0 var(--wmo-4),
-      0 5px 0 var(--wmo-5), 0 6px 0 var(--wmo-6), 0 7px 0 var(--wmo-7), 0 8px 0 var(--wmo-8);
-    filter:
-      drop-shadow(0 10px 16px rgba(8,6,30,.7))
-      drop-shadow(0 0 18px var(--splash-ink-glow, var(--accent-glow)));
+      0 1px 0 #dbdde6, 0 2px 0 #c9ccd7, 0 3px 0 #b6bac6, 0 4px 0 #a4a8b5,
+      0 5px 0 #9196a4, 0 6px 0 #7f8493, 0 7px 0 #6d7281, 0 8px 0 #5c6170;
+    filter: drop-shadow(0 10px 16px rgba(8,6,30,.7));
     opacity:0; transform-origin:50% 100%;
     animation:wordIn .7s cubic-bezier(.2,.9,.25,1) forwards; }
-  /* Буква O больше не выделяется: тот же цвет, тот же торец, то же свечение. */
-  #splash .s-title span.o{ color:var(--splash-ink, var(--accent)); }
+  /* Буква O — акцентная: цвет текущей темы (синий, янтарь, изумруд, роза, графит). */
+  #splash .s-title span.o{
+    background-image:linear-gradient(180deg, var(--accent) 0%, var(--splash-ink-hi, var(--accent)) 52%, var(--accent) 100%);
+    filter:
+      drop-shadow(0 10px 16px rgba(8,6,30,.7))
+      drop-shadow(0 0 22px var(--accent-glow));
+    text-shadow:
+      0 1px 0 var(--splash-ink-1), 0 2px 0 var(--splash-ink-2), 0 3px 0 var(--splash-ink-3),
+      0 4px 0 var(--splash-ink-4), 0 5px 0 var(--splash-ink-5), 0 6px 0 var(--splash-ink-6),
+      0 7px 0 var(--splash-ink-7), 0 8px 0 var(--splash-ink-8); }
   @keyframes wordIn{
     0%{ opacity:0; transform:translateY(38px) rotateX(-72deg) scale(.86); }
     55%{ opacity:1; } 78%{ transform:translateY(-4px) rotateX(6deg) scale(1.02); }
@@ -954,14 +957,15 @@
   #splash .s-sub{ font-family:'Unbounded', sans-serif; font-size:12.5px; font-weight:500;
     color:var(--text-dim); opacity:0; letter-spacing:.14em; line-height:1.45; text-align:center;
     animation:fadeUp .6s 1.15s ease forwards; }
-  #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--splash-ink, var(--accent)); }
+  #splash .s-sub em{ font-style:normal; font-weight:700; color:var(--accent); }
   /* Слоган и подпись — тот же акцент, что и буква O: в теме «Янтарь» всё тёплое,
      в «Изумруде» — зелёное, без разнобоя. */
   #splash .s-credit{ position:absolute; bottom:calc(30px + var(--safe-bottom)); font-size:11.5px; opacity:0; letter-spacing:.03em; animation:fadeUp .6s 1.7s ease forwards; }
   #splash .s-credit b{ font-weight:700; }
-  /* Слоган и подпись — тот же единственный цвет темы, что и надпись. */
-  #splash .s-sub, #splash .s-credit{ color:var(--splash-ink, var(--accent)); }
-  #splash .s-sub em, #splash .s-credit b{ color:var(--splash-ink, var(--accent)); }
+  /* Слоган и подпись — светлый текст, как и надпись, а акцентом темы остаются
+     слова «и вайбуй» и имя автора. */
+  #splash .s-sub, #splash .s-credit{ color:rgba(255,255,255,.84); }
+  #splash .s-sub em, #splash .s-credit b{ color:var(--accent); }
   @keyframes fadeUp{ to{ opacity:1; } }
   @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
   #splash.hide{ opacity:0; transform:scale(1.035); pointer-events:none; visibility:hidden; }
@@ -1705,6 +1709,12 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.23 — заставка переделана: надпись снова белая (глянцевый градиент и
+         нейтральный торец), а цвет темы работает АКЦЕНТОМ — буква O, слова
+         «и вайбуй» и имя автора. Ни надпись, ни свечение за ней больше не
+         заливаются цветом темы; слоган и подпись — светлые, а не серые.
+         Попутно: scrollIntoView зовём только там, где он есть (в старых
+         встроенных браузерах его нет — падал переход к стрику и к уровню).
    0.22 — правки по замечаниям: настройки снова открываются (ошибка в расчёте
          уровня убивала кнопку); туториал считает свою высоту от видимой части
          экрана, поэтому подпись и кнопка «Дальше» больше не проваливаются вниз;
@@ -1843,7 +1853,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.22';
+const APP_VERSION = '0.23';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3303,15 +3313,13 @@ function applyWordmarkShades(){
   // Цвета берём из таблицы тем: она всегда совпадает с CSS и не зависит от того,
   // успел ли браузер посчитать переменные (важно для мгновенной отрисовки заставки).
   const theme = THEMES.find(t => t.id === themeId()) || THEMES[0];
-  const cs = getComputedStyle(document.body);
-  const cssInk = (cs.getPropertyValue('--splash-ink') || '').trim();
-  const ink = theme.ink || cssInk || theme.accent || '#4f8bff';
+  const accent = theme.accent || '#7c6bff';    // акцент темы — ровно тот же, что в интерфейсе
   const st = document.documentElement.style;
-  st.setProperty('--splash-ink', ink);
-  st.setProperty('--splash-ink-glow', theme.inkGlow || (cs.getPropertyValue('--splash-ink-glow') || '').trim() || 'rgba(79,139,255,0.5)');
+  /* Торец акцентной буквы O: затемнение её же цвета. Надпись остаётся белой,
+     цвет темы работает только акцентом (см. #splash .s-title span). */
+  st.setProperty('--splash-ink-hi', shadeColor(accent, 1.45));   // тот же оттенок, светлее — это глянец буквы
   for (let i = 1; i <= 8; i++){
-    // Торец буквы — затемнение того же самого цвета, поэтому «второго» оттенка нет.
-    st.setProperty('--wmo-' + i, shadeColor(ink, 1 - i * 0.07));
+    st.setProperty('--splash-ink-' + i, shadeColor(accent, 1 - i * 0.075));
   }
 }
 function applyThemeArt(){
@@ -3324,13 +3332,11 @@ function applyThemeArt(){
 }
 /* Полный список тем: имя, подпись и порядок в окне выбора */
 const THEMES = [
-  /* ink — цвет заставки: им красятся надпись, буква O, слоган и подпись, все ровно
-     одним цветом. В синей теме это чистый синий, а не сине-фиолетовый акцент. */
-  { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', ink:'#4f8bff', inkGlow:'rgba(79,139,255,0.5)',  bg:'#0c0e16' },
-  { id:'amber',    name:'Янтарь',   note:'Тёплое кино',        accent:'#e3a63e', accent2:'#c9832a', ink:'#e3a63e', inkGlow:'rgba(227,166,62,0.55)', bg:'#131110' },
-  { id:'emerald',  name:'Изумруд',  note:'Спокойный зелёный',  accent:'#2fc08d', accent2:'#19a7b8', ink:'#2fc08d', inkGlow:'rgba(47,192,141,0.5)',  bg:'#08120f' },
-  { id:'rose',     name:'Роза',     note:'Ягодный вечер',      accent:'#ff5fa2', accent2:'#c05cff', ink:'#ff5fa2', inkGlow:'rgba(255,95,162,0.5)',  bg:'#150a12' },
-  { id:'graphite', name:'Графит',   note:'Строгий монохром',   accent:'#a3adbd', accent2:'#6f7b8d', ink:'#a3adbd', inkGlow:'rgba(163,173,189,0.45)', bg:'#0d0d10' },
+  { id:'neon',     name:'Синий',    note:'Неон и космос',      accent:'#7c6bff', accent2:'#4f8bff', bg:'#0c0e16' },
+  { id:'amber',    name:'Янтарь',   note:'Тёплое кино',        accent:'#e3a63e', accent2:'#c9832a', bg:'#131110' },
+  { id:'emerald',  name:'Изумруд',  note:'Спокойный зелёный',  accent:'#2fc08d', accent2:'#19a7b8', bg:'#08120f' },
+  { id:'rose',     name:'Роза',     note:'Ягодный вечер',      accent:'#ff5fa2', accent2:'#c05cff', bg:'#150a12' },
+  { id:'graphite', name:'Графит',   note:'Строгий монохром',   accent:'#a3adbd', accent2:'#6f7b8d', bg:'#0d0d10' },
 ];
 const THEME_NAMES = Object.fromEntries(THEMES.map(t => [t.id, t.name]));
 function themeId(){ return (THEMES.find(t => document.body.classList.contains('theme-' + t.id)) || THEMES[0]).id; }
@@ -4697,7 +4703,7 @@ const BADGE_PLACES = {
   wishlist: { label: 'Раздел «Хочу чекнуть»',  open: () => switchTab('wishlist') },
   watching: { label: 'Экран «Смотрю сейчас»',  open: () => document.getElementById('openWatchingRow').click() },
   reviews:  { label: 'Открыть мои оценки',     open: () => openMyTile('reviews') },
-  streak:   { label: 'Стрик в профиле',        open: () => { switchTab('profile'); setTimeout(() => document.getElementById('weekChart')?.scrollIntoView({ behavior:'smooth', block:'center' }), 260); } },
+  streak:   { label: 'Стрик в профиле',        open: () => { switchTab('profile'); setTimeout(() => { const el = document.getElementById('weekChart'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior:'smooth', block:'center' }); }, 260); } },
   genres:   { label: 'Каталог по жанрам',      open: () => switchTab('catalog') },
   episodes: { label: 'Экран «Смотрю сейчас»',  open: () => document.getElementById('openWatchingRow').click() },
 };
@@ -4717,7 +4723,7 @@ document.getElementById('openAchievements').onclick = openAchievementsScreen;
 document.getElementById('homeLevelStrip').onclick = () => {
   haptic('selection');
   switchTab('profile');
-  setTimeout(() => document.getElementById('levelCard')?.scrollIntoView({ behavior:'smooth', block:'center' }), 260);
+  setTimeout(() => { const el = document.getElementById('levelCard'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior:'smooth', block:'center' }); }, 260);
 };
 document.getElementById('closeAchievements').onclick = () => closeOverlay('achievementsScreen');
 
@@ -6112,7 +6118,8 @@ document.getElementById('statCardWatched').onclick = () => { haptic('selection')
 document.getElementById('statCardSkipped').onclick = () => { haptic('selection'); openHistoryAs('skipped'); };
 document.getElementById('statCardStreak').onclick = () => {
   haptic('selection');
-  document.getElementById('weekChart').scrollIntoView({ behavior:'smooth', block:'center' });
+  const chart = document.getElementById('weekChart');
+  if (chart && chart.scrollIntoView) chart.scrollIntoView({ behavior:'smooth', block:'center' });
   showToast('Заходи каждый день — стрик растёт', 'fire');
 };
 /* Настройки: профиль с уровнем, что даёт опыт, и версия — всё перед глазами */
