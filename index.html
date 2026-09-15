@@ -40,6 +40,8 @@
     --watching:#4fc3ff;
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
     --app-h: 100%;
   }
   /* Изумруд: спокойный зелёный с бирюзой */
@@ -108,6 +110,9 @@
       var(--bg);
     color:var(--text);
     font-family:'Inter',system-ui,sans-serif;
+    /* В горизонтальной ориентации вырез и скругления съедают края: отступаем
+       ровно на системную безопасную зону, иначе текст и обложки лезут под вырез. */
+    padding-left:var(--safe-left); padding-right:var(--safe-right);
     display:flex; flex-direction:column;
     user-select:none;
     -webkit-user-select:none;
@@ -538,6 +543,9 @@
      уходит под клавиатуру (высота приложения зафиксирована, см. syncAppHeight).
      Прячем только всплывающую «Вернуться», чтобы она не мигала под клавиатурой. */
   body.kb-open #undoBtn{ opacity:0; pointer-events:none; }
+  /* Пока идёт обучение, интерфейс приложения спрятан — ни панель вкладок, ни
+     шапка не выглядывают из-под слоя. */
+  body.tut-open .topbar, body.tut-open nav, body.tut-open .lvl-strip{ visibility:hidden; }
   body.radial-open{ overflow:hidden; overscroll-behavior:none; }
   body.radial-open .screen, body.radial-open .ov-body, body.radial-open #home{ touch-action:none; }
 
@@ -1009,10 +1017,14 @@
      физически не может «провалиться» вниз: ниже неё только сцена и подпись. */
   /* Сетка туториала: сверху шапка с «Дальше», ниже сцена, в самом низу подпись.
      Кнопка физически не может уехать вниз, а подпись не выходит за экран. */
-  #tutorial{ position:fixed; inset:0; height:var(--tut-h, 100dvh); overflow:hidden; background:var(--bg); z-index:95; display:none;
+  /* Слой туториала кроет ВСЁ приложение (включая панель вкладок), а содержимое
+     живёт внутри видимой части: за это отвечают --tut-h и --tut-pad-bottom,
+     которые считает скрипт. Верхний отступ ограничен: если клиент отдаёт
+     подозрительно большой inset, он не должен съедать пол-экрана. */
+  #tutorial{ position:fixed; inset:0; bottom:auto; height:var(--tut-h, var(--app-h, 100%)); overflow:hidden; background:var(--bg); z-index:95; display:none;
     grid-template-rows:auto minmax(0,1fr) minmax(0,auto) auto; gap:10px; align-content:stretch;
-    padding:calc(12px + var(--safe-top)) 20px calc(12px + var(--safe-bottom)); }
-  @supports not (height: 100dvh){ #tutorial{ height:var(--app-h, 100%); } }
+    padding:calc(10px + min(var(--safe-top), 90px)) calc(16px + var(--safe-right))
+            calc(10px + var(--safe-bottom) + var(--tut-pad-bottom, 0px)) calc(16px + var(--safe-left)); }
   #tutorial.show{ display:grid; }
   .tut-top{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
   .tut-back{ width:40px; height:40px; border-radius:13px; background:var(--surface); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; justify-content:center; flex:0 0 auto; transition:opacity .2s ease, transform .15s ease; }
@@ -1028,7 +1040,7 @@
   .tut-stage{ min-height:0; padding-bottom:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
   /* Демо-карточка всегда одного размера: если высоты мало, fitTutorial поджимает её
      трансформацией, а не размерами — иначе иконки и штампы становятся крошечными. */
-  .tut-demo{ position:relative; width:208px; height:292px; flex:0 0 auto; }
+  .tut-demo{ position:relative; width:208px; height:292px; flex:0 0 auto; transform-origin:50% 50%; }
   .tut-demo-card{ position:absolute; inset:0; border-radius:22px; overflow:hidden; background:var(--surface); border:1px solid var(--border); box-shadow:0 24px 50px -22px rgba(0,0,0,0.7); display:flex; flex-direction:column; justify-content:flex-end; }
   .tut-demo-card .tdc-poster{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .tut-demo-card .tdc-dim{ position:absolute; inset:0; z-index:1; background:rgba(6,7,12,0.62); opacity:0; pointer-events:none; }
@@ -1172,7 +1184,6 @@
   #splash, #onboarding, .overlay-screen{ height:var(--app-h, 100%); bottom:auto; }
   /* Туториал меряем по видимой высоте: скрипт кладёт её в --tut-h. Ниже по файлу
      не должно быть жёсткого height — иначе переменная не работает и низ уезжает. */
-  #tutorial{ bottom:auto; }
 </style>
 </head>
 <body>
@@ -1709,6 +1720,17 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.24 — приложение просит полноэкранный режим (Bot API 8.0) и живёт во весь экран:
+         учитывает обе безопасные зоны Telegram (системную и контентную), поэтому
+         ничто не лезет под кнопку «Закрыть», вырез и «домашнюю» полоску; в
+         горизонтальной ориентации появились боковые отступы; если клиент не умеет
+         fullscreen — остаёмся в expanded, а если откажет — повторим запрос на
+         первом касании. Туториал переделан: слой кроет всё приложение (панель
+         вкладок прячется), а содержимое меряется по ВИДИМОЙ части экрана и
+         переезжает внутрь отступом. Демо-карточка теперь масштабируется вместе со
+         своим ходом (±84px вбок, ±92px по вертикали) — раньше именно этот ход
+         вылезал за край экрана. Верхний отступ туториала ограничен: подозрительно
+         большой inset больше не съедает пол-экрана.
    0.23 — заставка переделана: надпись снова белая (глянцевый градиент и
          нейтральный торец), а цвет темы работает АКЦЕНТОМ — буква O, слова
          «и вайбуй» и имя автора. Ни надпись, ни свечение за ней больше не
@@ -1853,7 +1875,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.23';
+const APP_VERSION = '0.24';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -1909,19 +1931,58 @@ function esc(v){
 
 /* ============ TELEGRAM ============ */
 const tg = window.Telegram?.WebApp;
+function tgFullscreen(){
+  try{ return !!(tg && tg.isFullscreen); }catch(e){ return false; }
+}
+function tgInset(obj, key){
+  const v = obj ? obj[key] : 0;
+  return Number.isFinite(v) ? Math.max(0, Math.round(v)) : 0;
+}
+/* Безопасные зоны. В полноэкранном режиме Telegram больше не резервирует место
+   под свой интерфейс, поэтому складываем оба отступа: системный (вырез, полоска
+   «домой») и контентный (кнопка «Закрыть» и подписи Telegram сверху).
+   В обычном expanded-режиме шапку уже отрезал сам клиент: если добавить туда
+   safeAreaInset, экран уезжает вниз — из-за этого и «всё уходило за экраны». */
 function applySafeArea(){
-  const csa = tg?.contentSafeAreaInset || {};
-  const sa = tg?.safeAreaInset || {};
-  const top = (csa.top ?? sa.top ?? 0);
-  let bottom = (csa.bottom ?? sa.bottom ?? 0);
+  if (!tg){
+    // Вне Telegram ничего не переопределяем: там работают env(safe-area-inset-*)
+    document.documentElement.style.removeProperty('--safe-top');
+    document.documentElement.style.removeProperty('--safe-bottom');
+    document.documentElement.style.removeProperty('--safe-left');
+    document.documentElement.style.removeProperty('--safe-right');
+    syncAppHeight();
+    return;
+  }
+  const sa = tg.safeAreaInset || {};
+  const csa = tg.contentSafeAreaInset || {};
+  const fs = tgFullscreen();
+  const root = document.documentElement.style;
+  const top = fs ? (tgInset(sa, 'top') + tgInset(csa, 'top')) : 0;
+  let bottom = fs ? (tgInset(sa, 'bottom') + tgInset(csa, 'bottom')) : Math.max(tgInset(sa, 'bottom'), tgInset(csa, 'bottom'));
   // На Android у мини-аппа внизу висит своя пилюля, и старые клиенты о ней в
   // safeArea не сообщают. Тогда закладываем запас сами — иначе нижние кнопки
   // уезжают под неё, и это выглядит как «ничего не влезает».
-  const noReport = !(csa && csa.bottom) && !(sa && sa.bottom);
-  const androidBar = tg && /android/i.test(tg.platform || '') && noReport ? 34 : 0;
-  document.documentElement.style.setProperty('--safe-top', top + 'px');
-  document.documentElement.style.setProperty('--safe-bottom', Math.max(bottom, androidBar, 0) + 'px');
+  if (!fs && /android/i.test(tg.platform || '') && !bottom) bottom = 34;
+  root.setProperty('--safe-top', top + 'px');
+  root.setProperty('--safe-bottom', Math.max(bottom, 0) + 'px');
+  root.setProperty('--safe-left', Math.max(tgInset(sa, 'left'), tgInset(csa, 'left')) + 'px');
+  root.setProperty('--safe-right', Math.max(tgInset(sa, 'right'), tgInset(csa, 'right')) + 'px');
+  document.body.classList.toggle('tg-fs', fs);
   syncAppHeight();
+}
+/* Полноэкранный режим: Telegram 8.0+ умеет отдавать приложению весь экран.
+   Пробуем сразу при запуске, а если клиент требует жест пользователя —
+   повторяем один раз на первом касании. Не получилось — остаёмся в expanded. */
+let tgFsTried = false;
+function tgRequestFullscreen(){
+  if (!tg || tgFsTried || tgFullscreen()) return;
+  tgFsTried = true;
+  try{
+    if (typeof tg.requestFullscreen !== 'function') return;
+    if (typeof tg.isVersionAtLeast === 'function' && !tg.isVersionAtLeast('8.0')) return;
+    const res = tg.requestFullscreen();
+    if (res && typeof res.catch === 'function') res.catch(() => {});
+  }catch(e){}   // UNSUPPORTED / ALREADY_FULLSCREEN — просто остаёмся в expanded
 }
 /* Высота приложения. Берём самую большую из доступных «свободных» высот и держим
    её, пока в поле ввода стоит курсор: клавиатура НЕ сжимает приложение, поэтому
@@ -1948,17 +2009,29 @@ function syncAppHeight(){
 }
 if (tg) {
   tg.ready();
-  // ТОЛЬКО full size: expand() растягивает мини-апп на всю высоту окна, но НЕ уводит в
-  // системный fullscreen (без него Telegram не рисует свою круглую кнопку-пилюлю сверху).
-  // disableVerticalSwipes() не даёт свайпом вниз случайно свернуть/закрыть мини-апп.
+  // full size + сразу просим полноэкранный режим: так приложение занимает весь
+  // экран телефона, а Telegram рисует поверх только кнопку «Закрыть» — её место
+  // мы и учитываем через contentSafeAreaInset.
   try{ tg.expand(); }catch(e){}
   try { tg.disableVerticalSwipes(); } catch(e){}
-  // На всякий случай выходим из fullscreen, если клиент вдруг открыл нас в нём.
-  try{ if (tg.isFullscreen && typeof tg.exitFullscreen === 'function') tg.exitFullscreen(); }catch(e){}
+  tgRequestFullscreen();
   if (tg.onEvent){
     tg.onEvent('safeAreaChanged', applySafeArea);
+    tg.onEvent('contentSafeAreaChanged', applySafeArea);
     tg.onEvent('viewportChanged', applySafeArea);
+    tg.onEvent('fullscreenChanged', () => { applySafeArea(); syncAppHeight(); fitTutorial(); });
+    tg.onEvent('fullscreenFailed', () => { tgFsTried = true; applySafeArea(); });
+    tg.onEvent('themeChanged', () => { syncTelegramColors(); applyTheme(themeId()); });
+    tg.onEvent('activated', () => { applySafeArea(); ensureDeckHeight(); });
   }
+  // Если полноэкранный режим просят вызвать жестом — попробуем ещё раз на первом тапе
+  const fsRetry = () => {
+    window.removeEventListener('pointerdown', fsRetry, true);
+    window.removeEventListener('touchstart', fsRetry, true);
+    if (!tgFullscreen()) tgRequestFullscreen();
+  };
+  window.addEventListener('pointerdown', fsRetry, true);
+  window.addEventListener('touchstart', fsRetry, true);
   applySafeArea();
   syncTelegramColors();
   const u = tg.initDataUnsafe?.user;
@@ -1979,7 +2052,8 @@ if (tg) {
 // Вне Telegram (браузер, десктоп) держим ту же стабильную высоту приложения.
 window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial(); if (Radial.active) Radial.fit(); });
 window.addEventListener('orientationchange', () => setTimeout(() => { syncAppHeight(); applySafeArea(); fitTutorial(); }, 250));
-if (window.visualViewport) window.visualViewport.addEventListener('resize', syncAppHeight);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { syncAppHeight(); });
+window.addEventListener('scroll', () => { if (window.scrollY) window.scrollTo(0, 0); }, { passive:true });
 syncAppHeight();
 
 function getFlag(key, def){ const v = localStorage.getItem(key); return v===null ? def : v==='1'; }
@@ -2861,8 +2935,10 @@ function tutClearTimers(){
 }
 function demoCard(posterIdx, stampClass, stampText, anim, handAnim){
   const movie = tutMovie(posterIdx);
+  /* data-tut-move — на сколько пикселей демо уезжает от центра: по этому числу
+     считается масштаб, чтобы карточка не вылезала за край экрана. */
   return `
-    <div class="tut-demo">
+    <div class="tut-demo" data-tut-move="84x6">
       <div class="tut-demo-card" style="animation:${anim} 2.6s ease-in-out infinite;">
         <div class="tdc-poster" style="${tutPosterCSS(posterIdx)}"></div>
         <div class="tdc-dim" style="animation:dimWatched 2.6s ease-in-out infinite;"></div>
@@ -2878,7 +2954,7 @@ function demoCard(posterIdx, stampClass, stampText, anim, handAnim){
 function demoCardBoth(){
   const movie = tutMovie(2);
   return `
-    <div class="tut-demo">
+    <div class="tut-demo" data-tut-move="0x92">
       <div class="tut-demo-card" style="animation:demoWishBoth 3.4s ease-in-out infinite;">
         <div class="tdc-poster" style="${tutPosterCSS(2)}"></div>
         <div class="tdc-dim" style="animation:dimBoth 3.4s ease-in-out infinite;"></div>
@@ -3051,17 +3127,22 @@ function fitTutorial(){
   if (stage) stage.style.height = '';
   if (demo) demo.style.transform = '';
 
-  // 1. Высота туториала = реально видимая часть экрана: снизу у Telegram свой бар,
-  //    а выше видимой области кнопку не спасёт никакая сетка.
-  const box = t.getBoundingClientRect();
-  const bottom = tutVisibleBottom(box);
-  const vis = Math.round((bottom || box.bottom || 0) - box.top);
-  if (vis > 200) t.style.setProperty('--tut-h', vis + 'px');
-
-  // 2. Сколько осталось на сцену и подпись после шапки и кнопки.
+  // 1. Слой кроет всё приложение (вместе с панелью вкладок), а содержимое обязано
+  //    влезть в ВИДИМУЮ часть. Разницу между высотой приложения и видимой частью
+  //    отдаём нижним отступом — так обрезка нижнего бара Telegram ничего не съедает.
   const cs = getComputedStyle(t);
+  const box = t.getBoundingClientRect();
+  const visBottom = tutVisibleBottom(box);
+  const layerH = Math.round(appH || (visBottom || window.innerHeight || 0));
+  const visH = Math.round((visBottom || 0) - box.top);
+  if (layerH > 200) t.style.setProperty('--tut-h', layerH + 'px');
+  const hiddenBottom = Math.max(0, Math.round(layerH - visH));
+  t.style.setProperty('--tut-pad-bottom', hiddenBottom + 'px');
+
+  // 2. Сколько осталось на сцену и подпись после шапки и кнопки (по видимой части).
   const gap = parseFloat(cs.rowGap || cs.gap) || 10;
-  const inner = t.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+  const padTop = parseFloat(cs.paddingTop) || 0, padBot = parseFloat(cs.paddingBottom) || 0;
+  const inner = Math.max(120, Math.min(t.clientHeight - padTop - padBot, (visH || t.clientHeight) - padTop - padBot));
   const fixedH = (top ? top.offsetHeight : 0) + (actions ? actions.offsetHeight : 0) + gap * 3;
   let capNatural = cap ? cap.scrollHeight : 0;
   let plan = tutPlan(inner, fixedH, capNatural);
@@ -3090,12 +3171,23 @@ function fitTutorial(){
   clampTutorial();
 }
 
-/* Насколько можно показать демо, чтобы оно целиком влезло в сцену */
+/* Куда уезжает демо: карточка ходит вбок на ±84px, а на шаге «вверх и вниз» —
+   вертикально на ±92px. Раньше этот ход не учитывался, и карточка вылезала за
+   экран (её резало по краю). */
+function tutDemoMove(demo){
+  const raw = String((demo && demo.dataset && demo.dataset.tutMove) || '').split(/[x,; ]+/).filter(Boolean);
+  return { x: Math.abs(parseFloat(raw[0]) || 0), y: Math.abs(parseFloat(raw[1]) || 0) };
+}
+/* Насколько можно показать демо, чтобы ВЕСЬ его путь влез в сцену */
 function tutDemoScale(demo, stage){
-  if (!demo || !stage || stage.clientHeight <= 0 || demo.offsetHeight <= 0) return 1;
-  const byHeight = stage.clientHeight / (demo.offsetHeight + 24);
-  const byWidth = stage.clientWidth > 0 ? stage.clientWidth / demo.offsetWidth : 1;
-  return Math.max(0.4, Math.min(1, byHeight, byWidth));
+  if (!demo || !stage) return 1;
+  const availW = stage.clientWidth || 0, availH = stage.clientHeight || 0;
+  if (!availW || !availH) return 1;
+  const m = tutDemoMove(demo);
+  const w = (demo.offsetWidth || demo.getBoundingClientRect().width || 0) + m.x * 2 + 10;
+  const h = (demo.offsetHeight || demo.getBoundingClientRect().height || 0) + m.y * 2 + 10;
+  if (!w || !h) return 1;
+  return Math.max(0.42, Math.min(1, availW / w, availH / h));
 }
 function tutApplyScale(demo, k){
   demo.style.transform = (k && k < 0.995) ? `scale(${Math.round(k * 100) / 100})` : '';
@@ -3144,6 +3236,7 @@ function goTutStep(delta){
 }
 function closeTutorial(){
   tutClearTimers();
+  document.body.classList.remove('tut-open');
   document.getElementById('tutorial').classList.remove('show');
   localStorage.setItem('smotra_tutorial_done', '1');
 }
@@ -3157,6 +3250,7 @@ document.getElementById('tutSkipTop').onclick = closeTutorial;
 function maybeStartTutorial(){
   if (localStorage.getItem('smotra_tutorial_done')) return;
   tutStep = 0;
+  document.body.classList.add('tut-open');
   document.getElementById('tutorial').classList.add('show');
   renderTutStep();
   requestAnimationFrame(fitTutorial);   // уже видимый экран — проверяем после раскладки
