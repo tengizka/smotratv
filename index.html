@@ -1242,6 +1242,92 @@
     .poster-card:active, .ms-tile:active{ background:var(--surface-2); }
   }
 
+  /* ===== ДЕСКТОПНАЯ РАСКЛАДКА (как сайт) =====
+     Телефон остаётся телефоном: всё, что ниже, включается только на большом экране.
+     Здесь у приложения появляется боковая панель разделов, логотип уезжает в неё,
+     карточка фильма открывается панелью справа, а окна (настройки, FAQ, ачивки,
+     рецензия) перестают быть полноэкранными панелями и становятся аккуратными
+     модальными окнами по центру с затемнением под ними. */
+  .ov-scrim{ display:none; }
+
+  @media (min-width: 1024px){
+    :root{ --side: 236px; }
+    body{ padding-left:var(--side); padding-right:0; }
+    /* планшетное правило ограничивало всё колонкой 700px — здесь у окон своя ширина */
+    .overlay-screen, #sheet, #askSheet, #badgeSheet{ max-width:none; margin-left:0; margin-right:0; }
+
+    /* --- разделы: боковая панель вместо нижней --- */
+    nav{ position:fixed; left:0; top:0; bottom:0; width:var(--side); max-width:none; height:auto;
+      margin:0; border-radius:0; border-top:none; border-left:none; border-right:1px solid var(--border);
+      flex-direction:column; align-items:stretch; justify-content:flex-start; gap:4px;
+      padding:78px 14px calc(16px + var(--safe-bottom)); z-index:20; }
+    nav::before{ content:''; position:absolute; left:14px; right:14px; top:66px; height:1px; background:var(--border); }
+    nav button{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;
+      padding:12px 14px; border-radius:14px; font-size:14px; font-weight:600; }
+    nav button:active{ transform:none; background:var(--accent-soft); }
+    nav button svg{ width:21px; height:21px; }
+    nav button.active{ color:var(--text); background:var(--accent-soft); }
+    nav button.active::before{ top:50%; left:-14px; width:3px; height:22px; border-radius:0 3px 3px 0; transform:translateY(-50%); }
+    nav button.nav-home{ transform:none; }
+    nav button.nav-home .nav-home-circle{ width:34px; height:34px; }
+    /* логотип переезжает в боковую панель — как в веб-приложении */
+    .topbar .wordmark{ position:fixed; left:24px; top:calc(22px + var(--safe-top)); z-index:21; font-size:20px; }
+
+    /* --- шапка и содержимое --- */
+    .topbar, .lvl-strip, .screens{ max-width:none; width:auto; margin:0; }
+    .topbar{ padding:14px 28px 6px; justify-content:flex-end; }
+    .lvl-strip{ padding:calc(12px + var(--safe-top)) 28px 0; }
+    .screen{ padding:0 28px 22px; }
+    #home{ max-width:780px; margin:0 auto; }
+    #home .actions, #home .home-bottom{ max-width:480px; margin:0 auto; }
+    #profile, #feed{ max-width:900px; margin:0 auto; }
+    .grid2{ grid-template-columns:repeat(auto-fill, minmax(168px, 1fr)); }
+    .grid2 .poster-card, .grid2 .row-card{ contain-intrinsic-size:252px 378px; }
+
+    /* --- карточка фильма: панель справа --- */
+    #sheet{ position:fixed; top:0; right:0; bottom:0; left:auto; width:min(470px, 44vw);
+      height:100%; max-height:none; border-radius:22px 0 0 22px; border-bottom:1px solid var(--border);
+      transform:translateX(100%); box-shadow:-40px 0 90px -50px rgba(0,0,0,.9); }
+    #sheet.open{ transform:translateX(0); }
+    #sheet .poster-lg{ height:280px; border-radius:22px 22px 0 0; }
+    .sheet-backdrop{ position:fixed; inset:0; }
+    /* небольшие шторки (ID друга, ачивка) — окошком по центру */
+    #askSheet, #badgeSheet{ position:fixed; left:50%; top:50%; right:auto; bottom:auto;
+      width:min(440px, 92vw); max-height:78vh; border-radius:22px; border:1px solid var(--border);
+      transform:translate(-50%,-50%) scale(.96); opacity:0; visibility:hidden;
+      transition:transform .26s cubic-bezier(.2,.8,.2,1), opacity .2s ease, visibility .26s; }
+    #askSheet.open, #badgeSheet.open{ transform:translate(-50%,-50%) scale(1); opacity:1; visibility:visible; }
+
+    /* --- окна приложения: модальные, по центру --- */
+    .overlay-screen{ position:fixed; inset:auto; left:50%; top:50%;
+      width:min(980px, 94vw); height:min(820px, 90vh);
+      border:1px solid var(--border); border-radius:24px; overflow:hidden;
+      box-shadow:0 60px 140px -60px rgba(0,0,0,.9);
+      transform:translate(-50%,-50%) scale(.97); opacity:0; visibility:hidden; pointer-events:none;
+      transition:transform .3s cubic-bezier(.2,.8,.2,1), opacity .22s ease, visibility .3s; }
+    .overlay-screen.open{ transform:translate(-50%,-50%) scale(1); opacity:1; visibility:visible; pointer-events:auto; }
+    .ov-head{ padding:18px 24px 12px; }
+    .ov-body{ padding:6px 24px 26px; }
+    /* затемнение под модальными окнами: видно, что приложение «под» ними */
+    .ov-scrim{ display:block; position:fixed; inset:0; z-index:24; background:rgba(6,8,16,.62);
+      -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px);
+      opacity:0; pointer-events:none; transition:opacity .22s ease; }
+    body.ov-open .ov-scrim{ opacity:1; pointer-events:auto; }
+
+    /* --- заставка, онбординг и обучение ---
+       На телефоне это узкая колонка во весь экран. На десктопе колонка оставила бы
+       непокрытыми боковую панель и края окна (фон слоя не дошёл бы до них), поэтому
+       слои снова растягиваются на всё окно, а их содержимое уже центрируется
+       собственным flex — выглядит так же, но без «дыр» по краям. */
+    #splash, #onboarding, #tutorial{ max-width:none; }
+    /* зерно — на всё окно, вместе с боковой панелью */
+    .grain{ position:fixed; }
+    /* Содержимое живёт справа от панели, поэтому центрированные плавающие штуки
+       (пилюля «Вернуться», всплывающее сообщение) тоже смещаем к центру СОДЕРЖИМОГО,
+       иначе они висят левее колоды на пол-панели. */
+    .undo-pill, #toast{ left:calc(50% + var(--side) / 2); }
+  }
+
   /* ===== Оболочка: одинаковая высота у всех полноэкранных слоёв =====
      Чтобы сплэш, онбординг, туториал и оверлеи не «дышали» вместе с вьюпортом
      Telegram и выглядели как экраны приложения, а не сайта. */
@@ -1274,6 +1360,11 @@
 
 <!-- Пасхалка: набор анимированных моделек ровно на месте грабера Telegram.
      Тап по ней меняет модельку со сменной анимацией. -->
+
+<!-- Затемнение под модальными окнами (на телефоне не показывается):
+     на десктопе окна открываются окошком по центру, и под ними должно быть видно,
+     что приложение осталось на месте. -->
+<div class="ov-scrim" id="ovScrim" aria-hidden="true"></div>
 
 <!-- SPLASH -->
 <div id="splash">
@@ -1784,6 +1875,13 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.27 — десктопная раскладка: приложение выглядит как сайт, а не как телефон,
+         растянутый на монитор. Разделы переехали в левую панель (там же логотип),
+         карточка фильма открывается панелью справа, а окна — настройки, FAQ,
+         ачивки, история, рецензия — стали окнами по центру с затемнением под ними.
+         Каталог и чек-лист занимают всю ширину (обложек помещается больше), а
+         колода, профиль и лента держатся колонкой по центру. Телефон работает
+         ровно как раньше: вся эта раскладка включается только от 1024px.
    0.26 — «Вернуться» ложится ровно на «Перемешать»: пилюля стала заметнее
          (градиент темы, мягкое свечение), а её место скрипт считает по самой кнопке,
          поэтому на любом экране она стоит на ней, а не уезжает на панель вкладок.
@@ -1960,7 +2058,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.26';
+const APP_VERSION = '0.27';
 const APP_BUILD_DATE = '2026-09-14';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -3735,6 +3833,7 @@ function openOverlay(elOrId){
   overlayZ += 1;
   el.style.zIndex = String(overlayZ);
   el.classList.add('open');
+  document.body.classList.add('ov-open');   // показываем затемнение под окнами (десктоп)
   return el;
 }
 function closeOverlay(elOrId){
@@ -3742,7 +3841,20 @@ function closeOverlay(elOrId){
   if (!el) return;
   el.classList.remove('open');
   el.style.zIndex = '';
+  if (!document.querySelector('.overlay-screen.open')) document.body.classList.remove('ov-open');
 }
+/* Клик по затемнению закрывает верхнее окно — привычно для десктопа. */
+(function initOvScrim(){
+  const scrim = document.getElementById('ovScrim');
+  if (!scrim) return;
+  scrim.addEventListener('click', () => {
+    const open = [...document.querySelectorAll('.overlay-screen.open')];
+    if (!open.length) return;
+    const top = open.sort((a, b) => (+b.style.zIndex || 0) - (+a.style.zIndex || 0))[0];
+    haptic('selection');
+    closeOverlay(top);
+  });
+})();
 function renderThemeWindow(){
   const host = document.getElementById('themeList');
   if (!host) return;
@@ -5499,16 +5611,23 @@ function positionUndoPill(){
   const pillH = btn.offsetHeight || 44;
   const row = document.querySelector('#home .home-bottom');
   const rowRect = row ? row.getBoundingClientRect() : null;
-  let center;                                   // центр цели по вертикали, в координатах оболочки
+  const nav = document.querySelector('nav');
+  const navRect = nav ? nav.getBoundingClientRect() : null;
+  // Панель разделов бывает нижней (телефон) и боковой (десктоп): нижней считаем
+  // только ту, что действительно прижата к низу экрана.
+  const navIsBottom = !!navRect && navRect.height > 0 && navRect.width > 0
+    && (bodyH - (navRect.bottom - bodyRect.top)) < 140;
+  let bottom;
   if (rowRect && rowRect.height > 0 && rowRect.width > 0){
-    center = (rowRect.top - bodyRect.top) + rowRect.height / 2;
+    const center = (rowRect.top - bodyRect.top) + rowRect.height / 2;   // центр кнопки «Перемешать»
+    bottom = Math.round(bodyH - center - pillH / 2);                    // центр пилюли — там же
+  } else if (navIsBottom){
+    // Кнопку измерить нельзя (свайп не на главной) — встаём туда, где она была бы: над панелью
+    bottom = Math.round((bodyH - (navRect.top - bodyRect.top)) + 38 - pillH / 2);
   } else {
-    const nav = document.querySelector('nav');
-    const navRect = nav ? nav.getBoundingClientRect() : null;
-    const navTop = (navRect && navRect.height > 0) ? (navRect.top - bodyRect.top) : (bodyH - 74);
-    center = Math.max(pillH / 2 + 8, navTop - 38);   // столько же места над панелью, сколько занимает «Перемешать»
+    // На десктопе нижней панели нет: держим то же место от низа области приложения
+    bottom = 84;
   }
-  const bottom = Math.round(bodyH - center - pillH / 2);
   if (Number.isFinite(bottom) && bottom > 0) btn.style.setProperty('--undo-bottom', bottom + 'px');
 }
 function pushSwipeHistory(entry){
@@ -6824,7 +6943,11 @@ backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.re
     sheet.addEventListener('touchend', e => { end(); setTimeout(() => { touchActive = false; }, 400); });
     sheet.addEventListener('touchcancel', e => { end(); setTimeout(() => { touchActive = false; }, 400); });
   }
+  /* На десктопе карточка фильма — панель справа, и «протяжка вниз» ей не подходит:
+     закрываем кликом по затемнению, крестиком или Esc. */
+  const sheetIsDeskPanel = () => window.matchMedia && window.matchMedia('(min-width: 1024px)').matches;
   sheet.addEventListener('mousedown', e => {
+    if (sheetIsDeskPanel()) return;
     if (touchActive) return;
     if (e.button !== 0) return;
     if (window.getSelection && String(window.getSelection())) return; // не мешаем выделять текст

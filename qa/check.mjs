@@ -531,9 +531,16 @@ await sleep(60);
 ok(!dev('document.getElementById("sheet").classList.contains("open")'), 'Esc закрывает шторку');
 dev('openOverlay("settingsScreen");');
 await sleep(40);
+ok(dev('document.body.classList.contains("ov-open")'), 'открытое окно включает затемнение под собой');
+dev('document.getElementById("ovScrim").click();');
+await sleep(40);
+ok(!dev('document.getElementById("settingsScreen").classList.contains("open")'), 'клик по затемнению закрывает окно');
+dev('openOverlay("settingsScreen");');
+await sleep(40);
 dwin.document.dispatchEvent(new dwin.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 await sleep(40);
 ok(!dev('document.getElementById("settingsScreen").classList.contains("open")'), 'Esc закрывает окно настроек');
+ok(!dev('document.body.classList.contains("ov-open")'), 'после закрытия окна затемнение снято');
 ok(dErrors.length === 0, 'ошибок консоли на десктопном прогоне: ' + dErrors.length + (dErrors.length ? ' — ' + dErrors.slice(0, 2).join(' | ') : ''));
 /* --- пилюля «Вернуться»: место считается по кнопке «Перемешать» --- */
 const undoStyle = dev('document.getElementById("undoBtn").style.getPropertyValue("--undo-bottom")');
@@ -554,12 +561,49 @@ ok(/border:1px solid rgba\(255,255,255,0\.18\)/.test(cssFlat), 'по краю �
 ok(/\.undo-pill\{ z-index:45/.test(cssFlat), 'пилюля выше панели вкладок');
 ok(/function positionUndoPill\(\)\{/.test(js), 'место пилюли считает скрипт');
 ok(/const row = document\.querySelector\('#home \.home-bottom'\)/.test(js), 'целимся в строку с «Перемешать»');
-ok(/const bottom = Math\.round\(bodyH - center - pillH \/ 2\)/.test(js), 'центр пилюли совпадает с центром кнопки');
-ok(/center = Math\.max\(pillH \/ 2 \+ 8, navTop - 38\)/.test(js), 'если кнопку не видно — поднимаем над панелью вкладок');
+ok(/bottom = Math\.round\(bodyH - center - pillH \/ 2\);                    \/\/ центр пилюли — там же/.test(js), 'центр пилюли совпадает с центром кнопки');
+ok(/bottom = Math\.round\(\(bodyH - \(navRect\.top - bodyRect\.top\)\) \+ 38 - pillH \/ 2\)/.test(js), 'если кнопку не видно — поднимаем над панелью вкладок');
+ok(/const navIsBottom = !!navRect && navRect\.height > 0 && navRect\.width > 0\s*\n\s*&& \(bodyH - \(navRect\.bottom - bodyRect\.top\)\) < 140;/.test(js), 'нижней панелью считаем только ту, что прижата к низу (на десктопе она боковая)');
 ok(/positionUndoPill\(\);\s+\/\/ сначала место, потом показ/.test(js), 'место считается ДО показа — без прыжка');
 ok(/requestAnimationFrame\(positionUndoPill\);\s+\/\/ раскладка могла поменяться/.test(js), 'и уточняется в следующем кадре');
 ok(/window\.addEventListener\('resize', \(\) => \{ if \(document\.getElementById\('undoBtn'\)\?\.classList\.contains\('show'\)\) positionUndoPill\(\); \}\)/.test(js), 'смена размера окна пересчитывает место');
 ok(/window\.addEventListener\('orientationchange', \(\) => setTimeout\(positionUndoPill, 300\)\)/.test(js), 'поворот телефона тоже');
+
+
+/* ============================ [14] Десктопная раскладка (как сайт) ============================ */
+section('[14] Десктопная раскладка: боковая панель, панель фильма, окна по центру');
+const dflat = cssClean.replace(/\s+/g, ' ');
+const deskBlock = (cssClean.match(/@media \(min-width: 1024px\)\{[\s\S]*?\n  \}/) || [''])[0];
+ok(deskBlock.length > 800, 'есть отдельный блок раскладки от 1024px (' + deskBlock.length + ' символов)');
+ok(/:root\{ --side: 236px; \}/.test(dflat), 'ширина боковой панели задана');
+ok(/body\{ padding-left:var\(--side\); padding-right:0; \}/.test(dflat), 'содержимое сдвинуто вправо от панели');
+ok(/nav\{ position:fixed; left:0; top:0; bottom:0; width:var\(--side\); max-width:none; height:auto;/.test(dflat), 'разделы живут в боковой панели во всю высоту');
+ok(/nav button\{ flex-direction:row; justify-content:flex-start; align-items:center; gap:12px; width:100%;/.test(dflat), 'кнопки разделов стали строками с подписями');
+ok(/nav button\.active\{ color:var\(--text\); background:var\(--accent-soft\); \}/.test(dflat), 'активный раздел подсвечен');
+ok(/\.topbar \.wordmark\{ position:fixed; left:24px; top:calc\(22px \+ var\(--safe-top\)\); z-index:21; font-size:20px; \}/.test(dflat), 'логотип переехал в боковую панель');
+ok(/#sheet\{ position:fixed; top:0; right:0; bottom:0; left:auto; width:min\(470px, 44vw\);/.test(dflat), 'карточка фильма — панель справа');
+ok(/#sheet\.open\{ transform:translateX\(0\); \}/.test(dflat), 'панель выезжает слева направо, а не снизу');
+ok(/#askSheet, #badgeSheet\{ position:fixed; left:50%; top:50%; right:auto; bottom:auto;\s*width:min\(440px, 92vw\);/.test(dflat), 'небольшие шторки стали окошками по центру');
+ok(/\.overlay-screen\{ position:fixed; inset:auto; left:50%; top:50%;\s*width:min\(980px, 94vw\); height:min\(820px, 90vh\);/.test(dflat), 'окна приложения — по центру, а не во весь экран');
+ok(/\.overlay-screen\.open\{ transform:translate\(-50%,-50%\) scale\(1\); opacity:1; visibility:visible; pointer-events:auto; \}/.test(dflat), 'и открываются мягко, без съезда за край');
+ok(/\.ov-scrim\{ display:block; position:fixed; inset:0; z-index:24;/.test(dflat), 'под окнами появилось затемнение');
+ok(/body\.ov-open \.ov-scrim\{ opacity:1; pointer-events:auto; \}/.test(dflat), 'затемнение включается классом на body');
+ok(/\.ov-scrim\{ display:none; \}/.test(dflat), 'на телефоне затемнение не показывается (там окна полноэкранные)');
+ok(/#home\{ max-width:780px; margin:0 auto; \}/.test(dflat) && /#profile, #feed\{ max-width:900px; margin:0 auto; \}/.test(dflat), 'колода, профиль и лента держатся колонкой по центру');
+ok(/\.grid2\{ grid-template-columns:repeat\(auto-fill, minmax\(168px, 1fr\)\); \}/.test(dflat), 'каталог занимает всю ширину: обложек помещается больше');
+ok(/#splash, #onboarding, #tutorial\{ max-width:none; \}/.test(dflat), 'заставка и обучение на десктопе кроют всё окно (их содержимое центрирует flex)');
+ok(/\.undo-pill, #toast\{ left:calc\(50% \+ var\(--side\) \/ 2\); \}/.test(dflat), 'пилюля и сообщение центрируются по содержимому, а не по окну');
+ok(/#askSheet, #badgeSheet\{ position:fixed/.test(deskBlock.replace(/\s+/g, ' ')), 'правила шторок лежат именно в десктопном блоке');
+/* код под раскладку */
+ok(/document\.body\.classList\.add\('ov-open'\);   \/\/ показываем затемнение под окнами \(десктоп\)/.test(js), 'openOverlay включает затемнение');
+ok(/if \(!document\.querySelector\('\.overlay-screen\.open'\)\) document\.body\.classList\.remove\('ov-open'\);/.test(js), 'closeOverlay выключает его, когда закрыто последнее окно');
+ok(/\(function initOvScrim\(\)\{/.test(js) && /const top = open\.sort\(\(a, b\) => \(\+b\.style\.zIndex \|\| 0\) - \(\+a\.style\.zIndex \|\| 0\)\)\[0\];/.test(js), 'клик по затемнению закрывает верхнее окно');
+ok(/const sheetIsDeskPanel = \(\) => window\.matchMedia && window\.matchMedia\('\(min-width: 1024px\)'\)\.matches;/.test(js), 'для панели фильма на десктопе отключена протяжка вниз');
+ok(/if \(sheetIsDeskPanel\(\)\) return;/.test(js), 'и это действительно проверяется перед жест');
+ok(/<div class="ov-scrim" id="ovScrim" aria-hidden="true"><\/div>/.test(src), 'подложка есть в разметке');
+/* телефон не должен пострадать: базовые правила окон и панели остаются прежними */
+ok(/\.overlay-screen\{ position:absolute; inset:0; background:var\(--bg\); z-index:25; transform:translateX\(100%\)/.test(dflat), 'на телефоне окна по-прежнему выезжают справа во весь экран');
+ok(/nav\{ position:relative; z-index:4; display:flex; justify-content:space-around; align-items:center;/.test(dflat), 'на телефоне панель осталась внизу');
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
