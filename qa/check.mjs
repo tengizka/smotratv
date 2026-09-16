@@ -144,7 +144,11 @@ ok(/#tutorial\{ --tut-move-x:84px; --tut-move-y:92px;/.test(cssClean.replace(/\n
 ok(/return Math\.max\(0\.42, Math\.min\(1, availW \/ w, availH \/ h\)\)/.test(js), 'демо никогда не выходит за сцену');
 ok(/transform-origin:50% 50%/.test(rule('.tut-demo')), 'демо масштабируется из центра');
 ok(/tutDemoScale/.test(js) && /tutApplyScale/.test(js), 'подгонка применяется к демо');
-ok(/addEventListener\('resize', \(\) => \{ syncAppHeight\(\); applySafeArea\(\); ensureDeckHeight\(\); fitTutorial\(\); if \(Radial\.active\) Radial\.fit\(\)/.test(js) && /orientationchange/.test(js), 'при повороте пересчитываются и туториал, и подписи кружков');
+ok(/function relayout\(\)\{[\s\S]{0,260}syncAppHeight\(\); applySafeArea\(\); ensureDeckHeight\(\); fitTutorial\(\);/.test(js)
+  && /if \(Radial\.active\) Radial\.fit\(\);/.test(js) && /addEventListener\('resize', relayout\)/.test(js) && /orientationchange/.test(js),
+  'при повороте пересчитываются и туториал, и подписи кружков');
+ok(/let layoutQueued = false;/.test(js) && /requestAnimationFrame\(\(\) => \{\n\s*layoutQueued = false;/.test(js),
+  'поворот и ресайз собираются в один проход на кадр, а не пересчитываются на каждое событие');
 
 /* ============================== [5] Уровни ============================== */
 section('[5] LVL: мягкая лестница и правила в FAQ');
@@ -1565,13 +1569,25 @@ ok(js.indexOf("posterUrl(m, 'w500')") > -1, 'обложки на колесе с
 /* jsdom не грузит картинки, поэтому подменяем Image на заглушку, которая сразу
    сообщает об успехе: проверяем саму логику подмены фона. */
 devZ.ev('window.Image = function(){ const o = {}; Object.defineProperty(o, "src", { set(v){ o._src = v; setTimeout(() => { if (o.onload) o.onload(); }, 0); }, get(){ return o._src; } }); return o; };');
-devZ.ev('artUpgrades.clear();');
-devZ.ev(`(function(){ const m = MOVIES[0]; const el = document.createElement('div'); el.className = 'poster'; document.body.appendChild(el);
-  upgradeArt(el, m, ART_SIZES.deck); window.__probeEl = el; return true; })()`);
-await sleep(60);
-ok(/w780/.test(String(devZ.ev('window.__probeEl.style.backgroundImage'))),
-  'после загрузки крупной картинки фон подменился: ' + String(devZ.ev('window.__probeEl.style.backgroundImage')).slice(0, 60));
-devZ.ev('artUpgrades.clear(); upgradeDeckArt();');
+/* Резкая обложка — КАЖДОМУ элементу с этим тайтлом. Раньше уже загруженный адрес
+   попадал в Set, и вторая карточка того же фильма возвращалась с мыльной картинкой. */
+devZ.ev(`(function(){ const m = { id: 777001, title: 'Дубль', type: 'movie', posterPath: '/dup.jpg' };
+  const a = document.createElement('div'), b = document.createElement('div');
+  a.className = 'poster'; b.className = 'poster';
+  document.body.appendChild(a); document.body.appendChild(b);
+  upgradeArt(a, m, ART_SIZES.deck); upgradeArt(b, m, ART_SIZES.deck);
+  window.__p1 = a; window.__p2 = b; return true; })()`);
+await sleep(80);
+ok(/w780/.test(String(devZ.ev('window.__p1.style.backgroundImage'))) && /w780/.test(String(devZ.ev('window.__p2.style.backgroundImage'))),
+  'резкая обложка встаёт и второй карточке того же тайтла');
+ok(devZ.ev('artHiState.get(posterUrl({ posterPath: "/dup.jpg" }, ART_SIZES.deck))') === 'done',
+  'состояние загрузки запоминается, повторно сеть не дёргается');
+ok(devZ.ev('artHiWaiters.has(posterUrl({ posterPath: "/dup.jpg" }, ART_SIZES.deck))') === false,
+  'после загрузки очередь ожидающих по этому адресу пуста');
+/* Загрузки, начатые настоящим Image до подмены, для теста снимаем: в браузере они
+   завершаются сами, а здесь без сети висели бы вечно. */
+devZ.ev('[...artHiState.entries()].forEach(([u, st]) => { if (st !== "done") artHiState.delete(u); })');
+devZ.ev('upgradeDeckArt();');
 await sleep(80);
 ok(String(devZ.ev('(document.querySelector(".card .poster") || {}).dataset ? document.querySelector(".card .poster").dataset.hi || "" : ""')).length > 0
   || devZ.ev('!!document.querySelector(".card .poster")') === false,
@@ -1688,6 +1704,115 @@ devS.doc.getElementById('filterPopDone').click();
 await sleep(30);
 ok(!devS.doc.getElementById('filterPop').classList.contains('open'), 'кнопка «Готово» его закрывает');
 devS.close();
+
+/* ===== [25] Сплошной аудит: поиск по приложению, двойные запросы, откат ачивок ===== */
+section('[25] Сплошной аудит всего приложения');
+/* --- поиск тайтла стал мгновенным: без перебора каталога --- */
+ok(!/MOVIES\.find\(m => m\.id === id/.test(js), 'поиск тайтла больше не перебирает весь каталог');
+ok(/const tvLike = \(type === 'series' \|\| type === 'anime'\);/.test(js) && /const m = MOVIE_INDEX\.get\(k\) \|\| movieStubs\[k\];/.test(js),
+  'он идёт по готовому индексу и различает фильм и сериал с одинаковым числом TMDB');
+ok(/function movieById\(id, type\)\{[\s\S]{0,300}if \(!id\) return null;/.test(js), 'и не падает на пустом значении');
+/* --- копия тайтла в памяти телефона дозаполняется --- */
+ok(/const known = movieStubs\[k\];[\s\S]{0,700}if \(hasArt\(m\) && !known\.posterPath\)/.test(js),
+  'уже запомненная копия тайтла дозаполняется обложкой и описанием');
+/* --- ничего не роняет отрисовку на «карточка не нашлась» --- */
+ok(/function hasArt\(m\)\{ return !!\(m && m\.posterPath\); \}/.test(js), 'проверка обложки переживает пустой тайтл');
+ok(/function posterBG\(m\)\{\n  if \(!m\) return/.test(js), 'и фон карточки тоже');
+ok(/function openSheet\(movie\)\{[\s\S]{0,200}if \(!movie \|\| !movie\.id\) return;/.test(js), 'карточка фильма не открывается «в никуда»');
+ok(/function openTitleList\(title, movies, opts\)\{[\s\S]{0,400}movies = \(movies \|\| \[\]\)\.filter\(Boolean\);/.test(js), 'пустые тайтлы не попадают в окна списков');
+ok(/const mine = m => ratings\.get\(mid\(m\)\) \?\? ratings\.get\(m\.id\) \?\? 0;/.test(js),
+  '«Мои оценки» ищутся по ключу тайтла, а не по сырому числу TMDB');
+/* --- резкая обложка: состояние загрузки, а не список «уже грузили» --- */
+ok(/const artHiState = new Map\(\)/.test(js) && /const artHiWaiters = new Map\(\)/.test(js) && /function applyHiArt\(el, url\)/.test(js),
+  'резкая обложка ставится каждому элементу и ждёт общую загрузку');
+ok(/ART_HI_MAX = 1200/.test(js) && /artHiState\.delete\(first\)/.test(js), 'память под адреса обложек ограничена');
+ok(/const failTimer = setTimeout\(\(\) => \{/.test(js), 'зависшая картинка возвращает адрес в очередь, а не запирает его навсегда');
+ok(/const m = movieById\(card\.dataset\.id, card\.dataset\.type\) \|\| deck\[deckIdx\];/.test(js),
+  'резкая обложка колоды берётся у своей карточки, а не по номеру в списке');
+ok(/makeDraggable\(topCard, movieById\(topCard\.dataset\.id, topCard\.dataset\.type\) \|\| deck\[0\]\)/.test(js),
+  'и свайпается ровно та карточка, которая сверху');
+/* --- один тайтл — один запрос в TMDB --- */
+ok(/const movieInfoCache = new Map\(\)/.test(js) && /const movieInfoInFlight = new Map\(\)/.test(js) && /function movieInfoOnce\(key, factory\)/.test(js),
+  'актёры, трейлер и сервисы не запрашиваются дважды: повтор ждёт первый запрос');
+ok(/'cast\|' \+ mid\(movie\)/.test(js) && /'trailer\|' \+ mid\(movie\)/.test(js) && /'providers\|' \+ mid\(movie\)/.test(js),
+  'кэш ключуется тайтлом, а не объектом карточки');
+/* --- фоновые анимации: только transform --- */
+ok(/@keyframes artSweep\{ from\{ transform:translate3d/.test(cssClean) && /@keyframes deckShimmer\{ from\{ transform:translate3d/.test(cssClean),
+  'блик загрузки едет трансформацией — такую анимацию рисует видеокарта');
+ok(!/background-position:130%/.test(cssClean) && !/background-position:120%/.test(cssClean), 'перерисовки фона на каждом кадре больше нет');
+/* --- прокрутка, поиск и поворот: не чаще кадра --- */
+ok(/function initCatalogInfiniteScroll\(\)/.test(js) && /requestAnimationFrame\(checkBottom\);/.test(js),
+  'подгрузка каталога при прокрутке считается раз в кадр, а не на каждое событие');
+ok(/function scheduleFrame\(fn\)/.test(js) && /const renderCatalogSoon = scheduleFrame/.test(js) && /const renderWishlistSoon = scheduleFrame/.test(js),
+  'поиск перерисовывает список не чаще кадра');
+ok(/const measureBars = \(\) =>/.test(js) && /barCenters = null;/.test(js), 'шкала Смотриметров меряет столбики один раз на жест');
+/* --- сторож радиального меню живёт только пока меню открыто --- */
+ok(/function startWatchdog\(\)/.test(js) && /function stopWatchdog\(\)/.test(js) && /stopWatchdog\(\);\n    active = false;/.test(js),
+  'сторож залипшего меню включается при открытии и снимается при закрытии');
+ok(!/setInterval\(\(\) => \{\n    if \(!active\) return;/.test(js), 'постоянного интервала раз в секунду больше нет');
+
+/* --- живая проверка на устройстве --- */
+const auditFetches = [];
+const auditDb = makeFakeDb();
+const devT = await bootDevice(auditDb, { platform: 'android', fetch: async (url) => {
+  const u = String(url);
+  auditFetches.push(u);
+  if (/\/genre\/(movie|tv)\/list/.test(u)) return { ok: true, json: async () => ({ genres: [{ id: 28, name: 'Боевик' }, { id: 35, name: 'Комедия' }] }) };
+  if (/\/credits/.test(u)) return { ok: true, json: async () => ({ cast: [{ name: 'Актёр' }] }) };
+  if (/\/videos/.test(u)) return { ok: true, json: async () => ({ results: [] }) };
+  if (/watch\/providers/.test(u)) return { ok: true, json: async () => ({ results: {} }) };
+  return { ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX, genres: [] }) };
+} });
+ok(devT.errors.length === 0, 'устройство для аудита стартует без ошибок' + (devT.errors.length ? ': ' + devT.errors[0] : ''));
+/* поиск по ключу: фильм и сериал с одним числом TMDB не путаются */
+ok(devT.ev('!!movieById(5001, "film")') === true && devT.ev('movieById(5001, "film").type') === 'film',
+  'тайтл находится по ключу сразу');
+ok(devT.ev('movieById(999999, "film")') === null, 'неизвестный тайтл возвращает пусто, а не исключение');
+/* дозаполнение копии в памяти телефона */
+devT.ev('rememberMovie({ id: 9101, type: "film", title: "Тайтл #9101" })');
+devT.ev('rememberMovie({ id: 9101, type: "film", title: "Настоящее название", posterPath: "/real.jpg", overview: "Описание", genres: ["Боевик"] })');
+ok(devT.ev('keyToMovie(9101).posterPath') === '/real.jpg' && devT.ev('keyToMovie(9101).title') === 'Настоящее название',
+  'копия тайтла дозаполнилась обложкой и настоящим названием');
+ok(devT.ev('hasArt(null)') === false && devT.ev('typeof posterBG(null)') === 'string', 'пустой тайтл не роняет отрисовку обложки');
+ok(devT.ev('(function(){ try{ openSheet(null); openReviewScreen(null); return "ok"; }catch(e){ return e.message; } })()') === 'ok',
+  'нажатие на исчезнувший тайтл ничего не ломает');
+/* один тайтл = один запрос, сколько бы раз его ни открыли */
+devT.ev('window.__t = 0');
+const creditsBefore = auditFetches.filter(u => /\/5001\/credits/.test(u)).length;
+devT.ev("openSheet(movieById(5001,'film')); openSheet(movieById(5001,'film')); openWatchScreen(movieById(5001,'film'))");
+await sleep(400);
+const creditsAfter = auditFetches.filter(u => /\/5001\/credits/.test(u)).length;
+ok(creditsAfter - creditsBefore === 1, 'три открытия одного тайтла — один запрос актёров: ' + (creditsAfter - creditsBefore));
+/* поиск в каталоге: перерисовка по кадру, но результат верный */
+devT.ev("switchTab('catalog')");
+await sleep(80);
+const gridBefore = devT.ev('document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card").length');
+devT.ev(`(function(){ const el = document.getElementById('catSearch'); el.value = '2'; el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
+await sleep(80);
+const gridAfter = devT.ev('document.querySelectorAll("#catGrid .poster-card, #catGrid .row-card").length');
+ok(gridBefore > 0 && gridAfter > 0 && gridAfter < gridBefore, 'поиск в каталоге фильтрует список: ' + gridBefore + ' → ' + gridAfter);
+ok(devT.ev('searchQuery') === '2', 'строка поиска дошла до состояния');
+/* «Повторить» в ленте не подменяет режим */
+ok(devT.ev('(function(){ feedMode = "global"; renderFeed(true); return feedMode; })()') === 'global',
+  'кнопка «Повторить» в ленте обновляет тот же режим, а не переключает на друзей');
+ok(/const feedCache = \{ friends:'', global:'' \};/.test(js) && /const cached = feedCache\[mode\];/.test(js),
+  'у каждого режима ленты своя заготовка — чужие оценки не мелькают');
+/* «Вернуться» возвращает и опыт, и ачивки свайпа */
+devT.ev("switchTab('home')");
+await sleep(120);
+const xpBefore = devT.ev('myXP()');
+const badgesBefore = devT.ev('state.unlocked.length');
+const auditWatchedBefore = devT.ev('state.watched.length');
+devT.ev('resolveSwipe(document.querySelector("#stack .card:last-child"), deck[0], "watched")');
+await sleep(420);
+ok(devT.ev('state.unlocked.length') >= badgesBefore, 'свайп открывает ачивки');
+const xpAfterSwipe = devT.ev('myXP()');
+devT.ev('undoLastSwipe()');
+await sleep(420);
+ok(devT.ev('myXP()') === xpBefore, 'возврат карточки возвращает опыт: было ' + xpBefore + ', после свайпа ' + xpAfterSwipe + ', стало ' + devT.ev('myXP()'));
+ok(devT.ev('state.unlocked.length') === badgesBefore, 'и снимает ачивки, которые открыл именно этот свайп');
+ok(devT.ev('state.watched.length') === auditWatchedBefore, 'отменённый тайтл больше не «просмотрен»');
+devT.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

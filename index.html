@@ -657,8 +657,8 @@
   /* Пока колода догружается — красивая заглушка вместо пустоты */
   .deck-loading{ position:absolute; inset:0; border-radius:26px; border:1px solid var(--border); background:var(--surface);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; color:var(--text-dim); overflow:hidden; }
-  .deck-loading::before{ content:''; position:absolute; inset:0; background:linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.05) 40%, transparent 60%); background-size:220% 100%; animation:deckShimmer 1.5s linear infinite; }
-  @keyframes deckShimmer{ from{ background-position:120% 0; } to{ background-position:-120% 0; } }
+  .deck-loading::before{ content:''; position:absolute; inset:0; width:60%; background:linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.055) 42%, transparent 64%); animation:deckShimmer 1.5s linear infinite; }
+  @keyframes deckShimmer{ from{ transform:translate3d(-100%,0,0); } to{ transform:translate3d(266%,0,0); } }
   .deck-spinner{ width:52px; height:52px; border-radius:50%; border:3px solid var(--surface-2); border-top-color:var(--accent); animation:deckSpin .8s linear infinite; }
   @keyframes deckSpin{ to{ transform:rotate(360deg); } }
   .deck-loading-text{ position:relative; font-size:13.5px; font-weight:600; color:var(--text); }
@@ -698,13 +698,17 @@
   .pc-art{ width:100%; height:100%; position:relative; background-size:cover; background-position:center; background-repeat:no-repeat; }
   /* Пока обложка едет — на карточке идёт бегущий блик: видно, что идёт загрузка,
      а не «сломалось». Раньше пустое место просто висело без признаков жизни. */
+  /* Блик едет по transform, а не по background-position: такую анимацию браузер
+     отдаёт видеокарте, и десятки ещё не загруженных обложек больше не заставляют
+     телефон перерисовывать их все каждый кадр. */
   .pc-art.art-loading::after, .card .poster.art-loading::after,
   .fw-poster.art-loading::after, .fpr-poster.art-loading::after, .review-poster.art-loading::after{
     content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
     background:linear-gradient(100deg, transparent 22%, rgba(255,255,255,0.10) 46%, transparent 72%);
-    background-size:220% 100%; animation:artSweep 1.05s linear infinite; }
+    width:72%; left:-72%;
+    animation:artSweep 1.05s linear infinite; }
   .fw-poster.art-loading, .fpr-poster.art-loading, .review-poster.art-loading{ position:relative; }
-  @keyframes artSweep{ from{ background-position:130% 0; } to{ background-position:-130% 0; } }
+  @keyframes artSweep{ from{ transform:translate3d(0,0,0); } to{ transform:translate3d(240%,0,0); } }
   @media (prefers-reduced-motion: reduce){ .pc-art.art-loading::after, .card .poster.art-loading::after,
     .fw-poster.art-loading::after, .fpr-poster.art-loading::after, .review-poster.art-loading::after{ animation:none; } }
   .pc-icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.4; color:var(--text); }
@@ -2260,6 +2264,38 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.40 — полный аудит приложения: потерянные баги и лишняя работа:
+         • «Вернуться» возвращает всё: раньше отмена свайпа оставляла открытые им
+           ачивки и их опыт — теперь карточка, счётчики, опыт и достижения
+           откатываются вместе (проверено: 5 → 95 → снова 5 XP);
+         • резкая обложка встаёт всем карточкам одного тайтла: раньше её получал
+           только первый элемент, а та же обложка в другом списке оставалась
+           мыльной; состояние загрузки помнится, зависшая картинка возвращается в
+           очередь, память под адреса ограничена;
+         • резкость колоды больше не уезжает к чужому фильму: карточка берёт тайтл у
+           себя, а не по номеру в колоде (в кадре дубли названий пропускаются);
+         • один тайтл — один запрос: актёры, трейлер и сервисы кэшируются по ключу
+           и не запрашиваются заново, если карточку открыли дважды (было три
+           запроса — стал один);
+         • поиск тайтла по карточке больше не перебирает весь каталог и память
+           телефона: идёт по готовому индексу (в списках это было на каждый тап);
+         • копия тайтла в памяти телефона дозаполняется обложкой, описанием и
+           жанрами, когда они приезжают: пустых карточек в истории больше нет;
+         • кнопка «Повторить» в ленте оценок больше не переключает режим: в общем
+           рейтинге после сбоя открывалась лента друзей;
+         • у каждого режима ленты своя заготовка — при переключении «С друзьями ↔
+           Со всеми» чужие оценки больше не мелькают;
+         • пустой тайтл (карточку не нашли) больше не роняет отрисовку: проверка
+           обложки, открытие карточки, окна списков и «Смотриметры» стали
+           безопасными;
+         • «Мои оценки» показывают твою оценку, а не чужую: ключ сериала больше не
+           путается с фильмом с тем же числом TMDB;
+         • блик загрузки едет трансформацией, а не перерисовкой фона: на телефоне
+           десятки ещё не загруженных обложек больше не грузят видеокарту;
+         • прокрутка каталога, поиск, поворот экрана и шкала Смотриметров считаются
+           раз в кадр: раскладка больше не пересчитывается на каждое событие;
+         • сторож залипшего радиального меню живёт только пока меню открыто, а не
+           тикает каждую секунду всю сессию.
    0.39 — фильтры наконец сохраняются, в окнах снова скролл:
          • окно фильтров переехало из области экранов в общий слой окон: раньше
            снизу его перекрывала нижняя панель, и кнопка подтверждения была
@@ -2601,7 +2637,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.39';
+const APP_VERSION = '0.40';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2784,8 +2820,21 @@ function applyMyUser(){
   return true;
 }
 // Вне Telegram (браузер, десктоп) держим ту же стабильную высоту приложения.
-window.addEventListener('resize', () => { syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial(); if (Radial.active) Radial.fit(); });
-window.addEventListener('orientationchange', () => setTimeout(() => { syncAppHeight(); applySafeArea(); fitTutorial(); }, 250));
+/* Ресайз, поворот и клавиатура приходят пачками: раньше на каждое событие заново
+   считались высоты, безопасные зоны, колода и туториал. Теперь всё это собирается в
+   один проход на кадр — раскладка пересобирается один раз, а не пять. */
+let layoutQueued = false;
+function relayout(){
+  if (layoutQueued) return;
+  layoutQueued = true;
+  requestAnimationFrame(() => {
+    layoutQueued = false;
+    syncAppHeight(); applySafeArea(); ensureDeckHeight(); fitTutorial();
+    if (Radial.active) Radial.fit();
+  });
+}
+window.addEventListener('resize', relayout);
+window.addEventListener('orientationchange', () => setTimeout(relayout, 250));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { syncAppHeight(); });
 window.addEventListener('scroll', () => { if (window.scrollY) window.scrollTo(0, 0); }, { passive:true });
 syncAppHeight();
@@ -3105,6 +3154,7 @@ async function dbEpisode(movieId, seasons){
   }catch(e){ console.error(e); }
 }
 async function dbBadge(badgeId){ try{ sbFail(await sb.from('badges').insert({ telegram_id: TG_ID, badge_id: badgeId }), 'badges insert'); }catch(e){ console.error(e); } }
+async function dbBadgeRemove(badgeId){ try{ sbFail(await sb.from('badges').delete().eq('telegram_id', TG_ID).eq('badge_id', badgeId), 'badges delete'); }catch(e){ console.error(e); } }
 
 /* ============ РЕЦЕНЗИИ — СОБСТВЕННАЯ ШКАЛА СМОТРЫ (10–80) ============ */
 const BIG_CATS = [
@@ -3396,6 +3446,7 @@ function openTitleList(title, movies, opts){
   const o = opts || {};
   const screen = document.getElementById('titleListScreen');
   if (!screen) return;
+  movies = (movies || []).filter(Boolean);   // null в списке ронял всю отрисовку окна
   document.getElementById('titleListTitle').textContent = title;
   /* Счётчик в окне списка подписываем словом: «12 тайтлов» читается лучше, чем «12» */
   document.getElementById('titleListCount').textContent = `${movies.length} ${pluralRu(movies.length, 'тайтл', 'тайтла', 'тайтлов')}`;
@@ -5025,7 +5076,7 @@ function keepRussian(list){ return list.filter(isRussianCard); }
    пространстве (id + смещение), а старые записи без смещения переводим при загрузке. */
 const SERIES_ID_OFFSET = 1000000000;
 function isTvLike(m){ return !!m && (m.type === 'series' || m.type === 'anime'); }
-function mid(m){ return isTvLike(m) ? m.id + SERIES_ID_OFFSET : m.id; }
+function mid(m){ return (m && isTvLike(m)) ? m.id + SERIES_ID_OFFSET : (m ? m.id : 0); }
 /* Главный источник повторов в приложении: один и тот же тайтл приходит из двух разных
    discover-запросов. Популярный мультфильм есть и в «популярных фильмах», и в «мультфильмах»,
    популярное аниме — и в «сериалах», и в «аниме». Раньше это давало две одинаковые карточки
@@ -5387,15 +5438,42 @@ async function ensureEpisodeTotal(movie){
   movie._epFetched = true;
   return true;
 }
-async function ensureCast(movie){
-  if (movie._castFetched) return false;
-  const kind = (movie.type === 'series' || movie.type === 'anime') ? 'tv' : 'movie';
-  try{
-    const data = await fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/credits?language=ru-RU&api_key=${TMDB_KEY}`).then(r=>r.json());
-    movie.cast = (data.cast || []).slice(0, 6).map(c => c.name).filter(Boolean);
-  }catch(e){ movie.cast = []; }
-  movie._castFetched = true;
-  return true;
+/* ===== Одна карточка — один запрос =====
+   Карточку можно открыть дважды подряд (тап, возврат, повторный тап), и один тайтл
+   бывает представлен двумя копиями — из каталога и из памяти телефона. Раньше каждый
+   такой случай отправлял в TMDB ещё один точно такой же запрос. Теперь актёры,
+   трейлер и сервисы живут в общем кэше по ключу тайтла, а повторный запрос, пока
+   первый не ответил, просто ждёт его. */
+const movieInfoCache = new Map();       // 'что|ключ' → готовое значение
+const movieInfoInFlight = new Map();    // 'что|ключ' → промис в работе
+const MOVIE_INFO_MAX = 600;
+function movieInfoRemember(k, v){
+  if (movieInfoCache.size >= MOVIE_INFO_MAX){
+    const first = movieInfoCache.keys().next().value;
+    movieInfoCache.delete(first);
+  }
+  movieInfoCache.set(k, v);
+}
+function movieInfoOnce(key, factory){
+  if (movieInfoCache.has(key)) return Promise.resolve(movieInfoCache.get(key));
+  const running = movieInfoInFlight.get(key);
+  if (running) return running;
+  const job = factory()
+    .then(value => { movieInfoRemember(key, value); movieInfoInFlight.delete(key); return value; })
+    .catch(() => { movieInfoRemember(key, null); movieInfoInFlight.delete(key); return null; });
+  movieInfoInFlight.set(key, job);
+  return job;
+}
+function ensureCast(movie){
+  if (!movie || !movie.id) return Promise.resolve(false);
+  if (movie._castFetched) return Promise.resolve(false);
+  const kind = isTvLike(movie) ? 'tv' : 'movie';
+  return movieInfoOnce('cast|' + mid(movie), () =>
+    fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/credits?language=ru-RU&api_key=${TMDB_KEY}`)
+      .then(r => r.json())
+      .then(data => (data.cast || []).slice(0, 6).map(c => c.name).filter(Boolean))
+      .catch(() => [])
+  ).then(list => { movie.cast = list || []; movie._castFetched = true; return true; });
 }
 
 const TYPE_LABEL = { film:'Фильм', series:'Сериал', anime:'Аниме', cartoon:'Мультфильм' };
@@ -5403,11 +5481,17 @@ const TYPE_TABS = [ {key:'all', label:'Всё'}, {key:'film', label:'Фильм�
 const TYPE_ICON = { series:'tv', anime:'sparkles', cartoon:'teddy' };
 const GENRE_ICON = { 'Драма':'masks', 'Комедия':'smile', 'Триллер':'target', 'Ужасы':'ghost', 'Фантастика':'rocket', 'Боевик':'burst', 'Романтика':'heart', 'Документальный':'newspaper', 'Криминал':'detective' };
 function posterBG(m){
+  if (!m) return 'linear-gradient(165deg, var(--surface-2), var(--surface))';
   const h = (m.id * 53) % 360;
   return `radial-gradient(120% 90% at 30% 15%, hsla(${h+30},70%,55%,0.22), transparent 60%), linear-gradient(165deg, hsl(${h},38%,20%), hsl(${h+25},45%,9%))`;
 }
-function posterIcon(m){ return TYPE_ICON[m.type] || GENRE_ICON[(m.genres||[])[0]] || 'film'; }
-function hasArt(m){ return !!m.posterPath; }
+function posterIcon(m){
+  if (!m) return TYPE_ICON.film || 'film';
+  return TYPE_ICON[m.type] || GENRE_ICON[(m.genres||[])[0]] || TYPE_ICON.film || 'film';
+}
+/* Единственная защита от «карточка не нашлась»: все, кто рисует обложку, зовут эти
+   функции напрямую, и null здесь раньше ронял отрисовку целого экрана. */
+function hasArt(m){ return !!(m && m.posterPath); }
 function posterUrl(m, size){ return `https://image.tmdb.org/t/p/${size}${m.posterPath}`; }
 /* Размер обложки под место, а не «один на всех». Раньше карточка на главной тянула
    w342 и растягивалась на всю ширину (430+ px, на ретине вдвое больше) — отсюда и
@@ -5416,23 +5500,74 @@ const ART_SIZES = { deck:'w780', sheet:'w1280', card:'w342', thumb:'w185' };
 /* Тяжёлую версию обложки догружаем фоном поверх быстрой: сначала на экране появляется
    лёгкая картинка (кадр без ожидания), потом её место занимает резкая. Так и старт
    не тормозит, и качество в итоге полное. */
-const artUpgrades = new Set();
+const artHiState = new Map();          // url → 'loading' | 'done' | 'fail'
+const artHiWaiters = new Map();        // url → элементы, которым ещё не поставили картинку
+const ART_HI_MAX = 1200;               // столько адресов помним, дальше вытесняем старые
+function applyHiArt(el, url){
+  if (!el || !el.isConnected) return;
+  el.dataset.hi = url;
+  el.style.backgroundImage = `url('${url}')`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  el.classList.remove('art-loading');
+  clearArtPlaceholder(el);
+}
+function artHiRemember(url, state){
+  if (artHiState.size >= ART_HI_MAX){
+    /* Вытесняем самое старое: держать адреса всех когда-либо показанных обложек
+       незачем, а память на телефоне не бесконечная. */
+    const first = artHiState.keys().next().value;
+    artHiState.delete(first);
+  }
+  artHiState.set(url, state);
+}
+/* Раньше здесь стоял Set «этот тайтл уже грузили»: второй и все следующие элементы
+   получали готовую резкость только по счастливой случайности — та же обложка в
+   другом списке оставалась мыльной. Теперь запоминается состояние загрузки, а
+   картинка ставится каждому элементу, который её ждёт. */
 function upgradeArt(el, m, size){
   if (!el || !m || !hasArt(m)) return;
   const url = posterUrl(m, size || ART_SIZES.deck);
-  const key = mid(m) + '|' + url;
-  if (artUpgrades.has(key)) return;
+  if (el.dataset.hi === url) return;
+  const state = artHiState.get(url);
+  if (state === 'done'){ applyHiArt(el, url); return; }
+  if (state === 'fail') return;
+  if (state === 'loading'){
+    let list = artHiWaiters.get(url);
+    if (!list){ list = []; artHiWaiters.set(url, list); }
+    list.push(el);
+    return;
+  }
+  artHiRemember(url, 'loading');
+  const list = [el];
+  artHiWaiters.set(url, list);
   const img = new Image();
+  let settled = false;
+  /* Страховка: если картинка не ответила ни успехом, ни ошибкой (зависший запрос),
+     адрес возвращается в очередь — иначе резкая версия для него не пришла бы уже
+     никогда, а все следующие карточки просто копили бы ожидание. */
+  const failTimer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    if (artHiState.get(url) === 'loading') artHiState.delete(url);
+    artHiWaiters.delete(url);
+  }, 12000);
+  img.decoding = 'async';
   img.onload = () => {
-    if (!el.isConnected) return;
-    el.dataset.hi = url;
-    el.style.backgroundImage = `url('${url}')`;
-    el.style.backgroundSize = 'cover';
-    el.style.backgroundPosition = 'center';
-    el.classList.remove('art-loading');
+    if (settled) return;
+    settled = true; clearTimeout(failTimer);
+    artHiRemember(url, 'done');
+    const waiters = artHiWaiters.get(url);
+    artHiWaiters.delete(url);
+    (waiters || []).forEach(node => applyHiArt(node, url));
+  };
+  img.onerror = () => {
+    if (settled) return;
+    settled = true; clearTimeout(failTimer);
+    artHiRemember(url, 'fail');
+    artHiWaiters.delete(url);
   };
   img.src = url;
-  artUpgrades.add(key);
 }
 function posterStyle(m, size){ return hasArt(m) ? `background-image:url('${esc(posterUrl(m, size))}'); background-size:cover; background-position:center;` : `background:${posterBG(m)};`; }
 
@@ -5549,7 +5684,23 @@ function saveStubsSoon(){
 function rememberMovie(m){
   if (!m || !m.id || isHiddenItem(m)) return;     // порно и телешоу не запоминаем вообще
   const k = mid(m);
-  if (movieStubs[k]) return;
+  /* Копия уже есть — но она могла быть сделана до того, как приехали обложка,
+     описание, жанры и число серий. Раньше такие поля не дозаполнялись, и в истории
+     карточка навсегда оставалась пустой. */
+  const known = movieStubs[k];
+  if (known){
+    if (hasArt(m) && !known.posterPath){ known.posterPath = m.posterPath; known.poster = m.poster || known.poster; }
+    if (m.overview && !known.overview) known.overview = m.overview;
+    if ((m.genres || []).length > (known.genres || []).length) known.genres = m.genres.slice(0, 3);
+    if (!known.voteCount && m.voteCount) known.voteCount = m.voteCount;
+    if (!known.runtime && m.runtime) known.runtime = m.runtime;
+    if (!known.episodesTotal && m.episodesTotal) known.episodesTotal = m.episodesTotal;
+    if (!known.seasons && m.seasons && m.seasons.length) known.seasons = m.seasons;
+    if (!known.isCartoon && m.isCartoon) known.isCartoon = true;
+    if (!known.isAnime && m.isAnime) known.isAnime = true;
+    if (/^Тайтл #/.test(String(known.title || '')) && m.title && !/^Тайтл #/.test(String(m.title))) known.title = m.title;
+    return;
+  }
   movieStubs[k] = { id: m.id, type: m.type, title: m.title, originalTitle: m.originalTitle, year: m.year, adult: !!m.adult,
     rating: m.rating, poster: m.poster, posterPath: m.posterPath || null,
     overview: m.overview || '', voteCount: m.voteCount || 0,
@@ -5631,12 +5782,17 @@ function bumpReviewCount(movieId){
 }
 // ID у фильмов и сериалов живут в разных пространствах, поэтому тип — часть ключа.
 function movieById(id, type){
-  const inCatalog = type ? MOVIES.find(m => m.id === id && m.type === type) : MOVIES.find(m => m.id === id);
-  if (inCatalog) return inCatalog;
-  /* Тайтла нет в загруженном каталоге — ищем в копиях из памяти телефона.
-     Без этого в «Хочу чекнуть» и в профилях карточки не нажимались вообще. */
-  for (const m of Object.values(movieStubs)){
-    if (m.id === id && (!type || m.type === type)) return m;
+  id = Number(id);
+  if (!id) return null;
+  /* Раньше здесь перебирался весь каталог и все копии из памяти телефона: на тап по
+     карточке это сотни сравнений, а в списках — на каждый элемент. Ключи у нас уже
+     есть (mid), поэтому смотрим ровно по одному-двум ключам: фильм и сериал с одним
+     и тем же числом TMDB — разные тайтлы, поэтому порядок зависит от типа. */
+  const tvLike = (type === 'series' || type === 'anime');
+  const keys = tvLike ? [id + SERIES_ID_OFFSET, id] : [id, id + SERIES_ID_OFFSET];
+  for (const k of keys){
+    const m = MOVIE_INDEX.get(k) || movieStubs[k];
+    if (m && (!type || m.type === type || movieTypes(m).includes(type))) return m;
   }
   return null;
 }
@@ -5903,9 +6059,10 @@ const Roulette = (function(){
 })();
 
 /* Поиск в «Хочу чекнуть» */
+const renderWishlistSoon = scheduleFrame(() => renderWishlist());
 document.getElementById('wishSearch').addEventListener('input', (e) => {
   wishQuery = e.target.value.trim();
-  renderWishlist();
+  renderWishlistSoon();
 });
 
 /* ============ КЛАВИАТУРА И КРЕСТИКИ В ПОИСКЕ ============ */
@@ -6086,6 +6243,7 @@ function badgeCounters(){
 }
 function checkBadges(){
   const counters = badgeCounters();
+  const opened = [];                      // что открылось именно сейчас — нужно для «Вернуться»
   BADGES.forEach(b=>{
     const val = counters[b.kind || 'watched'] || 0;
     if (val >= b.min && !state.unlocked.includes(b.id)){
@@ -6094,9 +6252,13 @@ function checkBadges(){
       showToast(`Ачивка «${b.name}» открыта`, b.icon);
       haptic('notification','success');
       dbBadge(b.id);
+      opened.push(b.id);
     }
   });
   renderBadges();
+  /* Возвращаем список: «Вернуться» после свайпа снимает ачивки, которые этот свайп
+     и открыл. Иначе отмена оставляла лишний опыт и ачивку «за то, чего не было». */
+  return opened;
 }
 /* В профиле показываем только иконки и не весь список: 20 подписанных плиток
    выглядели тяжёлой сеткой. Название — в карточке ачивки по тапу. */
@@ -6298,42 +6460,49 @@ function watchTmdbPage(movie){
 }
 /* Официальный трейлер: сначала на русском, потом общий список TMDB. */
 function ensureTrailer(movie){
+  if (!movie || !movie.id) return Promise.resolve(null);
   if (movie._trailer !== undefined) return Promise.resolve(movie._trailer);
   const kind = isTvLike(movie) ? 'tv' : 'movie';
   const url = (lang) => `https://api.themoviedb.org/3/${kind}/${movie.id}/videos?api_key=${TMDB_KEY}${lang}`;
   const pick = (list) => (list || []).find(v => v.site === 'YouTube' && v.type === 'Trailer')
                      || (list || []).find(v => v.site === 'YouTube' && (v.type === 'Teaser' || v.type === 'Clip'));
-  return fetch(url('&language=ru-RU')).then(r => r.json())
-    .then(d => {
-      const ru = pick(d && d.results);
-      if (ru) return ru.key;
-      return fetch(url('')).then(r => r.json()).then(d2 => {
-        const any = pick(d2 && d2.results);
-        return any ? any.key : null;
-      });
-    })
-    .then(key => { movie._trailer = key; return key; })
-    .catch(() => { movie._trailer = null; return null; });
+  return movieInfoOnce('trailer|' + mid(movie), () =>
+    fetch(url('&language=ru-RU')).then(r => r.json())
+      .then(d => {
+        const ru = pick(d && d.results);
+        if (ru) return ru.key;
+        return fetch(url('')).then(r => r.json()).then(d2 => {
+          const any = pick(d2 && d2.results);
+          return any ? any.key : null;
+        });
+      })
+      .catch(() => null)
+  ).then(key => { movie._trailer = key; return key; });
 }
 /* Где тайтл лежит легально. Берём только Россию: приложение русское. */
 function ensureWatchProviders(movie){
+  if (!movie || !movie.id) return Promise.resolve({ rows: [], link: '' });
   if (movie._providers !== undefined) return Promise.resolve(movie._providers);
   const kind = isTvLike(movie) ? 'tv' : 'movie';
-  return fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/watch/providers?api_key=${TMDB_KEY}`)
-    .then(r => r.json())
-    .then(d => {
-      const ru = (d && d.results && d.results.RU) || null;
-      const rows = [];
-      ['flatrate', 'free', 'ads', 'rent', 'buy'].forEach(k => {
-        (ru && ru[k] || []).forEach(pr => {
-          if (rows.some(x => x.id === pr.provider_id)) return;
-          rows.push({ id: pr.provider_id, name: pr.provider_name, logo: pr.logo_path, kind: k });
+  return movieInfoOnce('providers|' + mid(movie), () =>
+    fetch(`https://api.themoviedb.org/3/${kind}/${movie.id}/watch/providers?api_key=${TMDB_KEY}`)
+      .then(r => r.json())
+      .then(d => {
+        const ru = (d && d.results && d.results.RU) || null;
+        const rows = [];
+        ['flatrate', 'free', 'ads', 'rent', 'buy'].forEach(k => {
+          (ru && ru[k] || []).forEach(pr => {
+            if (rows.some(x => x.id === pr.provider_id)) return;
+            rows.push({ id: pr.provider_id, name: pr.provider_name, logo: pr.logo_path, kind: k });
+          });
         });
-      });
-      movie._providers = { rows, link: (ru && ru.link) || watchTmdbPage(movie) };
-      return movie._providers;
-    })
-    .catch(() => { movie._providers = { rows: [], link: watchTmdbPage(movie) }; return movie._providers; });
+        return { rows, link: (ru && ru.link) || watchTmdbPage(movie) };
+      })
+      .catch(() => ({ rows: [], link: watchTmdbPage(movie) }))
+  ).then(info => {
+    movie._providers = info || { rows: [], link: watchTmdbPage(movie) };
+    return movie._providers;
+  });
 }
 function watchSkeletonHTML(){
   return `<div class="eyebrow">Трейлер</div>
@@ -6767,7 +6936,10 @@ function upgradeDeckArt(){
     const deckIdx = total - 1 - idx;              // последняя в DOM — верхняя карточка
     if (deckIdx > 1) return;
     const art = card.querySelector('.poster[data-art]');
-    const m = deck[deckIdx];
+    /* Фильм берём у самой карточки: в кадре пропускаются дубли названий, поэтому
+       позиция в DOM и позиция в колоде могли не совпадать — и резкая обложка
+       уезжала к чужому фильму. */
+    const m = movieById(card.dataset.id, card.dataset.type) || deck[deckIdx];
     if (art && m && art.dataset.hi !== posterUrl(m, ART_SIZES.deck)) upgradeArt(art, m, ART_SIZES.deck);
   });
 }
@@ -6783,7 +6955,9 @@ function restackAfterTop(swipedEl){
     card.style.zIndex = 10 - i;
   });
   const topCard = rest[0];
-  if (topCard) makeDraggable(topCard, deck[0]);
+  /* Свайпаем ровно ту карточку, которая оказалась сверху в DOM: при пропущенных
+     дублях это не всегда deck[0] — карточка вела себя как чужой фильм. */
+  if (topCard) makeDraggable(topCard, movieById(topCard.dataset.id, topCard.dataset.type) || deck[0]);
   // Дорисовываем карточку на заднем плане
   const shown = rest.length;
   if (deck[shown]){
@@ -6936,7 +7110,8 @@ function resolveSwipe(card, movie, action){
   flashAction(action);            // короткая вспышка цвета темы под карточкой
   showXPPop(xpForAction(action), card);
   updateStats();
-  if (action === 'watched') checkBadges();
+  /* Запоминаем, какие ачивки открыл именно этот свайп: отмена должна их снять. */
+  undoInfo.newBadges = action === 'skip' ? [] : checkBadges();
   pushSwipeHistory(undoInfo);
   setTimeout(()=>{
     deck = deck.filter(m => !sameMovie(m, movie));
@@ -7072,10 +7247,20 @@ function undoLastSwipe(){
   if (action === 'skip'){ state.skipped = state.skipped.filter(id=>id!==mid(movie)); dbSwipeRemove(mid(movie), 'skipped'); }
   if (action === 'wish'){ state.wishlist = state.wishlist.filter(id=>id!==mid(movie)); dbWishRemove(mid(movie)); }
   if (action === 'watching'){ state.watching = state.watching.filter(id=>id!==mid(movie)); dbWatchingRemove(mid(movie)); }
+  /* Ачивки, открытые отменённым свайпом, снимаем: иначе «вернул карточку» оставляло
+     чужой опыт и достижение за действие, которого не было. */
+  if (entry.newBadges && entry.newBadges.length){
+    entry.newBadges.forEach(id => {
+      state.unlocked = state.unlocked.filter(x => x !== id);
+      delete state.badgeDates[id];
+      dbBadgeRemove(id);
+    });
+  }
   deck = deck.filter(m => !sameMovie(m, movie));
   deck.unshift(movie);
   unmarkServed(movie);             // отменённый свайп — тайтл снова можно показать
   haptic('impact','medium');
+  renderBadges();
   updateStats();
   renderStack();
   requestAnimationFrame(()=>{
@@ -7219,6 +7404,7 @@ const Radial = (function(){
     try{
       menu.classList.add('show');
     }catch(e){ active = false; return; }
+    startWatchdog();
     hot = -1;
     // раскрываем кнопки из центра
     requestAnimationFrame(()=>{ items.forEach(it => { it.el.style.transform = `var(--rad-pos) scale(1)`; }); });
@@ -7272,6 +7458,7 @@ const Radial = (function(){
     // Чистим ВСЕГДА, даже если active уже сброшен: залипший слой radialMenu перекрывал
     // весь интерфейс, и приложение «переставало нажиматься» до перезагрузки.
     const wasOpen = active || menu.classList.contains('show');
+    stopWatchdog();
     active = false;
     document.body.classList.remove('radial-open');
     const chosen = (fire && wasOpen && hot>=0 && items[hot]) ? items[hot].act : null;
@@ -7281,6 +7468,19 @@ const Radial = (function(){
     curMovie = null; // фильм нужен только внутри действий выше
     if (chosen){ haptic('impact','light'); chosen.run(); }
   }
+  /* Сторож залипшего меню. Раньше это был setInterval на секунду, который крутился
+     ВСЮ сессию, даже когда меню никто не открывал, — теперь он живёт только пока
+     меню на экране и снимается сразу после закрытия. */
+  let watchdog = null;
+  function startWatchdog(){
+    if (watchdog) return;
+    watchdog = setInterval(() => {
+      if (!active && !menu.classList.contains('show')){ stopWatchdog(); return; }
+      // active, но на экране меню нет (или наоборот) — состояние разъехалось, закрываем
+      if (active && !menu.classList.contains('show')){ active = false; document.body.classList.remove('radial-open'); stopWatchdog(); }
+    }, 1000);
+  }
+  function stopWatchdog(){ if (watchdog){ clearInterval(watchdog); watchdog = null; } }
   backdrop.addEventListener('pointerup', ()=> close(false));
   /* Страховки от «залипшего» меню: любое отпускание пальца/курсора где угодно,
      отмена жеста и сторож раз в секунду. Плюс клик по фону. Раньше при потере
@@ -7290,11 +7490,6 @@ const Radial = (function(){
     document.addEventListener(ev, () => { if (active) safety(); }, true));
   document.addEventListener('visibilitychange', () => { if (document.hidden && active) close(false); });
   backdrop.addEventListener('click', () => close(false));
-  setInterval(() => {
-    if (!active) return;
-    // active, но на экране меню нет (или наоборот) — состояние разъехалось, закрываем
-    if (!menu.classList.contains('show')){ active = false; document.body.classList.remove('radial-open'); }
-  }, 1000);
   return { open, update, close, fit: fitRadLabels, get active(){ return active; } };
 })();
 
@@ -7642,7 +7837,10 @@ async function openMyTile(kind){
   if (kind === 'reviews'){
     const [ratings, friendRatings] = await Promise.all([myRatingMap(), friendRatingsByMovie()]);
     const movies = moviesOf([...ratings.keys()]);
-    const mine = m => ratings.get(m.id) ?? ratings.get(mid(m)) ?? 0;
+    /* Оценки в базе лежат под ключом mid (сериал — id + смещение). Раньше сначала
+       смотрели на «сырое» id: у сериала и фильма с одним числом TMDB это давало
+       чужую оценку. Порядок развёрнут. */
+    const mine = m => ratings.get(mid(m)) ?? ratings.get(m.id) ?? 0;
     return openTitleList('Мои оценки', movies, {
       view: 'rows',
       scoreOf: mine,
@@ -7998,9 +8196,21 @@ if (catActiveHost) catActiveHost.addEventListener('click', e => {
 });
 renderCatActive();            // чипы выбранных фильтров и значок на кнопке при запуске
 let searchQuery = '';
+/* Пока человек печатает, перерисовываем сетку не чаще одного раза за кадр: на каждый
+   ввод буквы строились десятки карточек, и ввод отставал от пальца. */
+function scheduleFrame(fn){
+  let queued = false, lastArgs = null;
+  return function(){
+    lastArgs = arguments;
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; fn.apply(null, lastArgs); });
+  };
+}
+const renderCatalogSoon = scheduleFrame(() => renderCatalog());
 document.getElementById('catSearch').addEventListener('input', e=>{
   searchQuery = e.target.value.trim().toLowerCase(); catalogRenderLimit = 60;
-  renderCatalog();
+  renderCatalogSoon();
 });
 /* ============ Общие шаблоны карточек (грид/список) ============ */
 /* Обложки грузим только когда карточка приближается к экрану: в каталоге
@@ -8679,6 +8889,9 @@ function fillSheetFromMovie(movie){
   renderProgress(movie);
 }
 function openSheet(movie){
+  /* Тап по карточке, которой уже нет в каталоге (истёк кэш, приехал новый список),
+     раньше приводил к исключению и «мёртвой» кнопке — теперь просто ничего не делаем. */
+  if (!movie || !movie.id) return;
   sheetMovie = movie;
   raiseSheet(sheet, document.getElementById('backdrop'));
   // Новая карточка всегда открывается сверху, а не в том месте, где докрутили прошлую.
@@ -8936,18 +9149,29 @@ function renderSliders(containerId, cats, store, max){
     };
     /* Протяжка пальцем по столбикам — как по шкале в приложении-пульте. */
     let dragging = false;
+    /* Середины столбиков считаем один раз на жест, а не на каждое движение пальца:
+       раньше протяжка по шкале читала раскладку десяти кнопок десятки раз в секунду. */
+    let barCenters = null;
+    const measureBars = () => {
+      barCenters = [...meter.querySelectorAll('.cm-bar')].map(b => {
+        const r = b.getBoundingClientRect();
+        return { v: +b.dataset.v, x: r.left + r.width / 2 };
+      });
+      return barCenters;
+    };
     const valFromX = (clientX) => {
-      const bars = [...meter.querySelectorAll('.cm-bar')];
+      const bars = barCenters || measureBars();
+      if (!bars.length) return 1;
       let best = bars[0], bestD = Infinity;
       bars.forEach(b => {
-        const r = b.getBoundingClientRect();
-        const d = Math.abs(clientX - (r.left + r.width / 2));
+        const d = Math.abs(clientX - b.x);
         if (d < bestD){ bestD = d; best = b; }
       });
-      return +best.dataset.v;
+      return best.v;
     };
     meter.addEventListener('pointerdown', (e) => {
       dragging = true;
+      measureBars();
       try{ meter.setPointerCapture && meter.setPointerCapture(e.pointerId); }catch(err){}
       setVal(valFromX(e.clientX), true);
     });
@@ -8955,15 +9179,18 @@ function renderSliders(containerId, cats, store, max){
     const drop = () => {
       if (!dragging) return;
       dragging = false;
+      barCenters = null;                 // в следующий раз измерим заново
       haptic('selection');
       updateReviewTotal();
     };
     meter.addEventListener('pointerup', drop);
-    meter.addEventListener('pointercancel', () => { dragging = false; });
+    meter.addEventListener('pointercancel', () => { dragging = false; barCenters = null; });
+    window.addEventListener('resize', () => { barCenters = null; });
     paintMeter(row, store[key], max);
   });
 }
 async function openReviewScreen(movie){
+  if (!movie || !movie.id) return;      // тайтл мог исчезнуть из каталога — окно не открываем
   reviewMovie = movie;
   document.getElementById('reviewMovieHeader').innerHTML = `
     <div class="thumb" style="${posterStyle(movie,'w154')}; width:44px; height:62px;">${hasArt(movie) ? '' : ICON(posterIcon(movie), 20)}</div>
@@ -9071,16 +9298,23 @@ function reviewCardHTML(r, profileMap, opts){
 
 /* Лента оценок: последний собранный вариант показываем сразу, а данные обновляем
    следом. Раньше при каждом заходе висела долгая «крутилка», а если база не
-   отвечала — экран оставался пустым навсегда. */
-let feedCacheHTML = '';
+   отвечала — экран оставался пустым навсегда. Свой заготовленный экран у каждого
+   режима: переключение «С друзьями ↔ Со всеми» больше не показывает чужие оценки. */
+const feedCache = { friends:'', global:'' };
 function withTimeout(p, ms, fallback){
   return Promise.race([p, new Promise(res => setTimeout(() => res(fallback), ms))]);
 }
 async function renderFeed(mode){
-  mode = mode || feedMode;
+  /* Раньше здесь стояло mode = mode || feedMode, и кнопка «Повторить» (renderFeed(true))
+     превращала режим в true — общий рейтинг после ошибки подменялся лентой друзей.
+     Теперь нераспознанный аргумент означает «обнови то, что открыто». */
+  mode = (mode === 'global' || mode === 'friends') ? mode : feedMode;
   const body = document.getElementById('feedBody');
-  if (feedCacheHTML){
-    body.innerHTML = feedCacheHTML
+  /* Своя заготовка на каждый режим: раньше при переключении на «Со всеми» на секунду
+     показывались оценки друзей. */
+  const cached = feedCache[mode];
+  if (cached){
+    body.innerHTML = cached
       + `<div class="empty-note" id="feedUpdating" style="padding:12px 4px;">Обновляю данные…</div>`;
     setTimeout(() => { const n = document.getElementById('feedUpdating'); if (n) n.style.display = 'none'; }, 2500);
   } else {
@@ -9120,11 +9354,11 @@ async function renderFeed(mode){
   const pack = await withTimeout(Promise.all([getFeedReviews(40), getFriendIds(), getRatingAggregates(400)]), 7000, null);
   if (!pack){
     // База не ответила: показываем то, что уже собрано, либо честно предлагаем повторить.
-    if (!feedCacheHTML){
+    if (!feedCache[mode]){
       body.innerHTML = `<div class="empty-note" style="padding:30px 4px;">Оценки не подгрузились — похоже, нет связи.<br>
         <button id="feedRetry" style="margin-top:14px; padding:12px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-weight:600;">Повторить</button></div>`;
       const btn = document.getElementById('feedRetry');
-      if (btn) btn.onclick = () => { haptic('selection'); renderFeed(true); };
+      if (btn) btn.onclick = () => { haptic('selection'); renderFeed(mode); };   // именно текущий режим
     }
     return;
   }
@@ -9159,7 +9393,7 @@ async function renderFeed(mode){
         ? block(friendIds.length ? 'Оценки друзей' : 'Оценки зрителей', friends) + block('Твои оценки', mine)
         : block('Твои оценки', mine) + `<div class="empty-note" style="padding:18px 4px;">Друзей пока нет — пригласи их в профиле, и здесь появятся их оценки</div>`)
     : '';
-  feedCacheHTML = body.innerHTML;
+  feedCache[mode] = body.innerHTML;
   [...body.querySelectorAll('.review-card')].forEach(card => {
     card.onclick = (e) => {
       const uid = +card.dataset.uid;
@@ -9422,20 +9656,35 @@ switchTab = function(id){
 /* Каталог не грузится весь и сразу (это тысячи тайтлов) — подгружаем ещё с TMDB,
    но только когда локально уже показано всё отфильтрованное (иначе просто жмут "Показать ещё"). */
 let catalogLoadingMore = false;
-document.getElementById('catalog').addEventListener('scroll', async (e) => {
-  if (catalogLoadingMore || tmdbFailed) return;
-  const moreWrapVisible = document.getElementById('catShowMore').style.display !== 'none';
-  if (moreWrapVisible) return; // есть ещё что показать локально — сетевой запрос пока не нужен
-  const el = e.target;
-  if (el.scrollHeight - el.scrollTop - el.clientHeight < 500){
+(function initCatalogInfiniteScroll(){
+  const catalogEl = document.getElementById('catalog');
+  if (!catalogEl) return;
+  let queued = false;
+  async function checkBottom(){
+    queued = false;
+    if (catalogLoadingMore || tmdbFailed) return;
+    const moreWrap = document.getElementById('catShowMore');
+    /* Есть что показать локально — сеть пока не нужна. display читаем у самой кнопки,
+       а не через querySelector: раньше на каждое событие прокрутки приходилось
+       пересчитывать раскладку целой сетки. */
+    if (moreWrap && moreWrap.style.display !== 'none') return;
+    if (catalogEl.scrollHeight - catalogEl.scrollTop - catalogEl.clientHeight > 500) return;
     catalogLoadingMore = true;
-    document.getElementById('catLoadMore').style.display = 'block';
+    const loadNote = document.getElementById('catLoadMore');
+    if (loadNote) loadNote.style.display = 'block';
     const added = await fetchMorePages();
-    document.getElementById('catLoadMore').style.display = 'none';
-    if (added){ renderCatalog(); }
+    if (loadNote) loadNote.style.display = 'none';
+    if (added) renderCatalog();
     catalogLoadingMore = false;
   }
-});
+  catalogEl.addEventListener('scroll', () => {
+    /* Раз в кадр, а не на каждое событие: чтение scrollHeight во время прокрутки —
+       это принудительный пересчёт раскладки, из-за него список дёргался. */
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(checkBottom);
+  }, { passive: true });
+})();
 
 /* ============ INIT ============ */
 (async () => {
