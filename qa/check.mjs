@@ -1016,6 +1016,43 @@ function makeFakeDb(){
   };
   return db;
 }
+/* Фальшивый звуковой контекст. В jsdom звука нет вообще, поэтому проверять звуковой
+   модуль «в живую» иначе как подменой AudioContext нельзя. Подмена ведёт себя как
+   настоящий браузер там, где браузер падает: exponentialRampToValueAtTime с нулём
+   бросает RangeError, отрицательное время запуска — тоже. Так тесты ловят не
+   «звук не сыграл», а именно ошибки в коде синтеза. */
+function makeFakeAudioContext(log){
+  const param = () => ({
+    value: 0,
+    setValueAtTime(v, t){ if (!isFinite(v)) throw new RangeError('NaN в значение'); if (t < 0) throw new RangeError('время меньше нуля'); log.params++; this.value = v; },
+    linearRampToValueAtTime(v, t){ if (!isFinite(v)) throw new RangeError('NaN в значение'); if (t < 0) throw new RangeError('время меньше нуля'); log.ramps++; this.value = v; },
+    exponentialRampToValueAtTime(v, t){
+      if (!(v > 0)) throw new RangeError('exponentialRampToValueAtTime: значение должно быть больше нуля');
+      if (t < 0) throw new RangeError('время меньше нуля');
+      log.expRamps++; this.value = v;
+    },
+    setTargetAtTime(v){ log.targets++; this.value = v; },
+    cancelScheduledValues(){ log.cancels++; },
+  });
+  return class FakeAudioContext {
+    constructor(){
+      this.currentTime = 0; this.sampleRate = 44100; this.state = 'suspended';
+      this.destination = { connect(){}, disconnect(){} };
+      log.created++;
+    }
+    createGain(){ return { gain: param(), connect(){}, disconnect(){} }; }
+    createOscillator(){
+      log.oscillators++;
+      return { type: 'sine', frequency: param(), connect(){}, disconnect(){},
+        start(t){ if (t < 0) throw new RangeError('start(): время меньше нуля'); log.starts.push(t); }, stop(){} };
+    }
+    createBiquadFilter(){ return { type: 'lowpass', Q: { value: 1 }, frequency: param(), connect(){}, disconnect(){} }; }
+    createBuffer(channels, len, rate){ log.buffers++; return { length: len, sampleRate: rate, getChannelData: () => new Float32Array(len) }; }
+    createBufferSource(){ log.sources++; return { buffer: null, connect(){}, disconnect(){}, start(){ log.starts.push(0); }, stop(){} }; }
+    resume(){ log.resumeCalls++; this.state = 'running'; return Promise.resolve(); }
+    close(){ log.closed++; }
+  };
+}
 async function bootDevice(fake, opts){
   const o = opts || {};
   const errors = [];
@@ -1036,6 +1073,8 @@ async function bootDevice(fake, opts){
         setBottomBarColor(){}, HapticFeedback: { impactOccurred(){}, notificationOccurred(){}, selectionChanged(){} }, openTelegramLink(){} } };
       w.supabase = fake;
       w.fetch = o.fetch || (async () => ({ ok: true, json: async () => ({ page: 1, total_pages: 1, results: FIX.slice(0, 6), genres: [] }) }));
+      /* Звук: подменяем AudioContext только тогда, когда он нужен проверке. */
+      if (o.audio){ w.AudioContext = makeFakeAudioContext(o.audio); w.__audio = o.audio; }
       w.IntersectionObserver = class { constructor(cb){ this.cb = cb; } observe(el){ io.push({ el, cb: this.cb }); } unobserve(){} disconnect(){} takeRecords(){ return []; } };
       w.__flushIO = () => io.splice(0).forEach(({ el, cb }) => { try{ cb([{ target: el, isIntersecting: true, intersectionRatio: 1 }], {}); } catch(e){} });
     },
@@ -1813,6 +1852,177 @@ ok(devT.ev('myXP()') === xpBefore, 'возврат карточки возвра
 ok(devT.ev('state.unlocked.length') === badgesBefore, 'и снимает ачивки, которые открыл именно этот свайп');
 ok(devT.ev('state.watched.length') === auditWatchedBefore, 'отменённый тайтл больше не «просмотрен»');
 devT.close();
+
+/* ===== [26] Звук приложения и планшетная раскладка (iPad) ===== */
+section('[26] Звук: синтез, настройки, синхронизация. Планшетная раскладка');
+/* --- звук ниоткуда не скачивается --- */
+ok(/const SFX_KEY = 'smotra_sfx';/.test(js) && /const MUSIC_KEY = 'smotra_music';/.test(js), 'два независимых канала звука со своими ключами памяти');
+ok(/function sfxOn\(\)\{ return getFlag\(SFX_KEY, true\); \}/.test(js) && /function musicOn\(\)\{ return getFlag\(MUSIC_KEY, true\); \}/.test(js),
+  'оба канала включены по умолчанию — как просили');
+ok(!/<audio[\s>]/i.test(src) && !/new Audio\(/.test(js) && !/\.mp3|\.ogg|\.m4a|\.wav|\.aac/i.test(src), 'ни одного звукового файла: всё синтезируется самим приложением');
+ok(/const AC = window\.AudioContext \|\| window\.webkitAudioContext;/.test(js) && /if \(!AC\)\{ audioBroken = true; return null; \}/.test(js),
+  'там, где звука нет или он запрещён, приложение молча работает дальше');
+ok(/\['pointerdown','touchstart','keydown'\]\.forEach\(ev => window\.addEventListener\(ev, unlockAudio, \{ passive:true \}\)\);/.test(js),
+  'звук разрешается первым касанием: иначе Safari глушит его навсегда');
+ok(/if \(ctx\.state === 'suspended'\)\{ try\{ ctx\.resume\(\); \}catch\(e\)\{\} \}/.test(js), 'и звуковой контекст тут же возобновляется');
+const SFX_ALL = ['tap','swipe','watched','skip','wish','watching','undo','open','close','badge','level','spin','tick','win','shuffle','done','error'];
+ok(SFX_ALL.every(n => new RegExp('\\n  ' + n + ':').test(js)), 'в наборе есть звук на каждое действие: ' + SFX_ALL.length + ' штук');
+ok(/function sfx\(name\)\{[\s\S]{0,80}if \(!sfxOn\(\) \|\| !audioUnlocked\) return;/.test(js), 'выключенный звук не считает ни одной ноты');
+/* --- звук подключён к самим действиям --- */
+ok(/sfx\('swipe'\);[\s\S]{0,240}sfx\(action === 'watched'/.test(js), 'свайп: сперва шорох, сразу за ним звук самого действия');
+ok(/sfx\(action === 'watched' \? 'watched' : action === 'skip' \? 'skip' : action === 'wish' \? 'wish' : 'watching'\);/.test(js),
+  'у каждого свайпа свой звук: смотрел, мимо, чекнуть, смотрю');
+ok(/sfx\('undo'\);/.test(js) && /sfx\('shuffle'\);/.test(js) && /sfx\('badge'\);/.test(js) && /if \(levelFor\(myXP\(\)\)\.level > levelBefore\) sfx\('level'\);/.test(js),
+  '«Вернуться», «Перемешать», ачивка и новый уровень тоже звучат');
+ok(/function resolveSwipe\(card, movie, action\)\{[\s\S]{0,400}const levelBefore = levelFor\(myXP\(\)\)\.level;[\s\S]{0,500}pushUnique\(state\.watched/.test(js),
+  'уровень запоминается до начисления опыта, иначе звук нового уровня не сыграл бы никогда');
+ok(/function openOverlay\(elOrId\)\{[\s\S]{0,320}sfx\('open'\);/.test(js) && /function closeOverlay\(elOrId\)\{[\s\S]{0,320}sfx\('close'\);/.test(js),
+  'окна приложения звучат при открытии и закрытии');
+ok(/sfx\('spin'\);[\s\S]{0,220}startTicks\(\);/.test(js) && /tickTimer = setInterval\(\(\) => sfx\('tick'\), 250\);/.test(js) && /if \(winner\) sfx\('win'\);/.test(js),
+  'рулетка: запуск, тики по ходу вращения, победный аккорд');
+ok(/function stopTicks\(\)\{ if \(tickTimer\)\{ clearInterval\(tickTimer\); tickTimer = null; \} \}/.test(js) && /stopTicks\(\);\n    winner = m \|\| null;/.test(js),
+  'тики выключаются вместе с вращением — трещотка не остаётся висеть');
+const sfxSites = (js.match(/sfx\('/g) || []).length;
+ok(sfxSites >= 18, 'звук подключён в ' + sfxSites + ' местах приложения, а не лежит мёртвым кодом');
+/* --- музыка --- */
+ok(/const MUSIC_BARS = \[[\s\S]{0,600}const MUSIC_BAR_SEC = 3\.6;/.test(js), 'фоновая музыка — короткий круг аккордов, а не случайные ноты');
+ok(/musicGain\.gain\.linearRampToValueAtTime\(0\.9, ctx\.currentTime \+ 1\.4\);/.test(js), 'музыка входит мягко, без щелчка');
+ok(/musicTimer = setInterval\(musicSchedule, 700\)/.test(js) && /while \(musicNextAt < ctx\.currentTime \+ 2\.4\)/.test(js),
+  'ноты расписываются вперёд по часам звука: музыка не дёргается от отрисовки');
+ok(/if \(document\.hidden\) stopMusic\(\);[\s\S]{0,90}else if \(musicOn\(\) && audioUnlocked\) startMusic\(\);/.test(js),
+  'ушёл из приложения — музыка молчит, вернулся — играет снова');
+/* --- тумблеры в настройках --- */
+ok(/<div class="set-label">Звуки<\/div>/.test(src) && /<div class="set-label">Фоновая музыка<\/div>/.test(src), 'в настройках есть обе строки с понятными подписями');
+ok(/<div class="switch" id="switchSfx" data-key="smotra_sfx"><\/div>/.test(src) && /<div class="switch" id="switchMusic" data-key="smotra_music"><\/div>/.test(src),
+  'в строках — настоящие тумблеры со своими ключами');
+ok(/initSwitch\(document\.getElementById\('switchSfx'\), true, \(on\) => \{\n  syncSetting\('sfx', on\);/.test(js), 'тумблер «Звуки» сразу делится выбором с другими устройствами');
+ok(/initSwitch\(document\.getElementById\('switchMusic'\), true, \(on\) => \{[\s\S]{0,220}startMusic\(\)[\s\S]{0,220}else stopMusic\(\);/.test(js),
+  'тумблер музыки включает и гасит подложку тем же касанием');
+/* --- синхронизация --- */
+ok(/if \(localStorage\.getItem\(SFX_KEY\)\) keys\.add\('sfx'\);/.test(js) && /if \(localStorage\.getItem\(MUSIC_KEY\)\) keys\.add\('music'\);/.test(js),
+  'выключенный звук уезжает в базу настроек');
+ok(/sfx: sfxOn\(\),\n    music: musicOn\(\),/.test(js), 'и лежит в общем наборе настроек рядом с темой и фильтрами');
+ok(/let sx = take\('sfx'\);[\s\S]{0,1000}if \(mu\)\{ if \(audioUnlocked\) startMusic\(\); \} else stopMusic\(\);/.test(js),
+  'на втором устройстве чужой выбор применяется: там тоже тишина');
+
+/* --- живая проверка звука: подменённый AudioContext --- */
+const sndLog = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] };
+const devSnd = await bootDevice(makeFakeDb(), { platform: 'ios', audio: sndLog });
+ok(devSnd.errors.length === 0, 'планшет запускается без ошибок с настоящим звуком' + (devSnd.errors.length ? ': ' + devSnd.errors[0] : ''));
+ok(devSnd.ev('audioBroken') === false && devSnd.ev('audioUnlocked') === false, 'до первого касания звук ещё не разрешён — как требует Safari');
+devSnd.ev("sfx('watched'); sfx('swipe'); sfx('badge')");
+ok(sndLog.oscillators === 0 && sndLog.sources === 0, 'до касания не играет ни одна нота, даже если действия уже идут');
+devSnd.ev("window.dispatchEvent(new Event('pointerdown'))");
+ok(devSnd.ev('audioUnlocked') === true && sndLog.resumeCalls >= 1, 'первое касание разрешает звук и возобновляет контекст');
+const tonesBefore = sndLog.oscillators;
+devSnd.ev("sfx('watched')");
+ok(sndLog.oscillators - tonesBefore === 2, '«смотрел» — аккорд из двух нот, а не молчание: ' + (sndLog.oscillators - tonesBefore));
+const noiseBefore = sndLog.sources;
+devSnd.ev("sfx('swipe')");
+ok(sndLog.sources > noiseBefore && sndLog.buffers > 0, 'свайп — шумовой «вжух», собранный прямо в приложении');
+ok(devSnd.ev("(function(){ try{ sfx('такого-звука-нет'); return 'ok'; }catch(e){ return 'ошибка: ' + e.message; } })()") === 'ok',
+  'незнакомое имя звука ничего не ломает');
+ok(sndLog.expRamps > 0 && sndLog.ramps > 0 && sndLog.starts.every(t => t >= 0), 'огибающие посчитаны без NaN и без нуля — браузер не упадёт');
+ok(devSnd.ev('musicTimer') !== null && devSnd.ev('musicVoices.length') > 0 && devSnd.ev('musicNextAt') > 0,
+  'музыка включилась вместе со звуком и расписала первые аккорды: ' + devSnd.ev('musicBarIndex') + ' такт(а) вперёд');
+ok(devSnd.errors.length === 0, 'за весь прогон звука ни одной ошибки' + (devSnd.errors.length ? ': ' + devSnd.errors[0] : ''));
+/* выключение звука в настройках гасит канал целиком */
+devSnd.doc.getElementById('switchSfx').click();
+await sleep(40);
+ok(devSnd.ev('sfxOn()') === false && devSnd.ev("localStorage.getItem('smotra_sfx')") === '0', 'тумблер «Звуки» выключает канал и запоминает выбор');
+const quietBefore = sndLog.oscillators + sndLog.sources;
+devSnd.ev("sfx('watched'); sfx('swipe'); sfx('badge'); sfx('level')");
+ok(sndLog.oscillators + sndLog.sources === quietBefore, 'выключенный звук молчит полностью — ни одной ноты');
+devSnd.doc.getElementById('switchSfx').click();
+await sleep(40);
+ok(devSnd.ev('sfxOn()') === true, 'и включается обратно тем же тумблером');
+devSnd.doc.getElementById('switchMusic').click();
+await sleep(60);
+ok(devSnd.ev('musicOn()') === false && devSnd.ev('musicTimer') === null && sndLog.targets > 0, 'музыка выключается, а её голоса гасятся, а не доигрывают');
+devSnd.doc.getElementById('switchMusic').click();
+await sleep(60);
+ok(devSnd.ev('musicOn()') === true && devSnd.ev('musicTimer') !== null, 'и включается обратно');
+/* выбор звука уезжает на второе устройство */
+const sndDb = makeFakeDb();
+const devSndA = await bootDevice(sndDb, { platform: 'ios', audio: { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] } });
+devSndA.doc.getElementById('switchSfx').click();
+devSndA.doc.getElementById('switchMusic').click();
+await sleep(220);
+ok(sndDb.cfgValue('sfx') === false && sndDb.cfgValue('music') === false, 'выключенный звук и музыка доехали до базы: ' + JSON.stringify([sndDb.cfgValue('sfx'), sndDb.cfgValue('music')]));
+const sndLog2 = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] };
+const devSndB = await bootDevice(sndDb, { platform: 'ios', audio: sndLog2 });
+ok(devSndB.ev('sfxOn()') === false && devSndB.ev('musicOn()') === false, 'второе устройство получило тишину из базы');
+ok(devSndB.ev("document.getElementById('switchSfx').classList.contains('on')") === false &&
+   devSndB.ev("document.getElementById('switchMusic').classList.contains('on')") === false, 'и оба тумблера на нём стоят в положении «выкл»');
+devSndB.ev("window.dispatchEvent(new Event('pointerdown'))");
+devSndB.ev("sfx('watched')");
+await sleep(60);
+ok(sndLog2.oscillators === 0 && devSndB.ev('musicTimer') === null, 'после этого звук и музыка там действительно не играют');
+devSnd.close(); devSndA.close(); devSndB.close();
+
+
+/* --- планшетная раскладка: iPad и Android-планшеты --- */
+const tSel = '@media (min-width: 700px) and (max-width: 1023px) and (min-height: 620px){';
+const tStart = cssClean.indexOf(tSel);
+ok(tStart !== -1, 'у планшетов своя полоса раскладки (700–1023px и достаточно высоты)');
+ok(!/@media \(min-width: 700px\) and \(max-width: 1023px\)\{/.test(cssClean), 'полоса требует высоты: телефон в горизонтали (он тоже шире 700px) сюда не попадает');
+const tBefore = cssClean.slice(0, tStart);
+ok(tBefore.split('{').length === tBefore.split('}').length,
+  'блок планшета объявлен на верхнем уровне: внутри другого @media он бы просто не сработал');
+/* Раньше на этой ширине работала только десктопная колонка 700px: по бокам оставались
+   полосы, а окна стояли «вставленными» в середину экрана. */
+const dCol = /@media \(min-width: 760px\)\{\s*:root\{ --col: 700px; \}/.test(cssClean);
+ok(dCol, 'десктопная колонка 700px осталась для широких экранов');
+let tInner = '';
+if (tStart !== -1){
+  const rest = cssClean.slice(tStart + tSel.length);
+  let depth = 1, i = 0;
+  while (i < rest.length && depth > 0){ if (rest[i] === '{') depth++; else if (rest[i] === '}') depth--; i++; }
+  tInner = rest.slice(0, i - 1);
+}
+ok(tInner.length > 900, 'планшетный блок найден и разобран (' + tInner.length + ' символов)');
+const tdom = new JSDOM(src.replace('</style>', tInner + '\n</style>'));
+const tg = (sel, prop) => { const el = tdom.window.document.querySelector(sel); return el ? tdom.window.getComputedStyle(el)[prop] : 'НЕТ'; };
+const tpx = (v) => parseFloat(v) || 0;
+ok(/min\(calc\(100% - 44px\),\s?940px\)/.test(tdom.window.getComputedStyle(tdom.window.document.documentElement).getPropertyValue('--col')),
+  'колонка планшета шире телефонной: ' + tdom.window.getComputedStyle(tdom.window.document.documentElement).getPropertyValue('--col'));
+ok(tpx(tg('#home','maxWidth')) === 640, 'карточка главной на планшете крупнее: ' + tg('#home','maxWidth'));
+ok(tpx(tg('.stack','maxWidth')) === 470 && tpx(tg('.stack','maxHeight')) > 400 && tg('.stack','marginLeft') === 'auto',
+  'колода крупнее телефонной, стоит по центру и держит пропорции постера: ' + tg('.stack','maxWidth'));
+ok(tpx(tg('.ov-head','maxWidth')) === 880 && tg('.ov-head','marginLeft') === 'auto', 'содержимое окон — колонкой по центру, а не растянуто на весь планшет');
+ok(tpx(tg('.ov-body','maxWidth')) === 880 && tpx(tg('#catalog','paddingLeft')) === 30, 'и у экранов появился воздух по краям: ' + tg('#catalog','paddingLeft'));
+ok(tg('.overlay-screen','maxWidth') === 'none' && tg('#splash','maxWidth') === 'none' && tg('#tutorial','maxWidth') === 'none' && tg('#onboarding','maxWidth') === 'none',
+  'заставка, обучение и окна кроют планшет целиком, а не стоят колонкой посередине');
+ok(tpx(tg('#sheet','maxWidth')) === 720 && tg('#sheet','marginLeft') === 'auto', 'нижние шторки держат читаемую ширину и стоят по центру');
+ok(tpx(tg('.icon-btn','width')) === 46 && tpx(tg('.icon-refresh','width')) === 44 && tpx(tg('.search-wrap .search-btn','width')) === 44,
+  'кнопки стали по пальцу: 46 и 44 вместо 42 и 36');
+/* Список жанров и сортировки рисуются кодом, поэтому пробуем их на живом примере. */
+tdom.window.document.body.insertAdjacentHTML('beforeend', '<div class="chip"></div><button class="f-chip"></button>');
+const tg2 = (sel, prop) => tdom.window.getComputedStyle(tdom.window.document.querySelector(sel))[prop];
+ok(tpx(tg('.set-row','paddingLeft')) === 17 && tpx(tg2('.chip','paddingLeft')) === 16 && tpx(tg2('.f-chip','minHeight')) === 42,
+  'строки настроек и фильтры на планшете просторнее: ' + tg2('.chip','paddingLeft') + ' и ' + tg2('.f-chip','minHeight'));
+ok(/minmax\(190px, 1fr\)/.test(tg('.grid2','gridTemplateColumns')), 'обложек в ряд помещается больше: ' + tg('.grid2','gridTemplateColumns'));
+ok(tpx(tg('nav','paddingTop')) === 10 && tpx(tg('nav svg','width')) === 24, 'панель разделов на планшете крупнее, но по-прежнему внизу');
+/* телефон не должен пострадать от планшетных правил */
+const ph = new JSDOM(src);
+const pg = (sel, prop) => { const el = ph.window.document.querySelector(sel); return el ? ph.window.getComputedStyle(el)[prop] : 'НЕТ'; };
+ok(tpx(pg('#home','maxWidth')) === 0 && tpx(pg('.stack','maxWidth')) === 0, 'на телефоне главная и колода по-прежнему во всю ширину');
+ph.window.document.body.insertAdjacentHTML('beforeend', '<div class="chip"></div><button class="f-chip"></button>');
+const pg2 = (sel, prop) => ph.window.getComputedStyle(ph.window.document.querySelector(sel))[prop];
+ok(tpx(pg('.icon-btn','width')) === 42 && tpx(pg('.icon-refresh','width')) === 36, 'кнопки на телефоне те же, что были');
+ok(tpx(pg2('.chip','paddingLeft')) === 15 && tpx(pg2('.f-chip','minHeight')) === 0, 'и фильтры на телефоне остались прежними');
+ok(tpx(pg('.ov-head','maxWidth')) === 0 && tpx(pg('#catalog','paddingLeft')) === 20, 'отступы телефонных экранов не тронуты: ' + pg('#catalog','paddingLeft'));
+ok(tpx(pg('.set-row','paddingLeft')) === 16, 'строка настроек на телефоне осталась прежней (16px против 17px на планшете)');
+/* палец вместо мыши: подсказки при наведении остаются только для мыши */
+const coarseSel = '@media (pointer: coarse) and (min-width: 700px){';
+const coarseIdx = cssClean.indexOf(coarseSel);
+ok(coarseIdx > tStart && /touch-action:manipulation/.test(cssClean.slice(coarseIdx, coarseIdx + 400)),
+  'на большом экране с касанием двойной тап не зумит страницу');
+ok(cssClean.indexOf('@media (pointer: coarse){') === -1, 'а телефонной вёрстки это правило не касается — поведение телефона не меняем');
+ok(/@media \(min-width: 1024px\) and \(pointer: coarse\)\{[\s\S]{0,200}--side: 224px/.test(cssClean),
+  'планшет с клавиатурой (широкий, но с касанием) получает панель уже — места под содержимое больше');
+ok(/@media \(hover:hover\) and \(pointer:fine\)\{/.test(cssClean) && /cursor:pointer/.test(cssClean), 'мышиные подсказки остались для мыши');
+tdom.window.close(); ph.window.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));

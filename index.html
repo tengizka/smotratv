@@ -1573,6 +1573,75 @@
     #toast{ left:var(--side); right:0; border-radius:0 0 20px 20px; }
   }
 
+  /* ===== ПЛАНШЕТЫ: iPad и Android-планшеты (700–1023px) =====
+     Здесь приложение раньше жило по телефонной раскладке, зажатой в колонку 700px:
+     на экране 820–1024px по бокам оставались полосы, окна выглядели «вставленными»
+     (затемнения под ними нет), а палец бил мимо мелких кнопок. Теперь у планшета
+     своя раскладка: колонка шире, содержимое окон по центру, цели крупнее, сетки
+     плотнее — но всё это по-прежнему телефонный интерфейс, просто собранный под
+     большой экран. */
+  @media (min-width: 700px) and (max-width: 1023px) and (min-height: 620px){
+    :root{ --col: min(calc(100% - 44px), 940px); }
+    /* Слои — во весь экран. Раньше колонка 700px оставляла по бокам полосы
+       приложения, и заставка с окнами выглядели приклеенными к центру. */
+    .overlay-screen, #tutorial, #onboarding, #splash{ max-width:none; margin-left:0; margin-right:0; }
+    /* Нижние шторки — во всю ширину нельзя: строки разъезжаются. Держим их
+       аккуратной карточкой по центру, чуть шире телефонной. */
+    .sheet{ max-width:min(92vw, 720px); margin-left:auto; margin-right:auto; }
+    /* А содержимое окон держим колонкой: строки не растягиваются на весь планшет. */
+    .ov-head, .ov-body{ width:100%; max-width:880px; margin-left:auto; margin-right:auto; }
+    .ov-head{ padding:calc(18px + var(--safe-top)) 30px 12px; }
+    .ov-body{ padding:8px 30px 34px; }
+    .topbar{ padding:10px 30px; }
+    .lvl-strip{ margin:0 auto 10px; }
+    .screen{ padding:0 30px 22px; }
+    #home{ max-width:640px; margin:0 auto; padding-top:12px; }
+    #profile, #feed{ max-width:900px; margin:0 auto; }
+    /* Колода заметно крупнее: на большом экране карточка не должна теряться. */
+    .stack{ width:100%; max-width:min(56vw, 470px); max-height:min(58vh, 700px); margin-left:auto; margin-right:auto; }
+    #home .actions .no, #home .actions .yes{ width:68px; height:68px; }
+    #home .actions .wishbtn, #home .actions .watchbtn{ width:60px; height:60px; }
+    #home .act-lbl{ font-size:12.5px; }
+    .grid2{ grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); }
+    .grid2 .poster-card, .grid2 .row-card{ contain-intrinsic-size:288px 430px; }
+    /* Рулетка и мелкие шторки — по центру, а не растянутыми на планшет. */
+    .rl-card{ width:min(560px, 100%); }
+    #askSheet, #badgeSheet{ max-width:min(560px, 92vw); margin-left:auto; margin-right:auto; }
+    /* Панель разделов и лента уровня — крупнее, но по-прежнему в колонке. */
+    nav{ padding-top:10px; }
+    nav button{ padding:6px 18px; }
+    nav svg{ width:24px; height:24px; }
+    /* Палец вместо мыши: цели не меньше 44px, поэтому и рамки у кнопок другие. */
+    .icon-btn{ width:46px; height:46px; border-radius:14px; }
+    .icon-btn svg{ width:19px; height:19px; }
+    .icon-refresh, .search-wrap .search-btn, .cat-head-row .search-btn{ width:44px; height:44px; }
+    .search-wrap .search-btn svg{ width:18px; height:18px; }
+    .chip{ padding:9px 16px; }
+    .f-chip{ min-height:42px; padding:0 16px; }
+    .set-row{ padding:15px 17px; }
+    .empty-note{ padding:34px 24px; }
+    .tut-caption .tc-desc, .ov-body p, .faq-a, .set-sub{ max-width:62ch; }
+  }
+  /* Планшет в горизонтальной ориентации: ширина уже за 1024px, включается
+     десктопная раскладка с боковой панелью. Она подходит и для касания, поэтому
+     меняем только то, что для пальца слишком мелко. */
+  @media (min-width: 1024px) and (pointer: coarse){
+    :root{ --side: 224px; }
+    .icon-btn{ width:46px; height:46px; border-radius:14px; }
+    .icon-btn svg{ width:19px; height:19px; }
+    .icon-refresh, .search-wrap .search-btn, .cat-head-row .search-btn{ width:44px; height:44px; }
+    .chip{ padding:9px 16px; }
+    .f-chip{ min-height:42px; padding:0 16px; }
+    .set-row{ padding:15px 17px; }
+  }
+  /* Крупный экран под палец: двойной тап по нему больше не зумит страницу
+     (в Safari на планшете user-scalable игнорируется). Телефоны сюда не попадают:
+     их поведение не меняем. */
+  @media (pointer: coarse) and (min-width: 700px){
+    button, .chip, .f-chip, .poster-card, .row-card, .ms-tile, .rank-row, .menu-row, .badge,
+    .set-row, .theme-card, .view-toggle button, .seg-btn, .rl-modes button, .ob-chip{ touch-action:manipulation; }
+  }
+
   /* ===== Окно «Уровни» =====
      Своя маленькая страница: где я сейчас, сколько до следующего, вся лестница
      уровней и из чего складывается опыт. Считается из того же myXP(), что и строка
@@ -2149,6 +2218,16 @@
         <div class="set-text"><div class="set-label">Вибро-отклик</div><div class="set-sub">Лёгкая вибрация на действия</div></div>
         <div class="switch" id="switchHaptic" data-key="smotra_haptic"></div>
       </div>
+      <div class="set-row" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h3l4.5-3.5v13L7 15H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.5 7.5 0 0 1 0 10.8"/></svg></div>
+        <div class="set-text"><div class="set-label">Звуки</div><div class="set-sub">Свайпы, ачивки, окна и кнопки</div></div>
+        <div class="switch" id="switchSfx" data-key="smotra_sfx"></div>
+      </div>
+      <div class="set-row" style="cursor:pointer;">
+        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></div>
+        <div class="set-text"><div class="set-label">Фоновая музыка</div><div class="set-sub">Тихая подложка, пока приложение открыто</div></div>
+        <div class="switch" id="switchMusic" data-key="smotra_music"></div>
+      </div>
     </div>
 
     <div class="set-group">
@@ -2264,6 +2343,38 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.41 — звук в приложении и отдельная раскладка для планшетов:
+         • у приложения появился звук — и ни одного файла: всё синтезируется на месте
+           через Web Audio, поэтому звук не тянет загрузку и не рвётся на слабой
+           связи. Свайп — шорох и своя нота на каждое действие (смотрел / мимо /
+           чекнуть / смотрю), плюс «Вернуться», «Перемешать», ачивки, новый
+           уровень, открытие и закрытие окон, кнопки и панель разделов;
+         • у рулетки и колеса теперь слышно вращение: гул запуска, тихие тики по
+           ходу и победный аккорд на выпавшем тайтле;
+         • лёгкая фоновая музыка: круг из четырёх аккордов с мягкими нотами поверх,
+           входит без щелчка и расписывается вперёд по часам звука, поэтому не
+           дёргается от отрисовки;
+         • в настройках два отдельных тумблера — «Звуки» и «Фоновая музыка»: можно
+           выключить любой канал. Выбор запоминается и уезжает на другие
+           устройства вместе с темой и фильтрами;
+         • звук включается первым касанием (иначе Safari глушит его навсегда) и
+           молчит, пока приложение свёрнуто: музыка засыпает и возвращается вместе
+           с тобой, батарею в фоне не тянет. Нет звуковой карты — приложение просто
+           работает тихо, без ошибок;
+         • у планшетов (iPad, 700–1023px) больше нет телефонной раскладки, зажатой в
+           колонку 700px: колонка шире, карточка главной крупнее, колода стоит по
+           центру и держит пропорции постера, содержимое окон идёт колонкой, а не
+           растянуто на весь экран;
+         • заставка, обучение и окна кроют планшет целиком: раньше по бокам
+           оставались полосы приложения, и они выглядели вставленными в середину
+           экрана;
+         • под палец: кнопки 46 и 44 вместо 42 и 36, просторнее фильтры и строки
+           настроек, крупнее панель разделов, обложек в ряд помещается больше,
+           двойной тап больше не зумит страницу;
+         • телефон в горизонтали (он тоже шире 700px, но низкий) в планшетную полосу
+           не попадает, а сам телефон не изменился: колода во всю ширину, те же
+           кнопки и отступы. Планшет с клавиатурой (широкий, но с касанием) получает
+           боковую панель поуже — места под содержимое больше.
    0.40 — полный аудит приложения: потерянные баги и лишняя работа:
          • «Вернуться» возвращает всё: раньше отмена свайпа оставляла открытые им
            ачивки и их опыт — теперь карточка, счётчики, опыт и достижения
@@ -2637,7 +2748,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.40';
+const APP_VERSION = '0.41';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2854,6 +2965,216 @@ function haptic(type, style){
   }catch(e){}
 }
 
+/* ============ ЗВУК ============
+   Звуки никуда не скачиваются: они синтезируются прямо в приложении через Web Audio.
+   Так их невозможно «не догрузить», они не рвутся на плохой связи и ничего не весят
+   в файле. Контекст звука создаётся только после первого касания: Safari и вебвью
+   Telegram глушат звук, включённый без действия человека, — а нам нужно, чтобы
+   первый же свайп был со звуком.
+
+   Два независимых канала, оба выключаются в настройках:
+     • «Звуки» — отклик интерфейса: свайпы, окна, ачивки, кнопки;
+     • «Фоновая музыка» — тихая подложка под приложением.
+   Настройки синхронизируются между устройствами, как тема и фильтры. */
+const SFX_KEY = 'smotra_sfx';
+const MUSIC_KEY = 'smotra_music';
+let audioCtx = null, audioBus = null, audioUnlocked = false, audioBroken = false;
+function sfxOn(){ return getFlag(SFX_KEY, true); }
+function musicOn(){ return getFlag(MUSIC_KEY, true); }
+function audioContext(){
+  if (audioCtx) return audioCtx;
+  if (audioBroken) return null;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC){ audioBroken = true; return null; }
+  try{
+    audioCtx = new AC();
+    audioBus = audioCtx.createGain();
+    audioBus.gain.value = 0.8;
+    audioBus.connect(audioCtx.destination);
+  }catch(e){ audioCtx = null; audioBus = null; audioBroken = true; }
+  return audioCtx;
+}
+/* Первое касание включает звук насовсем: с этого момента контекст разрешён и музыка
+   может играть. Слушатели остаются (снятие их на iOS иногда не срабатывает), но
+   каждый следующий вызов выходит сразу. */
+function unlockAudio(){
+  if (audioUnlocked) return;
+  const ctx = audioContext();
+  if (!ctx) return;
+  audioUnlocked = true;
+  if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+  if (musicOn()) startMusic();
+}
+['pointerdown','touchstart','keydown'].forEach(ev => window.addEventListener(ev, unlockAudio, { passive:true }));
+
+/* Короткий тон: тип волны, частота, длина, громкость, задержка. */
+function playTone(o){
+  const ctx = audioCtx; if (!ctx || !audioBus) return;
+  const t0 = ctx.currentTime + (o.delay || 0);
+  const dur = o.dur || 0.15;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = o.type || 'sine';
+  osc.frequency.setValueAtTime(o.freq, t0);
+  if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(20, o.to), t0 + dur);
+  const peak = o.gain == null ? 0.08 : o.gain;
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.05, dur * 0.3));
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain); gain.connect(audioBus);
+  osc.start(t0); osc.stop(t0 + dur + 0.04);
+  osc.onended = () => { try{ osc.disconnect(); gain.disconnect(); }catch(e){} };
+}
+/* Шум с полосовым фильтром: «вжух» свайпа, шорох перемешивания, вращение рулетки. */
+function playNoise(o){
+  const ctx = audioCtx; if (!ctx || !audioBus) return;
+  const dur = o.dur || 0.26;
+  const t0 = ctx.currentTime + (o.delay || 0);
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, o.decay || 1.5);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.Q.value = o.q == null ? 0.9 : o.q;
+  filter.frequency.setValueAtTime(o.from || 420, t0);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(60, o.to || 1600), t0 + dur);
+  const gain = ctx.createGain();
+  const peak = o.gain == null ? 0.09 : o.gain;
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.25);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  src.connect(filter); filter.connect(gain); gain.connect(audioBus);
+  src.start(t0); src.stop(t0 + dur + 0.03);
+  src.onended = () => { try{ src.disconnect(); filter.disconnect(); gain.disconnect(); }catch(e){} };
+}
+/* Что и как звучит. Громкость у всех откликов разная: свайп — тише, ачивка — заметнее,
+   но ничего не «стреляет» в ухо. */
+const SFX = {
+  tap:      () => playTone({ type:'triangle', freq:880, to:700, dur:.07, gain:.045 }),
+  swipe:    () => playNoise({ from:480, to:1900, dur:.22, gain:.065 }),
+  watched:  () => { playTone({ type:'sine', freq:587, dur:.18, gain:.085 }); playTone({ type:'sine', freq:880, dur:.24, gain:.075, delay:.09 }); },
+  skip:     () => { playTone({ type:'sine', freq:392, dur:.17, gain:.075 }); playTone({ type:'sine', freq:262, dur:.26, gain:.065, delay:.09 }); },
+  wish:     () => playTone({ type:'triangle', freq:660, to:990, dur:.22, gain:.065 }),
+  watching: () => playTone({ type:'triangle', freq:560, to:420, dur:.22, gain:.065 }),
+  undo:     () => { playNoise({ from:1500, to:380, dur:.22, gain:.055 }); playTone({ type:'sine', freq:330, dur:.2, gain:.055, delay:.05 }); },
+  open:     () => playTone({ type:'sine', freq:520, to:780, dur:.12, gain:.045 }),
+  close:    () => playTone({ type:'sine', freq:620, to:380, dur:.12, gain:.045 }),
+  badge:    () => [659, 880, 1175].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.34, gain:.07, delay:i * .1 })),
+  level:    () => [523, 659, 784, 1047].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.5, gain:.065, delay:i * .12 })),
+  spin:     () => playNoise({ from:320, to:900, dur:.5, gain:.045 }),
+  tick:     () => playTone({ type:'square', freq:1180, dur:.03, gain:.022 }),
+  win:      () => [784, 988, 1319].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.4, gain:.075, delay:i * .12 })),
+  shuffle:  () => playNoise({ from:900, to:300, dur:.3, gain:.045 }),
+  done:     () => { playTone({ type:'sine', freq:660, dur:.14, gain:.065 }); playTone({ type:'sine', freq:990, dur:.22, gain:.055, delay:.07 }); },
+  error:    () => { playTone({ type:'sine', freq:220, dur:.18, gain:.065 }); playTone({ type:'sine', freq:165, dur:.26, gain:.055, delay:.1 }); },
+};
+/* Один вход для всего приложения: sfx('watched'). Нет звуковой карты, нет разрешения
+   или выключено в настройках — тихо ничего не делаем. */
+function sfx(name){
+  if (!sfxOn() || !audioUnlocked) return;
+  const ctx = audioContext();
+  if (!ctx) return;
+  if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+  const fn = SFX[name];
+  if (!fn) return;
+  try{ fn(); }catch(e){}
+}
+
+/* ===== Фоновая музыка =====
+   Четыре аккорда по кругу: мягкая подложка и редкие ноты поверх. Ни ударных, ни
+   громких пиков — музыка нужна как атмосфера, а не как второй интерфейс. Всё
+   расписывается на секунду вперёд по часам звукового контекста, поэтому она не
+   «дёргается» от того, что телефон занят отрисовкой. */
+const MUSIC_BARS = [
+  { pad:[220.00, 261.63, 329.63], arp:[440.00, 523.25, 659.25] },   // ля минор
+  { pad:[174.61, 220.00, 261.63], arp:[349.23, 440.00, 523.25] },   // фа мажор
+  { pad:[130.81, 196.00, 261.63], arp:[392.00, 523.25, 659.25] },   // до мажор
+  { pad:[196.00, 246.94, 293.66], arp:[392.00, 493.88, 587.33] },   // соль мажор
+];
+const MUSIC_BAR_SEC = 3.6;
+let musicTimer = null, musicBarIndex = 0, musicNextAt = 0, musicVoices = [], musicGain = null;
+function musicVoice(freq, at, dur, peak, type){
+  const ctx = audioCtx;
+  if (!ctx || !musicGain) return;
+  const osc = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  filter.type = 'lowpass';
+  filter.frequency.value = Math.min(4200, freq * 6);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.linearRampToValueAtTime(peak, at + Math.min(0.9, dur * 0.28));
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  osc.connect(filter); filter.connect(gain); gain.connect(musicGain);
+  osc.start(at); osc.stop(at + dur + 0.05);
+  const voice = { osc, gain, filter };
+  musicVoices.push(voice);
+  osc.onended = () => {
+    try{ osc.disconnect(); filter.disconnect(); gain.disconnect(); }catch(e){}
+    const i = musicVoices.indexOf(voice);
+    if (i > -1) musicVoices.splice(i, 1);
+  };
+}
+function musicSchedule(){
+  const ctx = audioCtx;
+  if (!ctx || !musicGain) return;
+  while (musicNextAt < ctx.currentTime + 2.4){
+    const bar = MUSIC_BARS[musicBarIndex % MUSIC_BARS.length];
+    musicBarIndex++;
+    const at = musicNextAt;
+    bar.pad.forEach(f => musicVoice(f, at, MUSIC_BAR_SEC * 1.05, 0.05, 'sine'));
+    bar.arp.forEach((f, i) => musicVoice(f * 2, at + 0.6 + i * 0.62, 1.1, 0.028, 'triangle'));
+    musicNextAt += MUSIC_BAR_SEC;
+  }
+}
+function startMusic(){
+  const ctx = audioContext();
+  if (!ctx || !musicOn() || musicTimer) return;
+  if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+  if (!musicGain){
+    musicGain = ctx.createGain();
+    musicGain.gain.value = 0.0001;
+    musicGain.connect(audioBus);
+  }
+  try{
+    musicGain.gain.cancelScheduledValues(ctx.currentTime);
+    musicGain.gain.setValueAtTime(Math.max(0.0001, musicGain.gain.value), ctx.currentTime);
+    musicGain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.4);   // плавный вход
+  }catch(e){}
+  musicBarIndex = 0;
+  musicNextAt = ctx.currentTime + 0.2;
+  musicSchedule();
+  musicTimer = setInterval(musicSchedule, 700);
+}
+function stopMusic(){
+  if (musicTimer){ clearInterval(musicTimer); musicTimer = null; }
+  const ctx = audioCtx;
+  if (!ctx) return;
+  if (musicGain){
+    try{
+      musicGain.gain.cancelScheduledValues(ctx.currentTime);
+      musicGain.gain.setValueAtTime(Math.max(0.0001, musicGain.gain.value), ctx.currentTime);
+      musicGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
+    }catch(e){}
+  }
+  /* Голоса глушим сразу: иначе после выключения музыки аккорд доигрывал бы ещё
+     несколько секунд, а это выглядит как «кнопка не работает». */
+  const voices = musicVoices.slice();
+  musicVoices = [];
+  voices.forEach(v => {
+    try{ v.gain.gain.cancelScheduledValues(ctx.currentTime); v.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08); }catch(e){}
+    try{ v.osc.stop(ctx.currentTime + 0.35); }catch(e){}
+  });
+}
+/* Ушли из приложения — музыка молчит (и батарею не тянет), вернулись — играет снова. */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopMusic();
+  else if (musicOn() && audioUnlocked) startMusic();
+});
+
 /* ===== Синхронизация настроек между устройствами =====
    Списки (смотрел/чекнуть/смотрю/оценки/серии/ачивки/серия дней) живут в своих
    таблицах и потому одинаковы на всех устройствах. Настройки же хранились только
@@ -2959,6 +3280,19 @@ function applyRemoteSettingsInner(remote){
     saveWishFilters();
     try{ renderWishHead(); renderWishlist(); }catch(e){}
   }
+  let sx = take('sfx');
+  if (typeof sx === 'boolean' && sx !== sfxOn()){
+    setFlag(SFX_KEY, sx);
+    const sw = document.getElementById('switchSfx');
+    if (sw) sw.classList.toggle('on', sx);
+  }
+  let mu = take('music');
+  if (typeof mu === 'boolean' && mu !== musicOn()){
+    setFlag(MUSIC_KEY, mu);
+    const sw = document.getElementById('switchMusic');
+    if (sw) sw.classList.toggle('on', mu);
+    if (mu){ if (audioUnlocked) startMusic(); } else stopMusic();
+  }
   let since = take('since');
   if (typeof since === 'string' && since){
     try{
@@ -2983,6 +3317,8 @@ function savedSettingKeys(){
     if (localStorage.getItem(CAT_FILTER_KEY)) keys.add('catFilters');
     if (localStorage.getItem('smotra_wish_sort')) keys.add('wishSort');
     if (localStorage.getItem(WISH_FILTER_KEY)) keys.add('wishFilters');
+    if (localStorage.getItem(SFX_KEY)) keys.add('sfx');
+    if (localStorage.getItem(MUSIC_KEY)) keys.add('music');
     ['catalog', 'wishlist', 'watching'].forEach(section => {
       if (localStorage.getItem('smotra_view_' + section)) keys.add('views');
     });
@@ -3011,6 +3347,8 @@ function currentSyncedSettings(){
     catFilters,
     wishSort,
     wishFilters,
+    sfx: sfxOn(),
+    music: musicOn(),
     since: (() => { try{ return localStorage.getItem('smotra_since') || ''; }catch(e){ return ''; } })(),
   };
 }
@@ -4425,6 +4763,7 @@ function renderTutStep(){
   if (s.onEnter) requestAnimationFrame(()=> tutTimers.push(setTimeout(s.onEnter, 80)));
 }
 function goTutStep(delta){
+  sfx('tap');
   const next = Math.min(TUTORIAL_STEPS.length - 1, Math.max(0, tutStep + delta));
   if (next === tutStep) return;
   tutStep = next;
@@ -4662,6 +5001,7 @@ document.addEventListener('visibilitychange', () => {
 });
 function pickTheme(name){
   if (!THEME_NAMES[name]) return;
+  sfx('tap');
   localStorage.setItem('smotra_theme', name);
   syncSetting('theme', name);          // тема тоже едет на другое устройство
   applyTheme(name);
@@ -4703,6 +5043,7 @@ function raiseSheet(sheetEl, backdropEl){
 function openOverlay(elOrId){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
   if (!el) return null;
+  sfx('open');
   overlayZ += 1;
   el.style.zIndex = String(overlayZ);
   el.classList.add('open');
@@ -4712,6 +5053,7 @@ function openOverlay(elOrId){
 function closeOverlay(elOrId){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
   if (!el) return;
+  sfx('close');
   el.classList.remove('open');
   el.style.zIndex = '';
   if (!document.querySelector('.overlay-screen.open')) document.body.classList.remove('ov-open');
@@ -4774,6 +5116,17 @@ function initSwitch(el, def, onChange){
 }
 // Тумблер уведомлений убран: он ничего не делал (пушей нет) — лучше не врать пользователю.
 initSwitch(document.getElementById('switchHaptic'), true);
+/* Звук: два отдельных тумблера. Включая «Звуки», сразу даём услышать, что именно
+   включилось, — иначе непонятно, что настраиваешь. */
+initSwitch(document.getElementById('switchSfx'), true, (on) => {
+  syncSetting('sfx', on);
+  if (on){ unlockAudio(); sfx('watched'); }
+});
+initSwitch(document.getElementById('switchMusic'), true, (on) => {
+  syncSetting('music', on);
+  if (on){ unlockAudio(); startMusic(); }
+  else stopMusic();
+});
 /* Тумблера «Показывать 18+» больше нет: взрослого контента в приложении нет ни для
    кого и ни при каких настройках. Ключ прошлых версий вычищаем, чтобы он не
    тянулся ни в память устройства, ни в синхронизацию. */
@@ -5387,6 +5740,7 @@ function shakeDeck(){
   deckRefillTries = 0;
   const cards = [...stackEl.querySelectorAll('.card')];
   haptic('impact','medium');
+  sfx('shuffle');
   if (!cards.length){ deck = shuffle(deck); renderStack(); showToast('Колода перетасована', 'shuffle'); return; }
   // Карточки реально «взбалтываются»: каждая уезжает в свою сторону и возвращается.
   cards.forEach((card, i) => {
@@ -5820,7 +6174,7 @@ const Roulette = (function(){
   /* Two режима: привычная лента и колесо. Покер и автомат убраны — слишком много
      шума, а толку ноль. */
   const MODES = { strip:'Рулетка', wheel:'Колесо' };
-  let spinning = false, winner = null, spinTimer = null;
+  let spinning = false, winner = null, spinTimer = null, tickTimer = null;
   let customPool = null;          // список для прокрутки: по умолчанию — свой «Хочу чекнуть»
   let mode = 'strip';
   /* Множитель длительности: в тестах и при «уменьшить движение» всё происходит почти сразу */
@@ -5832,7 +6186,18 @@ const Roulette = (function(){
        фильтры, поиск и сортировка. Что видно на экране — из того и выбираем. */
     return wishVisibleMovies();
   }
-  function close(){ overlay.classList.remove('show'); spinning = false; customPool = null; clearTimeout(spinTimer); }
+  function close(){
+    overlay.classList.remove('show'); spinning = false; customPool = null;
+    clearTimeout(spinTimer);
+    stopTicks();
+  }
+  /* Тики: пока лента едет, слышно, что она движется. Тише самого действия и не чаще
+     четырёх раз в секунду — иначе это не отклик, а трещотка. */
+  function startTicks(){
+    stopTicks();
+    tickTimer = setInterval(() => sfx('tick'), 250);
+  }
+  function stopTicks(){ if (tickTimer){ clearInterval(tickTimer); tickTimer = null; } }
   function setOpenEnabled(on){ if (openBtn){ openBtn.disabled = !on; } }
   function setSpinLabel(text){ if (spinBtn) spinBtn.textContent = text; }
   function stageHTML(){
@@ -5890,12 +6255,16 @@ const Roulette = (function(){
     winner = null;
     setOpenEnabled(false);
     setSpinLabel('Ещё раз');
+    sfx('spin');
+    startTicks();
     if (mode === 'wheel') spinWheel(items); else spinStrip(items);
   }
   function finish(m){
     spinning = false;
+    stopTicks();
     winner = m || null;
     haptic('notification','success');
+    if (winner) sfx('win');
     setOpenEnabled(!!winner);
     if (!winner) return;
     resultEl.innerHTML = `<div class="rl-name">${esc(winner.title)}</div>
@@ -6251,6 +6620,7 @@ function checkBadges(){
       state.badgeDates[b.id] = new Date().toISOString();
       showToast(`Ачивка «${b.name}» открыта`, b.icon);
       haptic('notification','success');
+      sfx('badge');
       dbBadge(b.id);
       opened.push(b.id);
     }
@@ -6306,10 +6676,11 @@ const FAQ_ITEMS = [
   ['Что делают свайпы на главной?', 'Вправо — «Смотрел», влево — «Мимо» (больше не покажем), вверх — «Хочу чекнуть», вниз — «Смотрю сейчас». Те же действия есть кнопками под карточкой.'],
   ['Что такое «Смотрю сейчас»?', 'Это тайтлы, которые ты смотришь прямо сейчас. Для сериалов там же видно, сколько серий уже отсмотрено — можно отмечать по одной.'],
   ['Как работает «Вернуться»?', 'Кнопка внизу слева отменяет последний свайп: тайтл возвращается в ленту. Кнопку можно смахнуть в сторону, а разделы она не переключает.'],
-  ['Что такое Смотриметры?', 'Это оценка по восьми критериям, от 1 до 8 баллов каждый, суммарно до 68. Оценки видны друзьям в «Ленте» — можно сравнить вкусы.'],
+  ['Что такое Смотриметры?', 'Это оценка по десяти критериям: шесть главных — до 8 баллов, четыре детали — до 5, суммарно до 68. Оценки видны друзьям в «Ленте» — можно сравнить вкусы.'],
   ['Почему фильмы в ленте не повторяются?', 'Приложение помнит, что ты уже видел, и не показывает это снова. Если подборка иссякла, оно тихо догружает новые популярные тайтлы.'],
   ['Что такое «Хочу чекнуть»?', 'Список на потом. Когда он подрастёт, запусти рандомайзер — рулетку или колесо — и он выберет один тайтл за тебя.'],
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
+  ['Можно ли выключить звук?', 'Да, в настройках два отдельных выключателя: «Звуки» убирает отклик на свайпы, ачивки и кнопки, «Фоновая музыка» — тихую подложку. Звуки не скачиваются из интернета, а собираются самим приложением, поэтому не тормозят загрузку. Выбранное запоминается и переносится на другое устройство вместе с остальными настройками.'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
   ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле, а вся лестница из 68 уровней до 100 000 XP — в окне уровней: там же разбор, из чего именно набежал опыт.'],
   ['Какие уровни есть и сколько нужно опыта?', 'Уровней 68, удвоений нет: каждый следующий уровень дороже предыдущего примерно на 45 XP. Переходы стоят 22, 67, 111, 156 и так далее до 2 963 XP на последнем, а весь путь до 68-го — ровно 100 000 XP. Первые уровни закрываются за вечер (2-й — всего 22 XP), а 68-й «Кинолегенда IV» открывается на 100 000 XP — это длинная цель, зато без обрывов и «стены»: каждая ступень честно чуть дороже предыдущей. Ступени: «Зритель», «Кинолюб», «Киноман», «Киногурман», «Кинофил», «Синефил» … «Киноакадемик», «Киноархимаг», «Кинолегенда» — у каждой по четыре подуровня I–IV. Вся лестница целиком — в окне уровней (тап по полоске LVL вверху или по карточке уровня в профиле), и там же тап по любой плитке уровня показывает его название, порог и сколько опыта до него осталось.'],
@@ -7091,6 +7462,10 @@ function keepDeckFull(){
 function resolveSwipe(card, movie, action){
   let flyX = 0, flyY = 0, rot = 0;
   const undoInfo = { movie, action };
+  /* Уровень запоминаем до того, как свайп начислит опыт: иначе сравнение после
+     начисления всегда показывало бы «уровень тот же», и звук нового уровня не
+     сыграл бы никогда. */
+  const levelBefore = levelFor(myXP()).level;
   if (action === 'watched'){
     flyX = 900; rot = 28;
     undoInfo.wasWatching = state.watching.includes(mid(movie));
@@ -7103,6 +7478,9 @@ function resolveSwipe(card, movie, action){
   if (action === 'watching'){ flyY = 900; pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); }
   rememberMovie(movie);            // копия тайтла для историй, даже если каталог обновится
   if (action === 'watched' && (movie.type === 'series' || movie.type === 'anime')) fillAllEpisodes(movie);
+  /* Звук свайпа: сначала шорох, сразу за ним — отклик самого действия. */
+  sfx('swipe');
+  sfx(action === 'watched' ? 'watched' : action === 'skip' ? 'skip' : action === 'wish' ? 'wish' : 'watching');
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
   card.style.pointerEvents = 'none'; // улетающая карточка больше не ловит палец
@@ -7112,6 +7490,7 @@ function resolveSwipe(card, movie, action){
   updateStats();
   /* Запоминаем, какие ачивки открыл именно этот свайп: отмена должна их снять. */
   undoInfo.newBadges = action === 'skip' ? [] : checkBadges();
+  if (levelFor(myXP()).level > levelBefore) sfx('level');
   pushSwipeHistory(undoInfo);
   setTimeout(()=>{
     deck = deck.filter(m => !sameMovie(m, movie));
@@ -7260,6 +7639,7 @@ function undoLastSwipe(){
   deck.unshift(movie);
   unmarkServed(movie);             // отменённый свайп — тайтл снова можно показать
   haptic('impact','medium');
+  sfx('undo');
   renderBadges();
   updateStats();
   renderStack();
@@ -7345,6 +7725,7 @@ function toggleQuick(kind, movie){
     }
   }
   haptic('impact','light');
+  sfx('done');
   updateStats();
   syncDeckAfterExternalChange();
 }
@@ -7410,6 +7791,7 @@ const Radial = (function(){
     requestAnimationFrame(()=>{ items.forEach(it => { it.el.style.transform = `var(--rad-pos) scale(1)`; }); });
     active = true;
     haptic('impact','medium');
+    sfx('open');
   }
 
   /* Подписи в кружках: подбираем кегль так, чтобы строка укладывалась в кружок.
@@ -8917,9 +9299,10 @@ function openSheet(movie){
   /* Открыли карточку — сразу тянем всё, чего в ней не хватает: обложку, описание,
      жанры, число серий. Открытие окна ни на миг не ждём. */
   ensureMovieDetails(movie).then(ok => { if (ok) fillSheetFromMovie(movie); });
+  sfx('open');
   sheet.classList.add('open'); backdrop.classList.add('open');
 }
-backdrop.onclick = () => { sheet.classList.remove('open'); backdrop.classList.remove('open'); };
+backdrop.onclick = () => { sfx('close'); sheet.classList.remove('open'); backdrop.classList.remove('open'); };
 
 /* Шторка фильма закрывается протяжкой вниз из любого места — но только если список
    ещё не прокручен. Прошлая версия вешала preventDefault на каждый touchmove и
@@ -9217,6 +9600,7 @@ document.getElementById('submitReview').onclick = async () => {
   if (ok){
     haptic('notification','success');
     showToast('Рецензия опубликована', 'check');
+    sfx('done');
     closeOverlay('reviewScreen');
     if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
   } else {
@@ -9233,7 +9617,7 @@ document.getElementById('deleteReview').onclick = async () => {
     showToast('Рецензия удалена');
     closeOverlay('reviewScreen');
     if (sheetMovie === reviewMovie) refreshSheetReviews(reviewMovie);
-  }catch(e){ showToast('Не получилось удалить — проверь связь'); }
+  }catch(e){ sfx('error'); showToast('Не получилось удалить — проверь связь'); }
 };
 
 /* ============ ОЦЕНКИ: ДРУЗЬЯ И ОБЩИЙ РЕЙТИНГ ============ */
@@ -9494,7 +9878,7 @@ function switchTab(id){
   if (id === 'profile') enterProfile();
 }
 document.querySelectorAll('nav button').forEach(btn=>{
-  btn.addEventListener('click', () => { haptic('selection'); switchTab(btn.dataset.tab); });
+  btn.addEventListener('click', () => { haptic('selection'); sfx('tap'); switchTab(btn.dataset.tab); });
 });
 
 /* ============ ЖЕСТЫ НАВИГАЦИИ ============
