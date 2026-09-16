@@ -350,7 +350,26 @@
   .f-block{ margin-bottom:18px; }
   .f-block-title{ display:flex; align-items:center; justify-content:space-between; gap:10px;
     font-size:12px; font-weight:700; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase; margin-bottom:9px; }
-  .f-block-title button{ background:none; border:none; color:var(--accent); font-size:11.5px; font-weight:600; padding:2px 0; }
+  .f-block-title button{ background:none; border:none; color:var(--accent); font-size:11.5px; font-weight:600; padding:2px 0;
+    transition:transform .12s ease, color .18s ease; }
+  /* «Всё подряд» и «Все жанры» должны заметно срабатывать: кнопка подпрыгивает,
+     а чипы блока коротко вспыхивают — видно, что выбор сбросился. */
+  .f-block-title button:active{ transform:scale(.9); }
+  .f-block-title button.flash{ animation:clearFlash .5s cubic-bezier(.2,.8,.2,1); }
+  @keyframes clearFlash{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(1.2); color:var(--accent-2); }
+    100%{ transform:scale(1); }
+  }
+  .f-chips.reset .f-chip{ animation:chipReset .42s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes chipReset{
+    0%{ transform:scale(.82); opacity:.3; }
+    60%{ transform:scale(1.04); opacity:1; }
+    100%{ transform:scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .f-block-title button.flash, .f-chips.reset .f-chip{ animation-duration:.01s; }
+  }
   .f-chips{ display:flex; flex-wrap:wrap; gap:8px; }
   .f-chip{ display:flex; align-items:center; gap:6px; padding:9px 13px; border-radius:12px;
     background:var(--surface); border:1px solid var(--border); color:var(--text-dim);
@@ -400,7 +419,7 @@
   #filtersScreen .ov-body{ padding-top:0; padding-bottom:12px; }
   #filtersScreen .f-block{ margin-bottom:12px; }
   #filtersScreen .f-block:first-child{ margin-top:0; }
-  .filters-foot{ display:flex; gap:10px; padding:10px 18px calc(12px + var(--safe-bottom));
+  .filters-foot{ flex:0 0 auto; display:flex; gap:10px; padding:10px 18px calc(12px + var(--safe-bottom));
     border-top:1px solid var(--border); background:var(--surface); }
   .filters-reset{ flex:0 0 auto; padding:14px 20px; border-radius:15px; background:var(--surface-2);
     border:1px solid var(--border); color:var(--text-dim); font-size:13.5px; font-weight:700; font-family:'Inter'; }
@@ -551,6 +570,12 @@
   .filter-pop-chip svg{ width:15px; height:15px; }
   .filter-pop-chip.on{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
   .filter-pop-chip:active{ transform:scale(.95); }
+  .filter-pop-chip{ transition:transform .12s ease, background .18s ease, color .18s ease; }
+  .filter-pop-done{ width:100%; margin-top:12px; padding:11px; border-radius:13px; cursor:pointer;
+    font-family:'Inter'; font-size:13px; font-weight:700; color:var(--on-accent);
+    background:linear-gradient(180deg, var(--accent), var(--accent-2));
+    border:1px solid rgba(255,255,255,.16); box-shadow:0 14px 30px -18px var(--accent-glow); }
+  .filter-pop-done:active{ transform:scale(.98); }
   .filter-backdrop{ position:fixed; inset:0; z-index:13; display:none; }
   .filter-backdrop.open{ display:block; }
   .card{
@@ -999,7 +1024,12 @@
   #reviewScreen{ z-index:48; }
   .ov-head{ display:flex; align-items:center; gap:12px; padding:calc(16px + var(--safe-top)) 20px 10px; }
   .ov-head .wordmark{ font-size:17px; }
-  .ov-body{ flex:1; overflow-y:auto; overflow-x:hidden; overscroll-behavior:none; touch-action:pan-y; padding:6px 20px 30px; }
+  /* min-height:0 — обязательное условие, чтобы окно внутри колонки действительно
+     прокручивалось: без него тело окна растягивается по содержимому, и список
+     уровней (68 строк) «не скролится» — именно на это и жаловались. Плюс
+     -webkit-overflow-scrolling, чтобы инерция работала в вебвью Telegram. */
+  .ov-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+    touch-action:pan-y; -webkit-overflow-scrolling:touch; padding:6px 20px 30px; }
 
   /* ===== Bottom nav ===== */
   /* align-items:center — иконки и подписи стоят посередине полосы, а не липнут к низу */
@@ -1583,8 +1613,11 @@
     text-transform:none; letter-spacing:0; color:var(--accent); background:var(--accent-soft);
     border:1px solid var(--accent-border); -webkit-tap-highlight-color:transparent; }
   /* Карточка выбранного уровня: имя, порог, шаг и сколько до него осталось. */
-  .lv-pick{ margin-top:12px; padding:14px; border-radius:18px; background:var(--surface);
-    border:1px solid var(--accent-border); box-shadow:0 20px 44px -30px var(--accent-glow);
+  /* Карточка выбранного уровня липнет к верху окна: тапнул плитку — сразу видно
+     название и цифры, прокручивать для этого не нужно. */
+  .lv-pick{ position:sticky; top:0; z-index:6; margin-top:12px; padding:14px; border-radius:18px;
+    background:var(--surface); border:1px solid var(--accent-border);
+    box-shadow:0 22px 46px -26px var(--accent-glow), 0 10px 30px -18px rgba(0,0,0,.65);
     animation:lvPickIn .22s cubic-bezier(.2,.8,.2,1) both; }
   .lv-pick[hidden]{ display:none; }
   @keyframes lvPickIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
@@ -1755,6 +1788,7 @@
     <div class="filter-pop" id="filterPop">
       <div class="filter-pop-title">Показывать в ленте</div>
       <div class="filter-pop-chips" id="filterPopChips"></div>
+      <button class="filter-pop-done" id="filterPopDone">Готово</button>
     </div>
     <div class="stack" id="stack"></div>
     <button class="stack-filter" id="openFilters" aria-label="Фильтр">
@@ -1799,19 +1833,6 @@
     </div>
     <div class="empty-note" id="catLoadMore" style="display:none; padding:16px; text-align:center;">Догружаю каталог…</div>
   </section>
-
-  <!-- ФИЛЬТРЫ КАТАЛОГА -->
-  <div class="overlay-screen" id="filtersScreen">
-    <div class="ov-head">
-      <div class="ov-title-wrap"><div class="ov-title">Фильтры</div><div class="ov-sub" id="filtersFound"></div></div>
-      <button class="ov-close" id="closeFilters" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    </div>
-    <div class="ov-body" id="filtersBody"></div>
-    <div class="filters-foot">
-      <button class="filters-reset" id="filtersReset">Сбросить</button>
-      <button class="filters-apply" id="filtersApply">Показать</button>
-    </div>
-  </div>
 
   <!-- WISHLIST -->
   <section id="wishlist" class="screen">
@@ -1909,7 +1930,23 @@
   </button>
 </nav>
 
-<!-- HISTORY OVERLAY -->
+<!-- ФИЛЬТРЫ (каталог и «Хочу чекнуть») -->
+  <!-- Окно живёт рядом с остальными окнами, а не внутри .screens. Внутри области
+       экранов его снизу перекрывала нижняя панель — кнопку подтверждения было не
+       нажать, а сверху добавлялась пустая полоса высотой с безопасную зону: та самая
+       чёрная пустота на телефонах. -->
+  <div class="overlay-screen" id="filtersScreen">
+    <div class="ov-head">
+      <div class="ov-title-wrap"><div class="ov-title">Фильтры</div><div class="ov-sub" id="filtersFound"></div></div>
+      <button class="ov-close" id="closeFilters" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="ov-body" id="filtersBody"></div>
+    <div class="filters-foot">
+      <button class="filters-reset" id="filtersReset">Сбросить</button>
+      <button class="filters-apply" id="filtersApply">Подтвердить</button>
+    </div>
+  </div>
+
 <div class="overlay-screen" id="historyScreen">
   <div class="ov-head">
     <button class="icon-btn" id="closeHistory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -2223,6 +2260,21 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.39 — фильтры наконец сохраняются, в окнах снова скролл:
+         • окно фильтров переехало из области экранов в общий слой окон: раньше
+           снизу его перекрывала нижняя панель, и кнопка подтверждения была
+           недоступна — именно поэтому фильтры «не сохранялись»;
+         • кнопка подтверждения теперь всегда активна и подписана «Подтвердить»:
+           даже если под условия ничего не подошло, выбор можно сохранить;
+         • сверху окна фильтров больше нет пустой полосы: убрана вторая безопасная
+           зона, заголовок и «найдено N» стоят одной строкой на самом верху;
+         • «Всё подряд» и «Все жанры» теперь заметно срабатывают: кнопка
+           подпрыгивает, а чипы блока коротко вспыхивают;
+         • в фильтре ленты на главной появилась кнопка «Готово»;
+         • окна снова прокручиваются: телу окна вернули min-height:0 и инерцию,
+           из-за которых список уровней не листался;
+         • карточка выбранного уровня липнет к верху окна — название и цифры
+           видно сразу, без прокрутки.
    0.38 — телешоу убраны, обложки резкие, настройки короче:
          • ток-шоу, новости и реалити-шоу больше не показываются: это не кино и
            не сериал, и теперь такие тайтлы исключаются и в запросе к TMDB, и
@@ -2549,7 +2601,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.38';
+const APP_VERSION = '0.39';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -4728,6 +4780,7 @@ document.getElementById('openFilters').onclick = (e) => {
   isOpen ? closeFilterPop() : openFilterPop();
 };
 document.getElementById('filterBackdrop').onclick = closeFilterPop;
+document.getElementById('filterPopDone').onclick = () => { haptic('impact','light'); closeFilterPop(); };
 
 /* ============ DATA (TMDB) ============ */
 const TMDB_KEY = '4a37646c1145e683d01fb159ab035fe7';
@@ -7808,10 +7861,12 @@ function updateFiltersFound(){
   const n = filterTarget === 'wishlist'
     ? wishFilterMovies(filtersDraft, wishQuery, filtersDraft.sort).length
     : catFilterMovies(filtersDraft).length;
-  if (el) el.textContent = n ? `Найдено: ${n} ${pluralRu(n, 'тайтл', 'тайтла', 'тайтлов')}` : 'По этим условиям ничего нет — попробуй ослабить фильтры';
+  if (el) el.textContent = n ? `Найдено: ${n} ${pluralRu(n, 'тайтл', 'тайтла', 'тайтлов')}` : 'Под эти условия ничего не подошло';
+  /* Кнопка подтверждения активна всегда. Раньше она гасла, если под условия ничего
+     не подходило, и окно оказывалось запертым: сохранить выбор было нельзя — ровно
+     это и выглядело как «фильтры в чек-листе невозможно сохранить». */
   const apply = document.getElementById('filtersApply');
-  if (apply) apply.textContent = n ? `Показать ${n}` : 'Ничего не найдено';
-  if (apply) apply.disabled = !n;
+  if (apply){ apply.textContent = 'Подтвердить'; apply.disabled = false; }
 }
 function openFilters(target){
   filterTarget = target === 'wishlist' ? 'wishlist' : 'catalog';
@@ -7833,7 +7888,21 @@ if (filtersBody) filtersBody.addEventListener('click', e => {
     const what = clear.dataset.clear;
     if (what === 'types') filtersDraft.types = [];
     if (what === 'genres') filtersDraft.genres = [];
-    haptic('selection'); renderFilters(); return;
+    /* Полностью окно не перерисовываем: иначе анимацию сброса не увидеть. Снимаем
+       подсветку у чипов этого блока, показываем вспышку и обновляем счётчик. */
+    const block = clear.closest('.f-block');
+    const chipsBox = block ? block.querySelector('.f-chips') : null;
+    if (chipsBox){
+      const kind = what === 'types' ? 'type' : 'genre';
+      chipsBox.querySelectorAll('.f-chip').forEach(c => { if (c.dataset.f === kind) c.classList.remove('on'); });
+      chipsBox.classList.remove('reset'); void chipsBox.offsetWidth; chipsBox.classList.add('reset');
+      setTimeout(() => chipsBox.classList.remove('reset'), 460);
+    }
+    clear.classList.remove('flash'); void clear.offsetWidth; clear.classList.add('flash');
+    setTimeout(() => clear.classList.remove('flash'), 520);
+    haptic('selection');
+    updateFiltersFound();
+    return;
   }
   const chip = e.target.closest('.f-chip');
   if (!chip || !filtersDraft) return;
@@ -7877,7 +7946,7 @@ document.getElementById('filtersApply').onclick = () => {
     closeOverlay('filtersScreen');
     renderWishHead();
     renderWishlist();
-    showToast(wishFilterCount() ? `Фильтры чек-листа: ${wishFilterCount()}` : 'Фильтры чек-листа сброшены');
+    showToast(wishFilterCount() ? `Фильтры сохранились · ${wishFilterCount()}` : 'Фильтры чек-листа сброшены');
     return;
   }
   catFilters = { types: [...filtersDraft.types], genres: [...filtersDraft.genres], year: filtersDraft.year, sort: filtersDraft.sort };
@@ -7887,7 +7956,7 @@ document.getElementById('filtersApply').onclick = () => {
   closeOverlay('filtersScreen');
   renderCatActive();
   renderCatalog();
-  showToast(catFilterCount() ? `Фильтры: ${catFilterCount()}` : 'Фильтры сброшены');
+  showToast(catFilterCount() ? `Фильтры сохранились · ${catFilterCount()}` : 'Фильтры сброшены');
 };
 function catalogGenres(){
   return [...new Set(MOVIES.flatMap(m => m.genres || []))].sort((a,b) => a.localeCompare(b, 'ru'));

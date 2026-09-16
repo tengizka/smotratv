@@ -809,7 +809,8 @@ ok(/нужно ещё \$\{fmtXP\(need\)\} XP/.test(js), 'у будущих ур�
 ok(/Уровень пройден на <b>\$\{lv\.pct\}%<\/b>/.test(js), 'в шапке окна — процент пройденного уровня');
 ok(/function fmtXP\(n\)/.test(js) && /\.lv-hero-nums\{ display:grid; grid-template-columns:repeat\(3, 1fr\)/.test(dflat), 'опыт разложен по трём ячейкам — длинные числа не обрезаются');
 ok(/\.lv-hero-cell b\{ display:block;[\s\S]{0,200}?text-overflow:ellipsis; \}/.test(dflat), 'у больших чисел есть запас и аккуратное ужатие');
-ok(/\.lv-pick\{ margin-top:12px;/.test(dflat) && /\.lv-pick-nums\{ display:grid/.test(dflat), 'карточка выбранного уровня оформлена');
+ok(/\.lv-pick\{ position:sticky; top:0; z-index:6; margin-top:12px;/.test(dflat) && /\.lv-pick-nums\{ display:grid/.test(dflat),
+  'карточка выбранного уровня оформлена и липнет к верху окна');
 ok(/const showPick = \(n\) => \{/.test(js) && /document\.getElementById\('lvPick'\)/.test(js), 'тап по плитке раскрывает карточку уровня');
 ok(/aria-label="Уровень \$\{L\.level\}, \$\{esc\(L\.name\}\}?/.test(js) || /aria-label="Уровень \$\{L\.level\}/.test(js), 'у плитки есть подпись для доступности');
 ok(/id="lvJump"/.test(js) && /К моему уровню/.test(js) && /row\.scrollIntoView\(\{ block:'center', behavior:'smooth' \}\)/.test(js), 'есть прыжок к своему уровню в лестнице');
@@ -1125,7 +1126,8 @@ ok(src.indexOf('id="catSearchWrap"') > src.indexOf('class="cat-head-row"')
   && src.indexOf('id="catSearchWrap"') < src.indexOf('id="catGrid"'),
   'поиск каталога живёт в той же строке, что фильтры и вид');
 ok(!/\.cat-count\{/.test(dflat) && !/\.cat-title\{/.test(dflat) && !/cat-title/.test(src), 'надписи «Каталог» и счётчика в шапке не осталось');
-ok(/Показать \$\{n\}` : 'Ничего не найдено'/.test(js), 'сколько тайтлов под фильтрами — видно в кнопке окна фильтров');
+ok(/if \(el\) el\.textContent = n \? `Найдено: \$\{n\}/.test(js) && /apply\.textContent = 'Подтвердить'; apply\.disabled = false;/.test(js),
+  'сколько тайтлов под фильтрами — видно в шапке окна, а кнопка подтверждения всегда активна');
 /* чек-лист: иконка поиска сверху, заголовок под ней */
 const wishStart = src.indexOf('<!-- WISHLIST -->');
 const wishSrc = src.slice(wishStart, src.indexOf('<!-- WATCHING -->', wishStart));
@@ -1328,7 +1330,13 @@ devX.doc.querySelector('#filtersBody .f-chip[data-f="genre"][data-v="Драма"
 await sleep(20);
 ok(/Найдено[^0-9]*6/.test(String(devX.doc.getElementById('filtersFound').textContent)),
   'окно сразу считает, сколько подойдёт: ' + devX.doc.getElementById('filtersFound').textContent);
-ok(/Показать 6/.test(String(devX.doc.getElementById('filtersApply').textContent)), 'и кнопка подписана числом');
+ok('Подтвердить' === String(devX.doc.getElementById('filtersApply').textContent) && devX.doc.getElementById('filtersApply').disabled === false,
+  'кнопка подтверждения подписана и активна');
+/* даже если под условия ничего не подошло, выбор можно сохранить */
+devX.ev('filtersDraft = { types: [], genres: ["Нет такого жанра"], year: "any", sort: "added" }; updateFiltersFound();');
+ok(devX.doc.getElementById('filtersApply').disabled === false && /не подошло/.test(String(devX.doc.getElementById('filtersFound').textContent)),
+  'при пустом результате кнопка всё равно работает: ' + devX.doc.getElementById('filtersFound').textContent);
+devX.ev('filtersDraft = { types: [], genres: ["Драма"], year: "any", sort: "added" }; updateFiltersFound();');
 devX.doc.getElementById('filtersApply').click();
 await sleep(50);
 ok(devX.doc.querySelectorAll('#wishSort .chip.removable').length === 1, 'в шапке чек-листа виден активный фильтр с крестиком');
@@ -1600,6 +1608,86 @@ ok(/\.empty-note\{ text-align:center; color:var\(--text-dim\); font-size:13px; p
 ok(/#filtersScreen \.ov-sub\{ font-size:12px; color:var\(--text-dim\); margin-top:2px; \}/.test(dflat),
   'строка «найдено» в шапке фильтров тоже компактная');
 devZ.close();
+
+/* ===== [24] Кнопка подтверждения, анимация сброса и скролл окон ===== */
+section('[24] Подтверждение фильтров, анимация сброса, скролл окон');
+/* --- окно фильтров живёт вне области экранов: панель вкладок его больше не перекрывает --- */
+ok(src.indexOf('id="filtersScreen"') > src.indexOf('</nav>') || !/class="screens"[\s\S]*?id="filtersScreen"[\s\S]*?<\/div>\s*\n\s*<nav/.test(src),
+  'окно фильтров стоит вне области экранов — нижняя панель не накрывает кнопку подтверждения');
+ok(/\n\s*<\/nav>/.test(src), 'нижняя панель на месте');
+/* --- кнопка подтверждения --- */
+ok(src.indexOf('>Подтвердить</button>') > -1, 'в окне фильтров кнопка подписана «Подтвердить»');
+ok(!/filters-apply[\s\S]{0,80}disabled/.test(src), 'она не может быть выключена разметкой');
+ok(/apply\.disabled = false;/.test(js), 'и код её всегда включает');
+ok(/\$"?\{?n\}?"?/.test(js) && /Найдено: \$\{n\}/.test(js), 'число подходящих тайтлов видно в шапке окна');
+/* --- анимация «Всё подряд» / «Все жанры» --- */
+ok(/@keyframes clearFlash\{/.test(cssClean) && /@keyframes chipReset\{/.test(cssClean),
+  'есть анимации вспышки кнопки и перерисовки чипов');
+ok(/\.f-block-title button\.flash\{ animation:clearFlash/.test(dflat) && /\.f-chips\.reset \.f-chip\{ animation:chipReset/.test(dflat)
+  && /\.f-block-title button:active\{ transform:scale\(\.9\); \}/.test(dflat),
+  'кнопка сброса подпрыгивает и подсвечивает чипы');
+ok(/chipsBox\.classList\.add\('reset'\)/.test(js) && /clear\.classList\.add\('flash'\)/.test(js),
+  'и это действительно срабатывает по нажатию');
+ok(!/if \(what === 'genres'\) filtersDraft\.genres = \[\];\n    haptic\('selection'\); renderFilters\(\); return;/.test(js),
+  'после сброса окно не перерисовывается целиком — иначе анимации не увидеть');
+/* --- «Готово» в фильтре ленты --- */
+ok(src.indexOf('id="filterPopDone"') > -1, 'в фильтре ленты на главной есть кнопка «Готово»');
+ok(/getElementById\('filterPopDone'\)\.onclick/.test(js), 'она закрывает фильтр');
+/* --- скролл окон --- */
+ok(/\.ov-body\{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;/.test(dflat),
+  'тело окна имеет min-height:0 — иначе список уровней не листается');
+ok(/-webkit-overflow-scrolling:touch; padding:6px 20px 30px; \}/.test(dflat), 'и инерцию прокрутки для вебвью Telegram');
+ok(/\.lv-pick\{ position:sticky; top:0; z-index:6;/.test(dflat), 'карточка уровня липнет к верху окна');
+/* --- живой прогон: фильтры чек-листа действительно сохраняются --- */
+const saveDb = makeFakeDb();
+const SAVE_LIST = [
+  { id: 9401, type: 'movie', title: 'Первая', genres: ['Драма'], year: '2019', rating: 7 },
+  { id: 9402, type: 'movie', title: 'Вторая', genres: ['Боевик'], year: '2021', rating: 8 },
+  { id: 9403, type: 'series', title: 'Третья', genres: ['Драма'], year: '2022', rating: 9 },
+];
+SAVE_LIST.forEach(m => saveDb.rows('wishlist').push({ telegram_id: 909090, movie_id: m.type === 'series' ? m.id + 1000000000 : m.id }));
+const devS = await bootDevice(saveDb, { platform: 'android' });
+devS.ev(`(function(){ ${JSON.stringify(SAVE_LIST)}.forEach(m => rememberMovie({ id: m.id, type: m.type, title: m.title,
+  originalTitle: '', year: m.year, rating: m.rating, poster: null, posterPath: '/s' + m.id + '.jpg', overview: '', genres: m.genres }));
+  state.wishlist = ${JSON.stringify(SAVE_LIST.map(m => m.type === 'series' ? m.id + 1000000000 : m.id))}; renderWishlist(); return true; })()`);
+await sleep(60);
+ok(devS.ev('document.querySelector(".screens #filtersScreen") === null'), 'в живом дереве окно фильтров не внутри области экранов');
+devS.doc.getElementById('openWishFilters').click();
+await sleep(40);
+ok(devS.ev('!!document.getElementById("filtersScreen").classList.contains("open")'), 'окно фильтров чек-листа открылось');
+const applyBtn = devS.doc.getElementById('filtersApply');
+ok(applyBtn.disabled === false, 'кнопка подтверждения активна');
+/* выбираем тип «Сериалы», жмём сброс — чипы теряют подсветку и вспыхивают */
+devS.doc.querySelector('#filtersBody .f-chip[data-f="type"][data-v="series"]').click();
+await sleep(20);
+const seriesChip = devS.doc.querySelector('#filtersBody .f-chip[data-f="type"][data-v="series"]');
+ok(seriesChip.classList.contains('on'), 'выбранный тип подсвечен');
+const clearBtn = devS.doc.querySelector('#filtersBody [data-clear="types"]');
+clearBtn.click();
+await sleep(20);
+const chipsBox = devS.doc.querySelector('#filtersBody .f-block .f-chips');
+ok(clearBtn.classList.contains('flash') || chipsBox.classList.contains('reset'), 'при сбросе видно анимацию');
+ok(devS.ev('filtersDraft.types.length') === 0, 'и выбор правда сброшен');
+/* жмём «Подтвердить» — выбор сохраняется */
+devS.doc.querySelector('#filtersBody .f-chip[data-f="genre"][data-v="Драма"]').click();
+await sleep(20);
+devS.doc.getElementById('filtersApply').click();
+await sleep(80);
+ok(devS.ev('wishFilters.genres.length') === 1 && devS.ev('wishFilters.genres[0]') === 'Драма', 'нажатие «Подтвердить» сохранило фильтр');
+ok(String(devS.ev('localStorage.getItem("smotra_wish_filters")')).indexOf('Драма') > 0, 'и записало его в память телефона');
+ok(devS.ev('document.querySelectorAll("#wishSort .chip.removable").length') === 1, 'в шапке чек-листа появился чип активного фильтра');
+await sleep(150);
+ok(saveDb.cfgValue('wishFilters') && saveDb.cfgValue('wishFilters').genres[0] === 'Драма', 'и отправило в базу');
+/* фильтр ленты на главной: «Готово» закрывает окно */
+devS.ev('switchTab("home")');
+await sleep(40);
+devS.doc.getElementById('openFilters').click();
+await sleep(30);
+ok(devS.doc.getElementById('filterPop').classList.contains('open'), 'фильтр ленты открылся');
+devS.doc.getElementById('filterPopDone').click();
+await sleep(30);
+ok(!devS.doc.getElementById('filterPop').classList.contains('open'), 'кнопка «Готово» его закрывает');
+devS.close();
 
 console.log('\n' + (fail === 0 ? 'ВСЁ ОК: ' : 'ЕСТЬ ПРОБЛЕМЫ: ') + pass + ' passed, ' + fail + ' failed');
 if (fail) console.log('Проваленные проверки:\n - ' + failed.join('\n - '));
