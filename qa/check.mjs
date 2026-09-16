@@ -1022,9 +1022,14 @@ function makeFakeDb(){
    бросает RangeError, отрицательное время запуска — тоже. Так тесты ловят не
    «звук не сыграл», а именно ошибки в коде синтеза. */
 function makeFakeAudioContext(log){
-  const param = () => ({
+  const param = (kind) => ({
     value: 0,
-    setValueAtTime(v, t){ if (!isFinite(v)) throw new RangeError('NaN в значение'); if (t < 0) throw new RangeError('время меньше нуля'); log.params++; this.value = v; },
+    setValueAtTime(v, t){
+      if (!isFinite(v)) throw new RangeError('NaN в значение');
+      if (t < 0) throw new RangeError('время меньше нуля');
+      if (kind === 'freq') log.freqs.push(v);          // высоты — их проверяем в тестах
+      log.params++; this.value = v;
+    },
     linearRampToValueAtTime(v, t){ if (!isFinite(v)) throw new RangeError('NaN в значение'); if (t < 0) throw new RangeError('время меньше нуля'); log.ramps++; this.value = v; },
     exponentialRampToValueAtTime(v, t){
       if (!(v > 0)) throw new RangeError('exponentialRampToValueAtTime: значение должно быть больше нуля');
@@ -1034,7 +1039,7 @@ function makeFakeAudioContext(log){
     setTargetAtTime(v){ log.targets++; this.value = v; },
     cancelScheduledValues(){ log.cancels++; },
   });
-  return class FakeAudioContext {
+  const Fake = class FakeAudioContext {
     constructor(){
       this.currentTime = 0; this.sampleRate = 44100; this.state = 'suspended';
       this.destination = { connect(){}, disconnect(){} };
@@ -1043,15 +1048,37 @@ function makeFakeAudioContext(log){
     createGain(){ return { gain: param(), connect(){}, disconnect(){} }; }
     createOscillator(){
       log.oscillators++;
-      return { type: 'sine', frequency: param(), connect(){}, disconnect(){},
+      return { type: 'sine', frequency: param('freq'), connect(){}, disconnect(){},
         start(t){ if (t < 0) throw new RangeError('start(): время меньше нуля'); log.starts.push(t); }, stop(){} };
     }
-    createBiquadFilter(){ return { type: 'lowpass', Q: { value: 1 }, frequency: param(), connect(){}, disconnect(){} }; }
-    createBuffer(channels, len, rate){ log.buffers++; return { length: len, sampleRate: rate, getChannelData: () => new Float32Array(len) }; }
-    createBufferSource(){ log.sources++; return { buffer: null, connect(){}, disconnect(){}, start(){ log.starts.push(0); }, stop(){} }; }
+    createBiquadFilter(){ return { type: 'lowpass', Q: { value: 1 }, frequency: param('filter'), connect(){}, disconnect(){} }; }
+    createBuffer(channels, len, rate){ log.buffers++; return { length: len, sampleRate: rate, numberOfChannels: channels, getChannelData: () => new Float32Array(len) }; }
+    createBufferSource(){ log.sources++; return { buffer: null, loop: false, connect(){}, disconnect(){}, start(t){ log.starts.push(t || 0); }, stop(){} }; }
+    /* «Навороты» шины: их может не быть в старом браузере, поэтому их отсутствие —
+       отдельный сценарий проверки, а не ошибка. */
+    createDynamicsCompressor(){
+      log.compressors++;
+      return { threshold: param(), knee: param(), ratio: param(), attack: param(), release: param(), connect(){}, disconnect(){} };
+    }
+    createConvolver(){
+      log.convolvers++;
+      return { buffer: null, normalize: true, connect(){}, disconnect(){} };
+    }
+    createStereoPanner(){
+      log.panners++;
+      return { pan: param(), connect(){}, disconnect(){} };
+    }
     resume(){ log.resumeCalls++; this.state = 'running'; return Promise.resolve(); }
     close(){ log.closed++; }
   };
+  /* minimal — «старый браузер»: узлов просто нет. Именно отсутствие метода, а не
+     исключение: так ведёт себя движок без поддержки этих узлов. */
+  if (log && log.minimal){
+    delete Fake.prototype.createDynamicsCompressor;
+    delete Fake.prototype.createConvolver;
+    delete Fake.prototype.createStereoPanner;
+  }
+  return Fake;
 }
 async function bootDevice(fake, opts){
   const o = opts || {};
@@ -1855,25 +1882,54 @@ devT.close();
 
 /* ===== [26] Звук приложения и планшетная раскладка (iPad) ===== */
 section('[26] Звук: синтез, настройки, синхронизация. Планшетная раскладка');
+/* --- музыки больше нет --- */
+ok(!/MUSIC_KEY|musicOn|startMusic|stopMusic|MUSIC_BARS/.test(js), 'фоновой музыки в коде не осталось: ни канала, ни расписания, ни запуска');
+ok(!/<div class="set-label">Фоновая музыка<\/div>/.test(src) && !/switchMusic/.test(src),
+  'и в настройках от неё не осталось ни строки, ни тумблера (упоминание в истории версий — не в счёт)');
+ok(/try\{ localStorage\.removeItem\('smotra_music'\); \}catch\(e\)\{\}/.test(js), 'ключ музыки прошлых версий вычищается из памяти устройства');
 /* --- звук ниоткуда не скачивается --- */
-ok(/const SFX_KEY = 'smotra_sfx';/.test(js) && /const MUSIC_KEY = 'smotra_music';/.test(js), 'два независимых канала звука со своими ключами памяти');
-ok(/function sfxOn\(\)\{ return getFlag\(SFX_KEY, true\); \}/.test(js) && /function musicOn\(\)\{ return getFlag\(MUSIC_KEY, true\); \}/.test(js),
-  'оба канала включены по умолчанию — как просили');
-ok(!/<audio[\s>]/i.test(src) && !/new Audio\(/.test(js) && !/\.mp3|\.ogg|\.m4a|\.wav|\.aac/i.test(src), 'ни одного звукового файла: всё синтезируется самим приложением');
+ok(/const SFX_KEY = 'smotra_sfx';/.test(js) && /function sfxOn\(\)\{ return getFlag\(SFX_KEY, true\); \}/.test(js),
+  'канал звука один, включён по умолчанию');
+ok(!/<audio[\s>]/i.test(src) && !/new Audio\(/.test(js) && !/\.mp3|\.ogg|\.m4a|\.wav|\.aac/i.test(src),
+  'ни одного звукового файла: и звуки, и «комната» собираются на месте');
 ok(/const AC = window\.AudioContext \|\| window\.webkitAudioContext;/.test(js) && /if \(!AC\)\{ audioBroken = true; return null; \}/.test(js),
   'там, где звука нет или он запрещён, приложение молча работает дальше');
 ok(/\['pointerdown','touchstart','keydown'\]\.forEach\(ev => window\.addEventListener\(ev, unlockAudio, \{ passive:true \}\)\);/.test(js),
   'звук разрешается первым касанием: иначе Safari глушит его навсегда');
-ok(/if \(ctx\.state === 'suspended'\)\{ try\{ ctx\.resume\(\); \}catch\(e\)\{\} \}/.test(js), 'и звуковой контекст тут же возобновляется');
+/* --- как сделан сам звук --- */
+ok(/function makeImpulse\(ctx, seconds, decay\)\{/.test(js) && /conv\.buffer = makeImpulse\(ctx, /.test(js),
+  'у звука есть своя «комната» — реверб, собранный из шума прямо в приложении');
+ok(/createConvolver\(\)/.test(js) && /const wetReturn = ctx\.createGain\(\);/.test(js), 'и посыл в неё отдельным усилением');
+ok(/if \(ctx\.createDynamicsCompressor\)\{[\s\S]{0,400}comp\.threshold\.value = -16/.test(js), 'на выходе компрессор: подряд летящие звуки не наезжают и не щёлкают');
+ok(/try\{\n      if \(ctx\.createConvolver && ctx\.createBuffer\)\{/.test(js) && /catch\(e\)\{ audioWetIn = null; \}/.test(js),
+  'нет свёртки — играем сухо, а не молчим: каждая часть шины отваливается отдельно');
+ok(/let tail = master;\n    try\{\n      if \(ctx\.createDynamicsCompressor\)/.test(js) && /catch\(e\)\{ tail = master; \}/.test(js),
+  'и компрессор тоже: одна отсутствующая железка не уносит весь звук');
+ok(/function envelope\(param, at, dur, peak, attack\)\{/.test(js) && /param\.setValueAtTime\(0\.0001, at\);/.test(js),
+  'огибающая начинается и кончается на 0.0001 — ноль в экспоненте браузер не принимает, а резкий край щёлкает');
+ok(/function bell\(freq, o\)\{/.test(js) && /\(o\.parts \|\| \[\[1, 1, 1\], \[2, 0\.32, 0\.6\], \[3, 0\.12, 0\.38\]\]\)/.test(js),
+  'основа тембра — маримба: тон и обертоны, которые гаснут быстрее основы');
+ok(/const human = o\.human === false \? 1 : 1 \+ \(Math\.random\(\) - 0\.5\) \* 0\.025;/.test(js),
+  'высота на повторных щелчках чуть разная (меньше 3%): не робот');
+ok(/function noiseBuffer\(ctx\)\{[\s\S]{0,120}if \(audioNoise\) return audioNoise;/.test(js), 'буфер шума один на всё приложение — «вжухи» почти ничего не стоят');
+ok(/function riffle\(\)\{[\s\S]{0,300}for \(let i = 0; i < 7; i\+\+\)\{/.test(js), '«Перемешать» тасует карты: семь коротких шорохов со случайными промежутками');
+ok(/spin:     \(\) => whoosh\(\{ from: 220, to: 3000/.test(js), 'у вращения воздух набирает высоту — слышно разгон');
+ok(/function sub\(freq, dur, peak, at\)\{/.test(js) && /sub\(130\.81, 0\.9, 0\.05, 0\.02\)/.test(js), 'у крупных звуков есть низкий «подвал»');
+ok(/function voiceOut\(ctx, pan, wet\)\{/.test(js) && /if \(pan && ctx\.createStereoPanner\)\{/.test(js)
+   && /catch\(e\)\{ tail = out; \}/.test(js), 'панорама своя у каждого голоса и тоже умеет отвалиться');
+ok(/panner\.pan\.value = Math\.max\(-1, Math\.min\(1, pan\)\);/.test(js), 'панорама не выходит за пределы стерео');
+/* --- звук подключён к самим действиям --- */
 const SFX_ALL = ['tap','swipe','watched','skip','wish','watching','undo','open','close','badge','level','spin','tick','win','shuffle','done','error'];
 ok(SFX_ALL.every(n => new RegExp('\\n  ' + n + ':').test(js)), 'в наборе есть звук на каждое действие: ' + SFX_ALL.length + ' штук');
-ok(/function sfx\(name\)\{[\s\S]{0,80}if \(!sfxOn\(\) \|\| !audioUnlocked\) return;/.test(js), 'выключенный звук не считает ни одной ноты');
-/* --- звук подключён к самим действиям --- */
-ok(/sfx\('swipe'\);[\s\S]{0,240}sfx\(action === 'watched'/.test(js), 'свайп: сперва шорох, сразу за ним звук самого действия');
-ok(/sfx\(action === 'watched' \? 'watched' : action === 'skip' \? 'skip' : action === 'wish' \? 'wish' : 'watching'\);/.test(js),
-  'у каждого свайпа свой звук: смотрел, мимо, чекнуть, смотрю');
-ok(/sfx\('undo'\);/.test(js) && /sfx\('shuffle'\);/.test(js) && /sfx\('badge'\);/.test(js) && /if \(levelFor\(myXP\(\)\)\.level > levelBefore\) sfx\('level'\);/.test(js),
+ok(/function sfx\(name, opts\)\{[\s\S]{0,80}if \(!sfxOn\(\) \|\| !audioUnlocked\) return;/.test(js), 'выключенный звук не считает ни одной ноты');
+ok(/const panDir = action === 'watched' \? 0\.4 : action === 'skip' \? -0\.4 : 0;/.test(js)
+   && /sfx\('swipe', \{ pan: panDir \}\);/.test(js) && /'watching', \{ pan: panDir \}\);/.test(js),
+  'свайп и его звук уходят по панораме вслед за карточкой: мимо влево, смотрел вправо');
+ok(/sfx\('undo'\);/.test(js) && /sfx\('shuffle'\);/.test(js) && /sfx\('badge'\);/.test(js) && /sfx\('level'\);/.test(js),
   '«Вернуться», «Перемешать», ачивка и новый уровень тоже звучат');
+ok(/showToast\('Добавлено в «Хочу чекнуть»'\);\n    sfx\('wish'\);/.test(js) && /showToast\('Перемещено в «Смотрю»'\);\n    sfx\('watching'\);/.test(js)
+   && /sfx\('watched'\);\n    showToast\('Отмечено как просмотренное'\);/.test(js) && (js.match(/if \(already\) sfx\('undo'\);/g) || []).length === 3,
+  'кнопки на карточке фильма звучат как свайпы, а снятие отметки — мягкой отменой');
 ok(/function resolveSwipe\(card, movie, action\)\{[\s\S]{0,400}const levelBefore = levelFor\(myXP\(\)\)\.level;[\s\S]{0,500}pushUnique\(state\.watched/.test(js),
   'уровень запоминается до начисления опыта, иначе звук нового уровня не сыграл бы никогда');
 ok(/function openOverlay\(elOrId\)\{[\s\S]{0,320}sfx\('open'\);/.test(js) && /function closeOverlay\(elOrId\)\{[\s\S]{0,320}sfx\('close'\);/.test(js),
@@ -1884,29 +1940,15 @@ ok(/function stopTicks\(\)\{ if \(tickTimer\)\{ clearInterval\(tickTimer\); tick
   'тики выключаются вместе с вращением — трещотка не остаётся висеть');
 const sfxSites = (js.match(/sfx\('/g) || []).length;
 ok(sfxSites >= 18, 'звук подключён в ' + sfxSites + ' местах приложения, а не лежит мёртвым кодом');
-/* --- музыка --- */
-ok(/const MUSIC_BARS = \[[\s\S]{0,600}const MUSIC_BAR_SEC = 3\.6;/.test(js), 'фоновая музыка — короткий круг аккордов, а не случайные ноты');
-ok(/musicGain\.gain\.linearRampToValueAtTime\(0\.9, ctx\.currentTime \+ 1\.4\);/.test(js), 'музыка входит мягко, без щелчка');
-ok(/musicTimer = setInterval\(musicSchedule, 700\)/.test(js) && /while \(musicNextAt < ctx\.currentTime \+ 2\.4\)/.test(js),
-  'ноты расписываются вперёд по часам звука: музыка не дёргается от отрисовки');
-ok(/if \(document\.hidden\) stopMusic\(\);[\s\S]{0,90}else if \(musicOn\(\) && audioUnlocked\) startMusic\(\);/.test(js),
-  'ушёл из приложения — музыка молчит, вернулся — играет снова');
-/* --- тумблеры в настройках --- */
-ok(/<div class="set-label">Звуки<\/div>/.test(src) && /<div class="set-label">Фоновая музыка<\/div>/.test(src), 'в настройках есть обе строки с понятными подписями');
-ok(/<div class="switch" id="switchSfx" data-key="smotra_sfx"><\/div>/.test(src) && /<div class="switch" id="switchMusic" data-key="smotra_music"><\/div>/.test(src),
-  'в строках — настоящие тумблеры со своими ключами');
+/* --- тумблер в настройках и синхронизация --- */
+ok(/<div class="set-label">Звуки<\/div>/.test(src) && /<div class="switch" id="switchSfx" data-key="smotra_sfx"><\/div>/.test(src),
+  'в настройках есть строка «Звуки» с настоящим тумблером');
 ok(/initSwitch\(document\.getElementById\('switchSfx'\), true, \(on\) => \{\n  syncSetting\('sfx', on\);/.test(js), 'тумблер «Звуки» сразу делится выбором с другими устройствами');
-ok(/initSwitch\(document\.getElementById\('switchMusic'\), true, \(on\) => \{[\s\S]{0,220}startMusic\(\)[\s\S]{0,220}else stopMusic\(\);/.test(js),
-  'тумблер музыки включает и гасит подложку тем же касанием');
-/* --- синхронизация --- */
-ok(/if \(localStorage\.getItem\(SFX_KEY\)\) keys\.add\('sfx'\);/.test(js) && /if \(localStorage\.getItem\(MUSIC_KEY\)\) keys\.add\('music'\);/.test(js),
-  'выключенный звук уезжает в базу настроек');
-ok(/sfx: sfxOn\(\),\n    music: musicOn\(\),/.test(js), 'и лежит в общем наборе настроек рядом с темой и фильтрами');
-ok(/let sx = take\('sfx'\);[\s\S]{0,1000}if \(mu\)\{ if \(audioUnlocked\) startMusic\(\); \} else stopMusic\(\);/.test(js),
-  'на втором устройстве чужой выбор применяется: там тоже тишина');
+ok(/if \(localStorage\.getItem\(SFX_KEY\)\) keys\.add\('sfx'\);/.test(js) && /sfx: sfxOn\(\),\n/.test(js) && /let sx = take\('sfx'\);/.test(js),
+  'выключенный звук уезжает в базу настроек и применяется на втором устройстве');
 
-/* --- живая проверка звука: подменённый AudioContext --- */
-const sndLog = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] };
+/* --- живая проверка звука: подменённый AudioContext с «наворотами» --- */
+const sndLog = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[], freqs:[], compressors:0, convolvers:0, panners:0 };
 const devSnd = await bootDevice(makeFakeDb(), { platform: 'ios', audio: sndLog });
 ok(devSnd.errors.length === 0, 'планшет запускается без ошибок с настоящим звуком' + (devSnd.errors.length ? ': ' + devSnd.errors[0] : ''));
 ok(devSnd.ev('audioBroken') === false && devSnd.ev('audioUnlocked') === false, 'до первого касания звук ещё не разрешён — как требует Safari');
@@ -1914,51 +1956,77 @@ devSnd.ev("sfx('watched'); sfx('swipe'); sfx('badge')");
 ok(sndLog.oscillators === 0 && sndLog.sources === 0, 'до касания не играет ни одна нота, даже если действия уже идут');
 devSnd.ev("window.dispatchEvent(new Event('pointerdown'))");
 ok(devSnd.ev('audioUnlocked') === true && sndLog.resumeCalls >= 1, 'первое касание разрешает звук и возобновляет контекст');
+ok(sndLog.compressors === 1 && sndLog.convolvers === 1, 'шина собралась один раз: компрессор и «комната»');
+ok(sndLog.buffers === 1, '«комната» считается из шума один раз, а не на каждый звук');
 const tonesBefore = sndLog.oscillators;
+const freqBefore = sndLog.freqs.length;
 devSnd.ev("sfx('watched')");
-ok(sndLog.oscillators - tonesBefore === 2, '«смотрел» — аккорд из двух нот, а не молчание: ' + (sndLog.oscillators - tonesBefore));
+const notes = sndLog.oscillators - tonesBefore;
+ok(notes >= 4, '«смотрел» — аккорд маримбы, а не один синус: ' + notes + ' обертонов');
+ok(new Set(sndLog.freqs.slice(freqBefore)).size >= 2, 'и звучит он двумя разными нотами, а не одной');
+ok(sndLog.panners > 0, 'голос выведен через панораму — звук объёмный');
 const noiseBefore = sndLog.sources;
+const bufBefore = sndLog.buffers;
 devSnd.ev("sfx('swipe')");
-ok(sndLog.sources > noiseBefore && sndLog.buffers > 0, 'свайп — шумовой «вжух», собранный прямо в приложении');
+ok(sndLog.sources > noiseBefore && sndLog.buffers === bufBefore + 1, 'свайп — шумовой «вжух»; буфер шума создаётся на месте');
+const bufAfterSwipe = sndLog.buffers;
+devSnd.ev("sfx('swipe'); sfx('shuffle')");
+ok(sndLog.buffers === bufAfterSwipe, 'а дальше тот же буфер переиспользуется: десять «вжухов» не считают шум заново');
+/* тасовка: не один выдох, а череда шорохов */
+const rafBefore = sndLog.sources;
+devSnd.ev("sfx('shuffle')");
+ok(sndLog.sources - rafBefore === 7, '«Перемешать» шуршит семь раз — как тасовка карт: ' + (sndLog.sources - rafBefore));
+/* высота тиков разная — «не робот» */
+const tickBefore = sndLog.freqs.length;
+devSnd.ev("sfx('tick'); sfx('tick')");
+const tickFreqs = sndLog.freqs.slice(tickBefore);
+ok(tickFreqs.length === 2 && tickFreqs[0] !== tickFreqs[1], 'два тика рулетки — разной высоты: ' + tickFreqs.map(f => f.toFixed(1)).join(' / '));
 ok(devSnd.ev("(function(){ try{ sfx('такого-звука-нет'); return 'ok'; }catch(e){ return 'ошибка: ' + e.message; } })()") === 'ok',
   'незнакомое имя звука ничего не ломает');
 ok(sndLog.expRamps > 0 && sndLog.ramps > 0 && sndLog.starts.every(t => t >= 0), 'огибающие посчитаны без NaN и без нуля — браузер не упадёт');
-ok(devSnd.ev('musicTimer') !== null && devSnd.ev('musicVoices.length') > 0 && devSnd.ev('musicNextAt') > 0,
-  'музыка включилась вместе со звуком и расписала первые аккорды: ' + devSnd.ev('musicBarIndex') + ' такт(а) вперёд');
+/* прогон всего набора: каждый звук обязан собраться без исключений */
+const allBefore = sndLog.oscillators + sndLog.sources;
+devSnd.ev('[' + SFX_ALL.map(n => `'${n}'`).join(',') + "].forEach(n => sfx(n, { pan: 0.2 }))");
+ok(sndLog.oscillators + sndLog.sources > allBefore, 'весь набор из ' + SFX_ALL.length + ' звуков собирается и играет');
 ok(devSnd.errors.length === 0, 'за весь прогон звука ни одной ошибки' + (devSnd.errors.length ? ': ' + devSnd.errors[0] : ''));
 /* выключение звука в настройках гасит канал целиком */
 devSnd.doc.getElementById('switchSfx').click();
 await sleep(40);
 ok(devSnd.ev('sfxOn()') === false && devSnd.ev("localStorage.getItem('smotra_sfx')") === '0', 'тумблер «Звуки» выключает канал и запоминает выбор');
 const quietBefore = sndLog.oscillators + sndLog.sources;
-devSnd.ev("sfx('watched'); sfx('swipe'); sfx('badge'); sfx('level')");
+devSnd.ev("sfx('watched'); sfx('swipe'); sfx('badge'); sfx('level'); sfx('shuffle')");
 ok(sndLog.oscillators + sndLog.sources === quietBefore, 'выключенный звук молчит полностью — ни одной ноты');
 devSnd.doc.getElementById('switchSfx').click();
 await sleep(40);
 ok(devSnd.ev('sfxOn()') === true, 'и включается обратно тем же тумблером');
-devSnd.doc.getElementById('switchMusic').click();
-await sleep(60);
-ok(devSnd.ev('musicOn()') === false && devSnd.ev('musicTimer') === null && sndLog.targets > 0, 'музыка выключается, а её голоса гасятся, а не доигрывают');
-devSnd.doc.getElementById('switchMusic').click();
-await sleep(60);
-ok(devSnd.ev('musicOn()') === true && devSnd.ev('musicTimer') !== null, 'и включается обратно');
+ok(devSnd.ev('typeof startMusic') === 'undefined' && devSnd.ev('typeof musicOn') === 'undefined', 'никакой музыки вместе со звуком не включается');
+devSnd.close();
+/* «старый браузер»: узлов шины нет вообще — звук обязан остаться */
+const minLog = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[], freqs:[], compressors:0, convolvers:0, panners:0, minimal:true };
+const devMin = await bootDevice(makeFakeDb(), { platform: 'android', audio: minLog });
+devMin.ev("window.dispatchEvent(new Event('pointerdown'))");
+const minBefore = minLog.oscillators;
+devMin.ev("sfx('watched'); sfx('swipe'); sfx('shuffle')");
+ok(devMin.ev('audioBroken') === false && minLog.oscillators > minBefore && minLog.compressors === 0 && minLog.convolvers === 0,
+  'без компрессора, свёртки и панорамы звук всё равно играет — просто сухо');
+ok(devMin.errors.length === 0, 'и ни одной ошибки: деградация тихая' + (devMin.errors.length ? ': ' + devMin.errors[0] : ''));
+devMin.close();
 /* выбор звука уезжает на второе устройство */
 const sndDb = makeFakeDb();
-const devSndA = await bootDevice(sndDb, { platform: 'ios', audio: { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] } });
+const sndLogA = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[], freqs:[], compressors:0, convolvers:0, panners:0 };
+const devSndA = await bootDevice(sndDb, { platform: 'ios', audio: sndLogA });
 devSndA.doc.getElementById('switchSfx').click();
-devSndA.doc.getElementById('switchMusic').click();
 await sleep(220);
-ok(sndDb.cfgValue('sfx') === false && sndDb.cfgValue('music') === false, 'выключенный звук и музыка доехали до базы: ' + JSON.stringify([sndDb.cfgValue('sfx'), sndDb.cfgValue('music')]));
-const sndLog2 = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[] };
-const devSndB = await bootDevice(sndDb, { platform: 'ios', audio: sndLog2 });
-ok(devSndB.ev('sfxOn()') === false && devSndB.ev('musicOn()') === false, 'второе устройство получило тишину из базы');
-ok(devSndB.ev("document.getElementById('switchSfx').classList.contains('on')") === false &&
-   devSndB.ev("document.getElementById('switchMusic').classList.contains('on')") === false, 'и оба тумблера на нём стоят в положении «выкл»');
+ok(sndDb.cfgValue('sfx') === false, 'выключенный звук доехал до базы: ' + JSON.stringify(sndDb.cfgValue('sfx')));
+const sndLogB = { created:0, oscillators:0, buffers:0, sources:0, params:0, ramps:0, expRamps:0, targets:0, cancels:0, resumeCalls:0, closed:0, starts:[], freqs:[], compressors:0, convolvers:0, panners:0 };
+const devSndB = await bootDevice(sndDb, { platform: 'ios', audio: sndLogB });
+ok(devSndB.ev('sfxOn()') === false && devSndB.ev("document.getElementById('switchSfx').classList.contains('on')") === false,
+  'второе устройство получило тишину из базы, и тумблер на нём в положении «выкл»');
 devSndB.ev("window.dispatchEvent(new Event('pointerdown'))");
 devSndB.ev("sfx('watched')");
 await sleep(60);
-ok(sndLog2.oscillators === 0 && devSndB.ev('musicTimer') === null, 'после этого звук и музыка там действительно не играют');
-devSnd.close(); devSndA.close(); devSndB.close();
+ok(sndLogB.oscillators === 0, 'после этого звук там действительно не играет');
+devSndA.close(); devSndB.close();
 
 
 /* --- планшетная раскладка: iPad и Android-планшеты --- */

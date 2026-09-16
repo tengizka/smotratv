@@ -2220,13 +2220,8 @@
       </div>
       <div class="set-row" style="cursor:pointer;">
         <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h3l4.5-3.5v13L7 15H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.2 6.6a7.5 7.5 0 0 1 0 10.8"/></svg></div>
-        <div class="set-text"><div class="set-label">Звуки</div><div class="set-sub">Свайпы, ачивки, окна и кнопки</div></div>
+        <div class="set-text"><div class="set-label">Звуки</div><div class="set-sub">Свайпы, ачивки, уровни и кнопки</div></div>
         <div class="switch" id="switchSfx" data-key="smotra_sfx"></div>
-      </div>
-      <div class="set-row" style="cursor:pointer;">
-        <div class="set-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></div>
-        <div class="set-text"><div class="set-label">Фоновая музыка</div><div class="set-sub">Тихая подложка, пока приложение открыто</div></div>
-        <div class="switch" id="switchMusic" data-key="smotra_music"></div>
       </div>
     </div>
 
@@ -2343,6 +2338,30 @@
    пользователя): версия видна в самом низу экрана «Частые вопросы».
    ========================================================================== */
 /* История версий (дописывай строку при каждом обновлении, ничего не удаляй):
+   0.42 — музыка убрана, звуки переделаны:
+         • фоновой музыки больше нет: не прижилась — убрал целиком и вычистил её
+           настройку из памяти устройств и из синхронизации;
+         • звуки собраны заново, уже не «пищалка»: маримба (тон с гаснущими
+           обертонами) вместо голого синуса, у каждого звука свой тембр, а свайп
+           уходит по панораме вслед за карточкой — «мимо» влево, «смотрел» вправо;
+         • на выходе компрессор: когда подряд летят свайп, ачивка и новый уровень,
+           звуки не наезжают друг на друга и не щёлкают на пиках;
+         • своя «комната» — реверб, собранный из шума прямо в приложении: короткий
+           хвост даёт объём, поэтому подтверждения и ачивки звучат объёмно, а не
+           сухо. Файлов по-прежнему ни одного;
+         • высота на повторных щелчках чуть разная (меньше 3%): одинаковая нота на
+           каждый тап звучит роботом, живая — нет;
+         • «Перемешать» теперь тасует карты (череда коротких шорохов со случайными
+           промежутками), а не выдыхает один раз; у рулетки воздух набирает высоту —
+           слышно, что колесо разгоняется;
+         • кнопки на карточке фильма («Чекнуть», «Смотрю», «Смотрел») звучат так же,
+           как свайпы, а снятие отметки — мягкой отменой;
+         • «смотрел» — тёплое «да» из двух нот вверх, «мимо» — мягкое низкое «нет»,
+           «чекнуть» — искры пентатоники, «смотрю» — капля; ачивка и новый уровень
+           играют аккордом с низким «подвалом», выигрыш — со звоном поверх;
+         • шина и буфер шума создаются один раз, поэтому шорохи и «вжухи» почти
+           ничего не стоят; нет свёртки или компрессора в браузере — играем сухо, без
+           ошибок.
    0.41 — звук в приложении и отдельная раскладка для планшетов:
          • у приложения появился звук — и ни одного файла: всё синтезируется на месте
            через Web Audio, поэтому звук не тянет загрузку и не рвётся на слабой
@@ -2748,7 +2767,7 @@
          главной снова живая игрушка — чистая SVG из семи моделек, окрашенная в
          текущую тему. Рандомайзер стал игрой: рулетка, колесо, покер и автомат —
          четыре режима в одном окне. */
-const APP_VERSION = '0.41';
+const APP_VERSION = '0.42';
 const APP_BUILD_DATE = '2026-09-16';
 
 /* ============ SVG ICONS (единая библиотека, без эмодзи) ============ */
@@ -2972,208 +2991,279 @@ function haptic(type, style){
    Telegram глушат звук, включённый без действия человека, — а нам нужно, чтобы
    первый же свайп был со звуком.
 
-   Два независимых канала, оба выключаются в настройках:
-     • «Звуки» — отклик интерфейса: свайпы, окна, ачивки, кнопки;
-     • «Фоновая музыка» — тихая подложка под приложением.
-   Настройки синхронизируются между устройствами, как тема и фильтры. */
+   Из чего собран звук:
+     • шина с компрессором — когда подряд летят свайп, ачивка и уровень, звуки не
+       наезжают друг на друга и не щёлкают на пиках;
+     • своя маленькая «комната» — реверб, собранный из шума прямо в приложении:
+       именно он даёт объём, из-за которого звук звучит дорого, а не как пищалка;
+     • маримба вместо голого синуса: тон плюс обертоны, которые гаснут быстрее
+       основы, — тёплый «деревянный» тембр на подтверждениях и ачивках;
+     • лёгкий разброс высоты: одинаковая нота на каждый тап звучит роботом, живая —
+       нет. Разброс меньше 3%, поэтому на слух это не «фальшиво», а живо;
+     • свайп уходит по панораме вслед за карточкой: «мимо» — влево, «смотрел» —
+       вправо, «чекнуть» и «смотрю» — по центру.
+
+   Фоновой музыки нет: она не прижилась (см. историю версий).
+   Канал один — тумблер «Звуки» в настройках. Выбор запоминается и синхронизируется
+   между устройствами, как тема и фильтры. */
 const SFX_KEY = 'smotra_sfx';
-const MUSIC_KEY = 'smotra_music';
-let audioCtx = null, audioBus = null, audioUnlocked = false, audioBroken = false;
+let audioCtx = null, audioBus = null, audioWetIn = null, audioNoise = null, audioUnlocked = false, audioBroken = false;
 function sfxOn(){ return getFlag(SFX_KEY, true); }
-function musicOn(){ return getFlag(MUSIC_KEY, true); }
+
+/* Импульс для «комнаты»: короткий шум с плавным затуханием, в правом и левом канале
+   разный — так помещение получается широким. Никакого файла: считаем на месте. */
+function makeImpulse(ctx, seconds, decay){
+  const rate = ctx.sampleRate;
+  const len = Math.max(1, Math.floor(rate * seconds));
+  const buf = ctx.createBuffer(2, len, rate);
+  const attack = Math.max(1, Math.floor(rate * 0.01));
+  for (let ch = 0; ch < 2; ch++){
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++){
+      const fade = i < attack ? i / attack : 1;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay) * fade;
+    }
+  }
+  return buf;
+}
 function audioContext(){
   if (audioCtx) return audioCtx;
   if (audioBroken) return null;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC){ audioBroken = true; return null; }
   try{
-    audioCtx = new AC();
-    audioBus = audioCtx.createGain();
-    audioBus.gain.value = 0.8;
-    audioBus.connect(audioCtx.destination);
-  }catch(e){ audioCtx = null; audioBus = null; audioBroken = true; }
+    const ctx = new AC();
+    const master = ctx.createGain();
+    master.gain.value = 0.9;
+    /* Каждая часть шины — сама по себе: нет компрессора в браузере или не собралась
+       свёртка, играем тем, что есть. Из-за одной отсутствующей железки звук не
+       должен пропадать целиком. */
+    let tail = master;
+    try{
+      if (ctx.createDynamicsCompressor){
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -16; comp.knee.value = 22; comp.ratio.value = 3;
+        comp.attack.value = 0.004; comp.release.value = 0.28;
+        tail.connect(comp); tail = comp;
+      }
+    }catch(e){ tail = master; }
+    try{ tail.connect(ctx.destination); }catch(e){}
+    /* Посыл в «комнату». Нет свёртки — играем сухо: звук остаётся, воздуха меньше. */
+    try{
+      if (ctx.createConvolver && ctx.createBuffer){
+        const conv = ctx.createConvolver();
+        conv.buffer = makeImpulse(ctx, 1.05, 3.2);
+        const wetReturn = ctx.createGain();
+        wetReturn.gain.value = 0.5;
+        conv.connect(wetReturn); wetReturn.connect(master);
+        audioWetIn = conv;
+      }
+    }catch(e){ audioWetIn = null; }
+    audioBus = master;
+    audioCtx = ctx;
+  }catch(e){ audioCtx = null; audioBus = null; audioWetIn = null; audioBroken = true; }
   return audioCtx;
 }
-/* Первое касание включает звук насовсем: с этого момента контекст разрешён и музыка
-   может играть. Слушатели остаются (снятие их на iOS иногда не срабатывает), но
-   каждый следующий вызов выходит сразу. */
+/* Первое касание включает звук насовсем: с этого момента контекст разрешён.
+   Слушатели остаются (снятие их на iOS иногда не срабатывает), но каждый следующий
+   вызов выходит сразу. */
 function unlockAudio(){
   if (audioUnlocked) return;
   const ctx = audioContext();
   if (!ctx) return;
   audioUnlocked = true;
   if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
-  if (musicOn()) startMusic();
 }
 ['pointerdown','touchstart','keydown'].forEach(ev => window.addEventListener(ev, unlockAudio, { passive:true }));
 
-/* Короткий тон: тип волны, частота, длина, громкость, задержка. */
-function playTone(o){
-  const ctx = audioCtx; if (!ctx || !audioBus) return;
-  const t0 = ctx.currentTime + (o.delay || 0);
-  const dur = o.dur || 0.15;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = o.type || 'sine';
-  osc.frequency.setValueAtTime(o.freq, t0);
-  if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(20, o.to), t0 + dur);
-  const peak = o.gain == null ? 0.08 : o.gain;
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.05, dur * 0.3));
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  osc.connect(gain); gain.connect(audioBus);
-  osc.start(t0); osc.stop(t0 + dur + 0.04);
-  osc.onended = () => { try{ osc.disconnect(); gain.disconnect(); }catch(e){} };
+/* Общий белый шум: один буфер на всё приложение вместо новой генерации на каждый
+   звук — «вжухи» и шорохи после этого почти ничего не стоят. */
+function noiseBuffer(ctx){
+  if (audioNoise) return audioNoise;
+  const len = Math.max(1, Math.floor(ctx.sampleRate * 1.5));
+  audioNoise = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = audioNoise.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  return audioNoise;
 }
-/* Шум с полосовым фильтром: «вжух» свайпа, шорох перемешивания, вращение рулетки. */
-function playNoise(o){
+/* Точка вывода голоса: панорама, посыл в «комнату» и общий выход. */
+function voiceOut(ctx, pan, wet){
+  const out = ctx.createGain();
+  let tail = out;
+  if (pan && ctx.createStereoPanner){
+    try{
+      const panner = ctx.createStereoPanner();
+      panner.pan.value = Math.max(-1, Math.min(1, pan));
+      out.connect(panner); tail = panner;
+    }catch(e){ tail = out; }        // панорамы нет — играем по центру
+  }
+  if (audioBus) tail.connect(audioBus);
+  if (audioWetIn && wet){
+    const send = ctx.createGain();
+    send.gain.value = wet;
+    tail.connect(send); send.connect(audioWetIn);
+  }
+  return out;
+}
+/* Огибающая: быстрый вход и плавный уход. Ноль в экспоненте недопустим, поэтому
+   начинаем и заканчиваем на 0.0001 — это тише слуха и щелчка не даёт. */
+function envelope(param, at, dur, peak, attack){
+  param.setValueAtTime(0.0001, at);
+  param.exponentialRampToValueAtTime(Math.max(0.0002, peak), at + Math.max(0.004, attack || 0.008));
+  param.exponentialRampToValueAtTime(0.0001, at + Math.max(0.03, dur));
+}
+/* Маримба: основной тон и обертоны, которые гаснут быстрее основы. Из-за этого она
+   звучит как инструмент, а не как пищащий синус. */
+function bell(freq, o){
   const ctx = audioCtx; if (!ctx || !audioBus) return;
-  const dur = o.dur || 0.26;
-  const t0 = ctx.currentTime + (o.delay || 0);
-  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, o.decay || 1.5);
-  const src = ctx.createBufferSource(); src.buffer = buf;
+  o = o || {};
+  const at = ctx.currentTime + (o.at || 0);
+  const dur = o.dur || 0.5;
+  const peak = o.gain == null ? 0.06 : o.gain;
+  const human = o.human === false ? 1 : 1 + (Math.random() - 0.5) * 0.025;
+  const out = voiceOut(ctx, o.pan || 0, o.wet == null ? 0.35 : o.wet);
+  (o.parts || [[1, 1, 1], [2, 0.32, 0.6], [3, 0.12, 0.38]]).forEach(part => {
+    const mult = part[0], level = part[1], life = part[2];
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(Math.max(20, freq * mult * human), at);
+    envelope(gain.gain, at, dur * life, Math.max(0.0005, peak * level), 0.006);
+    osc.connect(gain); gain.connect(out);
+    osc.start(at); osc.stop(at + dur * life + 0.06);
+    osc.onended = () => { try{ osc.disconnect(); gain.disconnect(); }catch(e){} };
+  });
+}
+/* Шумовой «вжух»: полосовой фильтр едет по частоте, а края сглажены — резкий край
+   шума всегда щёлкает. */
+function whoosh(o){
+  const ctx = audioCtx; if (!ctx || !audioBus) return;
+  o = o || {};
+  const at = ctx.currentTime + (o.at || 0);
+  const dur = o.dur || 0.28;
+  const peak = o.gain == null ? 0.05 : o.gain;
+  const out = voiceOut(ctx, o.pan || 0, o.wet == null ? 0.2 : o.wet);
+  const src = ctx.createBufferSource();
+  src.buffer = noiseBuffer(ctx);
+  src.loop = true;
   const filter = ctx.createBiquadFilter();
   filter.type = 'bandpass';
-  filter.Q.value = o.q == null ? 0.9 : o.q;
-  filter.frequency.setValueAtTime(o.from || 420, t0);
-  filter.frequency.exponentialRampToValueAtTime(Math.max(60, o.to || 1600), t0 + dur);
+  filter.Q.value = o.q == null ? 0.8 : o.q;
+  filter.frequency.setValueAtTime(Math.max(40, o.from || 300), at);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(60, o.to || 2200), at + dur);
   const gain = ctx.createGain();
-  const peak = o.gain == null ? 0.09 : o.gain;
-  gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.25);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  src.connect(filter); filter.connect(gain); gain.connect(audioBus);
-  src.start(t0); src.stop(t0 + dur + 0.03);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.linearRampToValueAtTime(peak, at + dur * (o.rise == null ? 0.22 : o.rise));
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  src.connect(filter); filter.connect(gain); gain.connect(out);
+  src.start(at); src.stop(at + dur + 0.02);
   src.onended = () => { try{ src.disconnect(); filter.disconnect(); gain.disconnect(); }catch(e){} };
 }
-/* Что и как звучит. Громкость у всех откликов разная: свайп — тише, ачивка — заметнее,
-   но ничего не «стреляет» в ухо. */
+/* Деревянный щелчок: очень короткий шум и крошечное тело. Высота каждый раз чуть
+   разная — десять тапов подряд не сливаются в один механический треск. */
+function tick(freq, gain, pan){
+  whoosh({ at: 0, from: freq, to: freq * 0.72, dur: 0.035, gain: gain, q: 3.2, pan: pan, wet: 0.25, rise: 0.12 });
+  bell(freq * 1.5, { at: 0, dur: 0.07, gain: gain * 0.5, pan: pan, wet: 0.2, parts: [[1, 1, 1]] });
+}
+/* Низкий «подвал» под аккордом: слышно скорее корпусом, чем ухом, но именно он
+   делает крупные звуки (уровень, выигрыш) большими. */
+function sub(freq, dur, peak, at){
+  const ctx = audioCtx; if (!ctx || !audioBus) return;
+  const t0 = ctx.currentTime + (at || 0);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq * 2, t0);
+  osc.frequency.exponentialRampToValueAtTime(freq, t0 + dur * 0.5);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.linearRampToValueAtTime(peak, t0 + 0.06);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  const out = voiceOut(ctx, 0, 0.1);
+  osc.connect(gain); gain.connect(out);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+  osc.onended = () => { try{ osc.disconnect(); gain.disconnect(); }catch(e){} };
+}
+/* Тасовка карт: семь коротких шорохов со случайными промежутками и разной панорамой.
+   Один общий «пфф» звучал как выдох, а тасовка — это именно череда. */
+function riffle(){
+  for (let i = 0; i < 7; i++){
+    whoosh({
+      at: i * (0.026 + Math.random() * 0.018),
+      from: 1500 + Math.random() * 1100,
+      to: 800 + Math.random() * 700,
+      dur: 0.05 + Math.random() * 0.02,
+      gain: 0.022 + Math.random() * 0.012,
+      q: 1.1,
+      pan: (Math.random() * 2 - 1) * 0.4,
+      wet: 0.18,
+      rise: 0.15,
+    });
+  }
+}
+
 const SFX = {
-  tap:      () => playTone({ type:'triangle', freq:880, to:700, dur:.07, gain:.045 }),
-  swipe:    () => playNoise({ from:480, to:1900, dur:.22, gain:.065 }),
-  watched:  () => { playTone({ type:'sine', freq:587, dur:.18, gain:.085 }); playTone({ type:'sine', freq:880, dur:.24, gain:.075, delay:.09 }); },
-  skip:     () => { playTone({ type:'sine', freq:392, dur:.17, gain:.075 }); playTone({ type:'sine', freq:262, dur:.26, gain:.065, delay:.09 }); },
-  wish:     () => playTone({ type:'triangle', freq:660, to:990, dur:.22, gain:.065 }),
-  watching: () => playTone({ type:'triangle', freq:560, to:420, dur:.22, gain:.065 }),
-  undo:     () => { playNoise({ from:1500, to:380, dur:.22, gain:.055 }); playTone({ type:'sine', freq:330, dur:.2, gain:.055, delay:.05 }); },
-  open:     () => playTone({ type:'sine', freq:520, to:780, dur:.12, gain:.045 }),
-  close:    () => playTone({ type:'sine', freq:620, to:380, dur:.12, gain:.045 }),
-  badge:    () => [659, 880, 1175].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.34, gain:.07, delay:i * .1 })),
-  level:    () => [523, 659, 784, 1047].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.5, gain:.065, delay:i * .12 })),
-  spin:     () => playNoise({ from:320, to:900, dur:.5, gain:.045 }),
-  tick:     () => playTone({ type:'square', freq:1180, dur:.03, gain:.022 }),
-  win:      () => [784, 988, 1319].forEach((f,i) => playTone({ type:'triangle', freq:f, dur:.4, gain:.075, delay:i * .12 })),
-  shuffle:  () => playNoise({ from:900, to:300, dur:.3, gain:.045 }),
-  done:     () => { playTone({ type:'sine', freq:660, dur:.14, gain:.065 }); playTone({ type:'sine', freq:990, dur:.22, gain:.055, delay:.07 }); },
-  error:    () => { playTone({ type:'sine', freq:220, dur:.18, gain:.065 }); playTone({ type:'sine', freq:165, dur:.26, gain:.055, delay:.1 }); },
+  /* Кнопки, вкладки, тема, шаги обучения: мягкий «тук», почти без громкости */
+  tap:      () => tick(1244 + Math.random() * 60, 0.02, 0),
+  /* Свайп: воздух улетает вслед за карточкой, в её сторону */
+  swipe:    (o) => whoosh({ from: 320, to: 2500, dur: 0.3, gain: 0.048, pan: o.pan || 0, wet: 0.25 }),
+  /* «Смотрел»: две маримбы вверх (соль → до) — тёплое «да» */
+  watched:  (o) => { const p = o.pan || 0.12;
+    bell(783.99, { dur: 0.5, gain: 0.07, pan: p, wet: 0.42 });
+    bell(1046.50, { at: 0.09, dur: 0.62, gain: 0.062, pan: p, wet: 0.45 }); },
+  /* «Мимо»: низкое мягкое «нет» — уходит вниз, без резкости */
+  skip:     (o) => { const p = o.pan || -0.12;
+    whoosh({ from: 900, to: 300, dur: 0.2, gain: 0.022, pan: p, wet: 0.2 });
+    bell(392.00, { dur: 0.36, gain: 0.055, pan: p, wet: 0.3 });
+    bell(261.63, { at: 0.085, dur: 0.44, gain: 0.048, pan: p, wet: 0.35 }); },
+  /* «Чекнуть»: искры вверх — три ноты пентатоники, будто блеснуло */
+  wish:     (o) => [880, 1046.5, 1318.5].forEach((f, i) =>
+              bell(f, { at: i * 0.055, dur: 0.5, gain: 0.05, pan: (o.pan || 0) + i * 0.05, wet: 0.5 })),
+  /* «Смотрю»: капля — мягкий спуск с лёгким «бульком» */
+  watching: (o) => { const p = o.pan || 0;
+    whoosh({ from: 1500, to: 480, dur: 0.16, gain: 0.02, pan: p, wet: 0.2 });
+    bell(659.25, { dur: 0.3, gain: 0.055, pan: p, wet: 0.35 });
+    bell(493.88, { at: 0.08, dur: 0.42, gain: 0.05, pan: p, wet: 0.4 }); },
+  /* «Вернуться»: воздух в обратную сторону и две ноты вниз */
+  undo:     () => { whoosh({ from: 2200, to: 420, dur: 0.28, gain: 0.042, wet: 0.3 });
+                    bell(1046.50, { at: 0.02, dur: 0.34, gain: 0.05, wet: 0.42 });
+                    bell(783.99, { at: 0.11, dur: 0.5, gain: 0.05, wet: 0.45 }); },
+  /* Окна: тихий «вдох» при открытии и «выдох» при закрытии */
+  open:     () => { bell(587.33, { dur: 0.26, gain: 0.045, wet: 0.32 }); bell(880, { at: 0.06, dur: 0.34, gain: 0.038, wet: 0.36 }); },
+  close:    () => { bell(659.25, { dur: 0.22, gain: 0.04, wet: 0.26 }); bell(440, { at: 0.06, dur: 0.3, gain: 0.036, wet: 0.3 }); },
+  /* Ачивка: три ноты вверх и высокий звон поверх */
+  badge:    () => { [1046.5, 1318.5, 1568].forEach((f, i) => bell(f, { at: i * 0.07, dur: 0.9, gain: 0.055, wet: 0.55 }));
+                    bell(2093, { at: 0.1, dur: 0.5, gain: 0.018, wet: 0.5 }); },
+  /* Новый уровень: короткая фанфара, а под ней низкий «подвал» */
+  level:    () => { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => bell(f, { at: i * 0.1, dur: 1.1, gain: 0.058, wet: 0.55 }));
+                    sub(130.81, 0.9, 0.05, 0.02);
+                    bell(1568, { at: 0.34, dur: 0.9, gain: 0.028, wet: 0.6 }); },
+  /* Вращение: воздух набирает высоту — слышно, что колесо разгоняется */
+  spin:     () => whoosh({ from: 220, to: 3000, dur: 0.6, gain: 0.046, q: 0.7, wet: 0.3, rise: 0.45 }),
+  /* Тик рулетки: чуть разная высота, чтобы лента «щёлкала», а не пищала */
+  tick:     (o) => tick(1180 + Math.random() * 90, 0.02, o.pan || 0),
+  /* Выигрыш: светлый аккорд, звон поверх и низ — «вот оно» */
+  win:      () => { [523.25, 659.25, 783.99].forEach((f, i) => bell(f, { at: i * 0.06, dur: 1.15, gain: 0.055, wet: 0.5 }));
+                    bell(2093, { at: 0.3, dur: 0.6, gain: 0.016, wet: 0.55 });
+                    sub(130.81, 1.0, 0.048, 0.04); },
+  /* «Перемешать»: тасовка карт, а не один выдох */
+  shuffle:  () => riffle(),
+  /* Подтверждение: две ноты вверх, коротко и тепло */
+  done:     () => { bell(659.25, { dur: 0.34, gain: 0.055, wet: 0.36 }); bell(987.77, { at: 0.075, dur: 0.5, gain: 0.05, wet: 0.42 }); },
+  /* Ошибка: низкое «не вышло» — мягко, без резкого квадрата */
+  error:    () => { bell(233.08, { dur: 0.3, gain: 0.05, wet: 0.22, type: 'triangle' });
+                    bell(174.61, { at: 0.1, dur: 0.44, gain: 0.045, wet: 0.26, type: 'triangle' }); },
 };
 /* Один вход для всего приложения: sfx('watched'). Нет звуковой карты, нет разрешения
    или выключено в настройках — тихо ничего не делаем. */
-function sfx(name){
+function sfx(name, opts){
   if (!sfxOn() || !audioUnlocked) return;
   const ctx = audioContext();
   if (!ctx) return;
   if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
   const fn = SFX[name];
   if (!fn) return;
-  try{ fn(); }catch(e){}
+  try{ fn(opts || {}); }catch(e){}
 }
-
-/* ===== Фоновая музыка =====
-   Четыре аккорда по кругу: мягкая подложка и редкие ноты поверх. Ни ударных, ни
-   громких пиков — музыка нужна как атмосфера, а не как второй интерфейс. Всё
-   расписывается на секунду вперёд по часам звукового контекста, поэтому она не
-   «дёргается» от того, что телефон занят отрисовкой. */
-const MUSIC_BARS = [
-  { pad:[220.00, 261.63, 329.63], arp:[440.00, 523.25, 659.25] },   // ля минор
-  { pad:[174.61, 220.00, 261.63], arp:[349.23, 440.00, 523.25] },   // фа мажор
-  { pad:[130.81, 196.00, 261.63], arp:[392.00, 523.25, 659.25] },   // до мажор
-  { pad:[196.00, 246.94, 293.66], arp:[392.00, 493.88, 587.33] },   // соль мажор
-];
-const MUSIC_BAR_SEC = 3.6;
-let musicTimer = null, musicBarIndex = 0, musicNextAt = 0, musicVoices = [], musicGain = null;
-function musicVoice(freq, at, dur, peak, type){
-  const ctx = audioCtx;
-  if (!ctx || !musicGain) return;
-  const osc = ctx.createOscillator();
-  const filter = ctx.createBiquadFilter();
-  const gain = ctx.createGain();
-  osc.type = type || 'sine';
-  osc.frequency.value = freq;
-  filter.type = 'lowpass';
-  filter.frequency.value = Math.min(4200, freq * 6);
-  gain.gain.setValueAtTime(0.0001, at);
-  gain.gain.linearRampToValueAtTime(peak, at + Math.min(0.9, dur * 0.28));
-  gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-  osc.connect(filter); filter.connect(gain); gain.connect(musicGain);
-  osc.start(at); osc.stop(at + dur + 0.05);
-  const voice = { osc, gain, filter };
-  musicVoices.push(voice);
-  osc.onended = () => {
-    try{ osc.disconnect(); filter.disconnect(); gain.disconnect(); }catch(e){}
-    const i = musicVoices.indexOf(voice);
-    if (i > -1) musicVoices.splice(i, 1);
-  };
-}
-function musicSchedule(){
-  const ctx = audioCtx;
-  if (!ctx || !musicGain) return;
-  while (musicNextAt < ctx.currentTime + 2.4){
-    const bar = MUSIC_BARS[musicBarIndex % MUSIC_BARS.length];
-    musicBarIndex++;
-    const at = musicNextAt;
-    bar.pad.forEach(f => musicVoice(f, at, MUSIC_BAR_SEC * 1.05, 0.05, 'sine'));
-    bar.arp.forEach((f, i) => musicVoice(f * 2, at + 0.6 + i * 0.62, 1.1, 0.028, 'triangle'));
-    musicNextAt += MUSIC_BAR_SEC;
-  }
-}
-function startMusic(){
-  const ctx = audioContext();
-  if (!ctx || !musicOn() || musicTimer) return;
-  if (ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
-  if (!musicGain){
-    musicGain = ctx.createGain();
-    musicGain.gain.value = 0.0001;
-    musicGain.connect(audioBus);
-  }
-  try{
-    musicGain.gain.cancelScheduledValues(ctx.currentTime);
-    musicGain.gain.setValueAtTime(Math.max(0.0001, musicGain.gain.value), ctx.currentTime);
-    musicGain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1.4);   // плавный вход
-  }catch(e){}
-  musicBarIndex = 0;
-  musicNextAt = ctx.currentTime + 0.2;
-  musicSchedule();
-  musicTimer = setInterval(musicSchedule, 700);
-}
-function stopMusic(){
-  if (musicTimer){ clearInterval(musicTimer); musicTimer = null; }
-  const ctx = audioCtx;
-  if (!ctx) return;
-  if (musicGain){
-    try{
-      musicGain.gain.cancelScheduledValues(ctx.currentTime);
-      musicGain.gain.setValueAtTime(Math.max(0.0001, musicGain.gain.value), ctx.currentTime);
-      musicGain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.45);
-    }catch(e){}
-  }
-  /* Голоса глушим сразу: иначе после выключения музыки аккорд доигрывал бы ещё
-     несколько секунд, а это выглядит как «кнопка не работает». */
-  const voices = musicVoices.slice();
-  musicVoices = [];
-  voices.forEach(v => {
-    try{ v.gain.gain.cancelScheduledValues(ctx.currentTime); v.gain.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08); }catch(e){}
-    try{ v.osc.stop(ctx.currentTime + 0.35); }catch(e){}
-  });
-}
-/* Ушли из приложения — музыка молчит (и батарею не тянет), вернулись — играет снова. */
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) stopMusic();
-  else if (musicOn() && audioUnlocked) startMusic();
-});
 
 /* ===== Синхронизация настроек между устройствами =====
    Списки (смотрел/чекнуть/смотрю/оценки/серии/ачивки/серия дней) живут в своих
@@ -3286,13 +3376,6 @@ function applyRemoteSettingsInner(remote){
     const sw = document.getElementById('switchSfx');
     if (sw) sw.classList.toggle('on', sx);
   }
-  let mu = take('music');
-  if (typeof mu === 'boolean' && mu !== musicOn()){
-    setFlag(MUSIC_KEY, mu);
-    const sw = document.getElementById('switchMusic');
-    if (sw) sw.classList.toggle('on', mu);
-    if (mu){ if (audioUnlocked) startMusic(); } else stopMusic();
-  }
   let since = take('since');
   if (typeof since === 'string' && since){
     try{
@@ -3318,7 +3401,6 @@ function savedSettingKeys(){
     if (localStorage.getItem('smotra_wish_sort')) keys.add('wishSort');
     if (localStorage.getItem(WISH_FILTER_KEY)) keys.add('wishFilters');
     if (localStorage.getItem(SFX_KEY)) keys.add('sfx');
-    if (localStorage.getItem(MUSIC_KEY)) keys.add('music');
     ['catalog', 'wishlist', 'watching'].forEach(section => {
       if (localStorage.getItem('smotra_view_' + section)) keys.add('views');
     });
@@ -3348,7 +3430,6 @@ function currentSyncedSettings(){
     wishSort,
     wishFilters,
     sfx: sfxOn(),
-    music: musicOn(),
     since: (() => { try{ return localStorage.getItem('smotra_since') || ''; }catch(e){ return ''; } })(),
   };
 }
@@ -5120,17 +5201,15 @@ initSwitch(document.getElementById('switchHaptic'), true);
    включилось, — иначе непонятно, что настраиваешь. */
 initSwitch(document.getElementById('switchSfx'), true, (on) => {
   syncSetting('sfx', on);
-  if (on){ unlockAudio(); sfx('watched'); }
-});
-initSwitch(document.getElementById('switchMusic'), true, (on) => {
-  syncSetting('music', on);
-  if (on){ unlockAudio(); startMusic(); }
-  else stopMusic();
+  if (on){ unlockAudio(); sfx('watched'); }   // включая звук, сразу даём услышать какой
 });
 /* Тумблера «Показывать 18+» больше нет: взрослого контента в приложении нет ни для
    кого и ни при каких настройках. Ключ прошлых версий вычищаем, чтобы он не
    тянулся ни в память устройства, ни в синхронизацию. */
 try{ localStorage.removeItem('smotra_adult'); }catch(e){}
+/* Фоновую музыку убрали (см. историю версий) — ключ прошлых версий тоже убираем,
+   чтобы он не тянулся ни в память устройства, ни в синхронизацию. */
+try{ localStorage.removeItem('smotra_music'); }catch(e){}
 
 function onTypeFilterChange(){
   deck = deck.filter(m => typeEnabledFor(m));
@@ -6680,7 +6759,7 @@ const FAQ_ITEMS = [
   ['Почему фильмы в ленте не повторяются?', 'Приложение помнит, что ты уже видел, и не показывает это снова. Если подборка иссякла, оно тихо догружает новые популярные тайтлы.'],
   ['Что такое «Хочу чекнуть»?', 'Список на потом. Когда он подрастёт, запусти рандомайзер — рулетку или колесо — и он выберет один тайтл за тебя.'],
   ['Как добавить друга?', 'Открой вкладку «Друзья», нажми «Добавить по ID» и введи ID друга (он показан внизу того же списка). Ссылку для приглашения даёт кнопка «Пригласить».'],
-  ['Можно ли выключить звук?', 'Да, в настройках два отдельных выключателя: «Звуки» убирает отклик на свайпы, ачивки и кнопки, «Фоновая музыка» — тихую подложку. Звуки не скачиваются из интернета, а собираются самим приложением, поэтому не тормозят загрузку. Выбранное запоминается и переносится на другое устройство вместе с остальными настройками.'],
+  ['Можно ли выключить звук?', 'Да: в настройках есть выключатель «Звуки» — он убирает весь звуковой отклик: свайпы, ачивки, уровни, окна и кнопки. Звуки не скачиваются из интернета, а собираются самим приложением, поэтому не тормозят загрузку и не рвутся на плохой связи. Выбранное запоминается и переносится на другое устройство вместе с остальными настройками. Фоновой музыки в приложении нет — она не прижилась.'],
   ['Что со связью с базой?', 'Свайпы и оценки сразу пишутся в память телефона, а в базу уходят, когда есть интернет. Если связи не было, нажми «Отправить записи заново» — ничего не потеряется.'],
   ['Как растёт LVL?', 'Опыт дают сами действия: «Смотрел» +10 XP, «Хочу чекнуть» +6, «Смотрю» +4, «Мимо» +1, оценка по Смотриметрам +25, ачивка +40, каждый день стрика +5 XP. Опыт считается из твоих списков, поэтому после сброса прогресса уровень честно падает, а не «залипает». Прогресс виден полоской вверху главной и карточкой в профиле, а вся лестница из 68 уровней до 100 000 XP — в окне уровней: там же разбор, из чего именно набежал опыт.'],
   ['Какие уровни есть и сколько нужно опыта?', 'Уровней 68, удвоений нет: каждый следующий уровень дороже предыдущего примерно на 45 XP. Переходы стоят 22, 67, 111, 156 и так далее до 2 963 XP на последнем, а весь путь до 68-го — ровно 100 000 XP. Первые уровни закрываются за вечер (2-й — всего 22 XP), а 68-й «Кинолегенда IV» открывается на 100 000 XP — это длинная цель, зато без обрывов и «стены»: каждая ступень честно чуть дороже предыдущей. Ступени: «Зритель», «Кинолюб», «Киноман», «Киногурман», «Кинофил», «Синефил» … «Киноакадемик», «Киноархимаг», «Кинолегенда» — у каждой по четыре подуровня I–IV. Вся лестница целиком — в окне уровней (тап по полоске LVL вверху или по карточке уровня в профиле), и там же тап по любой плитке уровня показывает его название, порог и сколько опыта до него осталось.'],
@@ -7478,9 +7557,11 @@ function resolveSwipe(card, movie, action){
   if (action === 'watching'){ flyY = 900; pushUnique(state.watching, mid(movie)); dbWatchingAdd(mid(movie)); }
   rememberMovie(movie);            // копия тайтла для историй, даже если каталог обновится
   if (action === 'watched' && (movie.type === 'series' || movie.type === 'anime')) fillAllEpisodes(movie);
-  /* Звук свайпа: сначала шорох, сразу за ним — отклик самого действия. */
-  sfx('swipe');
-  sfx(action === 'watched' ? 'watched' : action === 'skip' ? 'skip' : action === 'wish' ? 'wish' : 'watching');
+  /* Звук свайпа: сначала шорох, сразу за ним — отклик самого действия. Оба уходят
+     по панораме вслед за карточкой: «мимо» влево, «смотрел» вправо. */
+  const panDir = action === 'watched' ? 0.4 : action === 'skip' ? -0.4 : 0;
+  sfx('swipe', { pan: panDir });
+  sfx(action === 'watched' ? 'watched' : action === 'skip' ? 'skip' : action === 'wish' ? 'wish' : 'watching', { pan: panDir });
   card.style.transform = `translate(${flyX}px, ${flyY || 40}px) rotate(${rot}deg)`;
   card.style.opacity = '0';
   card.style.pointerEvents = 'none'; // улетающая карточка больше не ловит палец
@@ -9802,7 +9883,9 @@ document.getElementById('sheetWish').onclick = function(){
     pushUnique(state.wishlist, mid(sheetMovie));
     dbWishAdd(mid(sheetMovie));
     showToast('Добавлено в «Хочу чекнуть»');
+    sfx('wish');
   }
+  if (already) sfx('undo');
   haptic('impact','light');
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
@@ -9823,7 +9906,9 @@ document.getElementById('sheetWatching').onclick = function(){
     pushUnique(state.watching, mid(sheetMovie));
     dbWatchingAdd(mid(sheetMovie));
     showToast('Перемещено в «Смотрю»');
+    sfx('watching');
   }
+  if (already) sfx('undo');
   haptic('impact','light');
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
@@ -9844,8 +9929,10 @@ document.getElementById('sheetWatched').onclick = function(){
     state.watching = state.watching.filter(id=>id!==mid(sheetMovie));
     dbSwipe(mid(sheetMovie),'watched'); dbWishRemove(mid(sheetMovie)); dbWatchingRemove(mid(sheetMovie));
     checkBadges();
+    sfx('watched');
     showToast('Отмечено как просмотренное');
   }
+  if (already) sfx('undo');
   haptic('impact','medium');
   pulseBtn(this);
   updateSheetButtons(sheetMovie);
